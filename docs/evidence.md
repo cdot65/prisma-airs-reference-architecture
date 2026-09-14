@@ -27,6 +27,14 @@ At 12:55 UTC, both exact installed alpha.14 packages completed production gatewa
 
 The gateway's observed frontend MCP token is opaque and lasts 3,600 seconds. The separate upstream Keycloak JWT lasts 300 seconds. Acceptance waits for real expiration, launches two concurrent native processes, records nonsecret token-generation fingerprints, and correlates gateway tool telemetry with upstream requests. The deployment also has a 30-minute Keycloak SSO idle limit, and the observed upstream refresh grants expired after 30 minutes without renewal. The corrected runner uses periodic authorized reads to maintain normal activity, verifies that those reads do not rotate the frontend token early, and then tests concurrent processes after actual frontend expiry. This is active-session acceptance, not a claim of uninterrupted access after an hour idle. Changing a local expiry field or reusing direct-route receipts would not establish this behavior.
 
+## Alpha.15 implementation in progress
+
+The production MCP adapter now renews its own management-API service-account token once after a rejected cached token, then retries the authorized read once. Concurrent callers share acquisition; a late rejection cannot invalidate a newer cached generation. Permission denials and resource-not-found responses do not trigger this renewal. The change passed 50 backend tests and is deployed on both healthy production replicas. These are backend service credentials, separate from either human OAuth leg.
+
+The native client has merged durable refresh-intent handling. Cross-environment coordination, same-identity inference restoration, typed failure guidance and the terminal sign-in action are undergoing Rust integration validation for alpha.15. The candidate keeps the 30-minute idle policy and prevents automatic replay of completed work. Opaque gateway MCP credentials still lack the trusted identity continuity needed to automatically restore an existing conversation after a new login.
+
+Alpha.15 is not yet published or accepted on exact Linux and signed Apple Silicon packages. Alpha.14 remains the published release; its recorded exception does not transfer to this candidate.
+
 ## Evidence boundaries
 
 The public educational repository contains explanations and fictional examples. Operational credentials, identity records, private logs and full release receipts remain outside the publication. Deployment observations above were made on September 14, 2026; a source revision alone is not a live health check.

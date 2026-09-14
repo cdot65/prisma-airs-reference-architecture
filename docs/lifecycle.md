@@ -52,13 +52,25 @@ stateDiagram-v2
     LoginRequired --> Active: New verified browser login
 ```
 
+## Alpha.15 recovery work
+
+The next candidate preserves the 30-minute SSO idle limit. It renews credentials when work needs them; an idle terminal does not generate keepalive traffic. Returning after the refresh grant expires requires sign-in. Device authorization and browser SSO differ in how initial authorization is completed, not in this renewal requirement.
+
+Native MCP now records durable refresh intent in the merged client changes. Cross-environment locking and the inference recovery interface are being validated for alpha.15. A returned token generation is saved before use; local storage retries reuse that generation rather than repeating the rotating exchange. A rejected or uncertain exchange requires sign-in, while a pre-dispatch discovery outage preserves the unconsumed grant. A locked native store needs storage repair, not an unrelated new SSO session.
+
+The candidate's inference recovery uses `/signin`, or `airs-harness login --restore-session --no-browser` in another terminal with the same selected environment. Restore verifies the original issuer, subject, client and audience before saving credentials. It preserves the open conversation and draft, and leaves retrying the request to the user. Ordinary login and logout remain separate session boundaries. These commands describe candidate behavior, not the published alpha.14 interface.
+
+Gateway-facing MCP credentials are separate. The observed opaque gateway token does not provide a verified account-continuity contract to the native client. The candidate therefore stops an MCP authentication failure before model-driven credential fallback, gives the bound gateway MCP login command, and directs the user to a fresh conversation. Automatic restoration of the old MCP conversation is still gated on trusted identity evidence. Backend management-API service-account failures are not treated as human sign-in failures.
+
+The implementation-status lesson records what is merged, deployed and still awaiting exact-package acceptance.
+
 ## Refresh cannot expand the grant
 
 A historical direct-route expiry test found that the MCP SDK appended `offline_access` during refresh because Keycloak advertised support for it. This client had never requested or received that scope, so Keycloak rejected the refresh. Initial login and tool calls had succeeded; only waiting for expiry exposed the defect.
 
 The integration now prevents that automatic addition when the saved grant lacks `offline_access`. An existing grant that includes it is preserved. The regression test inspects the SDK’s actual HTTP refresh request, including its resource indicator. Server support, client registration and the permissions granted in a particular login are three different facts. A refresh request must remain within the original grant. [OAuth refresh requirements, RFC 6749 section 6](https://www.rfc-editor.org/rfc/rfc6749#section-6).
 
-Alpha.14 acceptance measures two actual gateway-facing expiration intervals with concurrent fresh native processes. It compares native token-generation fingerprints and expiry metadata without publishing credentials, and correlates gateway tool telemetry with upstream calls after the separate five-minute JWT lifetime. Successful initial login alone cannot prove either renewal path. The earlier direct-client result covers neither the CAS chain nor gateway-managed upstream storage.
+Full lifecycle acceptance requires two actual gateway-facing expiration intervals with concurrent fresh native processes. Alpha.14 shipped under a recorded exception with zero completed frontend cycles; that exception is not evidence for later releases. It compares native token-generation fingerprints and expiry metadata without publishing credentials, and correlates gateway tool telemetry with upstream calls after the separate five-minute JWT lifetime. Successful initial login alone cannot prove either renewal path. The earlier direct-client result covers neither the CAS chain nor gateway-managed upstream storage.
 
 ## Revocation has several clocks
 
