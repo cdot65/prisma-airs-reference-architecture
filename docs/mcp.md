@@ -4,6 +4,8 @@ title: "Read-only MCP authorization"
 sidebar_label: "Read-only MCP authorization"
 ---
 
+> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
+
 ## Give the assistant a small, enforceable tool surface
 
 The initial `prisma-airs-mcp` server exposes eight configuration-read tools. It returns projected summaries rather than raw upstream JSON. This lets Alex ask useful questions without receiving server credentials, full authentication configuration, prompts, or logs.

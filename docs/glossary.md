@@ -4,6 +4,8 @@ title: "Glossary and misconceptions"
 sidebar_label: "Glossary and misconceptions"
 ---
 
+> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
+
 ## Vocabulary for this architecture
 
 | Term | Meaning here |

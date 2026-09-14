@@ -4,121 +4,89 @@ title: "Login from browser to authorized tools"
 sidebar_label: "Login from browser to authorized tools"
 ---
 
-## Begin with a configured trust relationship
+## Authenticate for the gateway destination
 
-The harness starts with an expected issuer, a registered native client, and a resource. Discovery confirms the server's advertised contract against those settings. It is not permission to send tokens to any URL returned by an arbitrary server.
+Both inference and MCP must target Prisma AIRS AI Gateway. The following sequences describe the required integration, not a completed release acceptance record. Prior commands that connected the harness directly to `prisma-airs-mcp` are withdrawn.
 
-The reviewed MCP server publishes protected-resource metadata at `/.well-known/oauth-protected-resource/mcp`. An unauthenticated MCP request receives a 401 challenge advertising metadata. The client checks the resource, authorization server, and requested scopes before beginning login. See [RFC 9728](https://www.rfc-editor.org/info/rfc9728/) for metadata and the [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization) for its use in MCP.
+For inference, a user signs in to Keycloak using the configured native-client flow and presents a gateway-authorized JWT. A workspace API key is a separate supported authentication mode; it does not require converting the key into a Keycloak token. Preserve the working inference environment while correcting MCP.
 
-## Connect through the normal harness command
-
-This example uses fictional endpoints and a preconfigured `learning` inference environment. It illustrates the alpha.13 integration contract; use a build whose release acceptance is recorded before treating it as an installation guide.
-
-First set `mcp_oauth_credentials_store = "keyring"` at the top level of the selected environment's `config.toml`, before any TOML tables. Then add the remote server using its registered public client and explicit read scopes:
-
-```sh
-airs-harness --environment learning mcp add prisma-airs \
-  --url https://mcp.example.com/mcp \
-  --oauth-client-id learning-harness-mcp \
-  --scopes airs.gateway.read,airs.profiles.read
-```
-
-The built-in command starts browser authorization. Sign in as the intended human account. In this integration, protected-resource discovery already supplies `resource`; also passing `--oauth-resource` duplicates the parameter and causes the reviewed Keycloak registration to reject the request. Explicit scopes keep login limited to the two intended read permissions.
-
-```sh
-airs-harness --environment learning mcp list
-airs-harness --environment learning doctor --verify-access
-airs-harness --environment learning
-```
-
-`mcp list` confirms local registration. `doctor --verify-access` checks inference access. In the interactive harness, `/mcp` shows the MCP connection and tool inventory; a model-selected read with a returned result establishes that the complete path works. These checks answer different questions.
-
-For a later MCP login, use `airs-harness --environment learning mcp login prisma-airs --scopes airs.gateway.read,airs.profiles.read`. Adding native OAuth MCP configuration preserves the existing inference environment and history binding in the reviewed integration. Legacy helper or static-credential configurations have their own binding constraints and require a separate migration review.
-
-## End-to-end native login
-
-This sequence shows both native logins. The operator signs in as the same human for both resources. The built-in Codex MCP client maintains a distinct OAuth client registration and token bundle; it does not compare an MCP ID token with the inference identity. Browser redirects carry a short-lived code; tokens are obtained through a separate token-endpoint exchange.
+## Native MCP login through the gateway
 
 ```mermaid
 sequenceDiagram
-    accTitle: Complete native inference and MCP login
-    accDescr: The harness completes browser PKCE for inference, verifies and stores that identity, validates MCP metadata, then completes separate resource-bound PKCE for the same user before invoking MCP.
-    actor alex as Alex
-    participant harness as Harness
+    accTitle: Required gateway-facing native MCP login
+    accDescr: The built-in client discovers OAuth at AI Gateway. Browser authentication goes through CAS and Keycloak. The gateway resolves CIE workspace membership, obtains consent and issues gateway-facing credentials for MCP requests.
+    actor user as Alex
+    participant client as Built-in harness MCP client
+    participant gateway as AI Gateway MCP listener
     participant browser as System browser
-    participant keycloak as Keycloak
-    participant store as OS credential store
-    participant gateway as AI Gateway
-    participant mcp as MCP server
-    alex->>harness: Set up inference login
-    harness->>harness: Create state, nonce, verifier, and loopback listener
-    harness->>browser: Open inference authorization URL with S256 challenge
-    browser->>keycloak: Authenticate user under realm policy
-    keycloak-->>browser: Redirect with code, state, and issuer
-    browser->>harness: Loopback callback
-    harness->>harness: Validate callback state and issuer
-    harness->>keycloak: Exchange code with verifier and registered redirect
-    keycloak-->>harness: Inference access token, ID token, refresh token
-    harness->>harness: Verify identity and inference binding
-    harness->>store: Persist inference token generation
-    harness->>gateway: Verify inference access with inference JWT
-    gateway-->>harness: Authorized response
-    alex->>harness: Connect direct MCP resource
-    harness->>mcp: Request protected-resource metadata
-    mcp-->>harness: Resource, authorization server, and scopes
-    harness->>harness: Validate metadata against configured trust
-    harness->>browser: Open MCP authorization with fresh S256 challenge and resource
-    browser->>keycloak: Authorize MCP client using browser SSO if available
-    keycloak-->>browser: Redirect with new code, state, and issuer
-    browser->>harness: MCP loopback callback
-    harness->>harness: Validate callback state and issuer
-    harness->>keycloak: Exchange code with verifier and MCP resource
-    keycloak-->>harness: Separate MCP access and refresh tokens
-    harness->>harness: Associate OAuth credentials with this MCP server
-    harness->>store: Persist MCP token generation
-    harness->>mcp: Initialize using MCP bearer token
-    mcp->>mcp: Verify token and effective resource authorization
-    mcp-->>harness: MCP initialization result
-    harness->>mcp: List tools using MCP bearer token
-    mcp-->>harness: Available tool definitions
+    participant cas as CAS
+    participant idp as Keycloak
+    participant directory as CIE-backed workspace membership
+    participant store as Native credential store
+    user->>client: Connect the gateway MCP URL
+    client->>gateway: Initialize without a gateway MCP credential
+    gateway-->>client: OAuth challenge and protected-resource metadata
+    client->>gateway: Discover authorization and token endpoints
+    client->>browser: Open gateway authorization with state and PKCE
+    browser->>gateway: Begin authorization
+    gateway-->>browser: Continue through CAS
+    browser->>cas: Start configured SSO flow
+    cas-->>browser: Federate to organizational IdP
+    browser->>idp: Authenticate as intended human
+    idp-->>browser: Federation response
+    browser->>cas: Complete identity-provider callback
+    cas-->>browser: Continue gateway login
+    browser->>gateway: Resume authenticated authorization
+    gateway->>directory: Resolve user and workspace access
+    directory-->>gateway: Provisioned identity and membership
+    gateway-->>browser: Request consent for MCP access
+    user->>browser: Approve requested access
+    browser->>gateway: Submit consent
+    gateway-->>browser: Authorization redirect
+    browser->>client: Loopback callback with code and state
+    client->>gateway: Exchange code using PKCE verifier
+    gateway-->>client: Gateway-facing access and refresh credentials
+    client->>store: Persist credentials bound to gateway endpoint
+    client->>gateway: Initialize and list tools with gateway credential
 ```
 
-The browser may reuse its Keycloak session during the second authorization. That improves usability without reusing the inference access token. Each OAuth authorization attempt has a fresh verifier and state. Inference additionally uses OIDC identity verification. The MCP login requests only `airs.gateway.read` and `airs.profiles.read`; it does not request `openid` or depend on an ID token.
+CAS is the gateway-facing user-authentication method in SCM deployments. The actual callback, client registration, token issuer, audience and scopes must be verified from the gateway's discovery and deployed configuration. A Keycloak login during federation does not establish that the resulting MCP token is the same JWT used for inference. [OAuth in SCM](https://portkey.ai/docs/product/mcp-gateway/authentication/cas).
 
-PKCE binds code redemption to the client that created the verifier. The challenge is derived from the verifier; the verifier is sent only during the token exchange. `state` correlates the callback, while OIDC `nonce` participates in ID-token validation. The mechanisms address different parts of the flow. [PKCE specification](https://www.rfc-editor.org/info/rfc7636/).
+If an operator selects the gateway's External OAuth mode instead, the harness presents a Keycloak-issued token using the configured gateway authentication contract. It still targets the gateway. Switching to a direct upstream URL is never the fallback for a failed gateway login.
 
-The MCP client includes its `resource` indicator during authorization, exchange, and refresh. This helps keep credentials bound to the intended endpoint. The resource server must still enforce the audience. [Resource indicators](https://www.rfc-editor.org/info/rfc8707/).
-
-## When CIE/CAS participates in browser login
-
-The next sequence is the related gateway identity pattern, not an extra mandatory step in the native sequence above. The SCIM population must already exist. Exact gateway OAuth behavior needs its own deployment evidence.
+## Upstream OAuth remains with the gateway
 
 ```mermaid
 sequenceDiagram
-    accTitle: Related CIE CAS browser authentication
-    accDescr: The browser follows a gateway identity flow to CAS and Keycloak. A signed SAML response returns through the browser, after which the gateway resolves the provisioned identity and policy.
-    participant browser as Browser
-    participant gateway as Gateway identity entry
-    participant cas as CIE CAS
-    participant keycloak as Keycloak SAML IdP
-    browser->>gateway: Begin gateway identity flow
-    gateway-->>browser: Redirect to configured authentication flow
-    browser->>cas: Start CAS authentication
-    cas-->>browser: SAML authentication request
-    browser->>keycloak: Authenticate at configured IdP
-    keycloak-->>browser: Signed SAML response
-    browser->>cas: Post response to assertion consumer endpoint
-    cas->>cas: Validate assertion and mapped identity
-    cas-->>browser: Continue authenticated gateway flow
-    browser->>gateway: Resume flow
-    gateway->>gateway: Resolve provisioned identity and workspace policy
-    gateway-->>browser: Consent or access outcome
+    accTitle: Separate gateway-managed upstream MCP authorization
+    accDescr: The gateway discovers upstream OAuth and coordinates the user's consent. The upstream authorization server issues tokens to the gateway, which stores them and uses them for proxied MCP requests. The harness retains only its gateway-facing credentials.
+    participant client as Harness
+    participant gateway as AI Gateway
+    participant browser as User browser
+    participant upstream as Upstream MCP server
+    participant auth as Upstream authorization server
+    client->>gateway: Request access to provisioned MCP tools
+    gateway->>upstream: Discover upstream authentication requirements
+    upstream-->>gateway: Protected resource and authorization metadata
+    gateway-->>browser: Upstream consent flow when required
+    browser->>auth: Authenticate and approve upstream access
+    auth-->>browser: Redirect with authorization code
+    browser->>gateway: Gateway upstream OAuth callback
+    gateway->>auth: Exchange code with configured client authentication
+    auth-->>gateway: Upstream access and refresh tokens
+    gateway->>gateway: Store tokens for this upstream and user
+    gateway->>upstream: Proxied MCP request with upstream credential
+    upstream-->>gateway: Authorized MCP response
+    gateway-->>client: MCP response
 ```
 
-CAS is the SAML service provider in that exchange; Keycloak is the SAML IdP. The assertion is delivered through the browser. It is not the direct MCP bearer token. Compare the two sequences before assuming that “SSO” names one protocol or one audience.
+The exact consent trigger and order depend on the registered upstream integration. Gateway OAuth Auto and machine client credentials are distinct modes. A failure in the latter does not demonstrate that the former is unavailable. The gateway manages upstream OAuth; the harness must not acquire upstream tokens to bypass that step. [MCP authentication layers](https://portkey.ai/docs/product/mcp-gateway/authentication).
 
-## User-visible failures
+## Onboarding and validation boundary
 
-A canceled browser login returns the user to setup. A callback with mismatched state must fail. Inference protects its existing identity binding. MCP independently authorizes the subject in the access token at the server; sign in as the intended account in the second browser flow. Set `mcp_oauth_credentials_store = "keyring"` to require the native credential store and prevent the built-in auto mode from falling back to a file. `--no-browser` changes how the authorization URL is presented, not the authentication requirement.
+Use the gateway-provided connection URL for the provisioned integration. The reviewed deployment has distinct inference and MCP listeners; an upstream server URL is not interchangeable with the MCP gateway URL. Exact runnable onboarding is pending verification of gateway registration, workspace access, CAS/CIE configuration and the installed native client.
 
-Continue with [Refresh revocation and identity changes](./lifecycle.md). Deployment-specific evidence is in [Implementation status and public sources](./evidence.md).
+Require native credential storage for the harness. Verify OAuth discovery, browser callback, gateway access, tool discovery and a model-selected read as separate steps. Then test expiry, logout and denial on the gateway-mediated path. Existing direct-server credentials and the direct-path fixture tests do not establish these results.
+
+Continue with [End-to-end question walkthrough](./walkthrough.md) and [Implementation status and public sources](./evidence.md).

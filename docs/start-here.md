@@ -4,6 +4,8 @@ title: "Start here"
 sidebar_label: "Start here"
 ---
 
+> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
+
 ## The goal
 
 Build an AI assistant that can explain the AI infrastructure a person is allowed to inspect. The assistant should use an approved model route, pass configured content checks, and retrieve configuration through tools that enforce the person's permissions.

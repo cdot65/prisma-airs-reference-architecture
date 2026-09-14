@@ -4,6 +4,8 @@ title: "Refresh revocation and identity changes"
 sidebar_label: "Refresh revocation and identity changes"
 ---
 
+> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
+
 ## A login creates a credential lifecycle
 
 Access tokens are short lived. Refresh tokens let the client obtain a new generation without repeating the whole browser flow. The reviewed MCP access-token limit is 300 seconds, with five seconds of validation clock tolerance. Treat those numbers as deployment settings, not OAuth defaults.

@@ -2,91 +2,91 @@
   {
     "slug": "start-here",
     "noteId": "285d579c-10cf-4695-a130-7e264c7e34ed",
-    "sourceSha256": "9e62c9887d1313c13f3799956997166fe58ded42c2f8c26fe71b7b836980f060",
-    "publishedSha256": "6b897e5e3870ec4e32298576534f3dcb42bf7ecba04ec1f0ae538ae225c2c562"
+    "sourceSha256": "5592b5e8faf92e967021614147cd30b46ef06805924df555bd1c27ad704c1c5e",
+    "publishedSha256": "2517130ea580a4e89b9881753fcd7f8b92142f3d8ee7769a6be7531ddcc2dc6d"
   },
   {
     "slug": "architecture",
     "noteId": "3f00eb86-27db-4f23-b84d-5a6941ec32f6",
-    "sourceSha256": "2ec07440592e0fb8edf387e74420ec530a18bac29cad9d1726d06c1705ff7669",
-    "publishedSha256": "4f9f902294994563337074764190e8bee842a6c47af6d5ba3687ff83f1cd1ff0"
+    "sourceSha256": "bc63cd3c5330868dacaf4cc2f960f8eacab333a951de4c56e34b126846cb56ed",
+    "publishedSha256": "5bb2fca8c6d3cbcb36b55742df713131c336fa504b9b78d1e662fec887249574"
   },
   {
     "slug": "harness",
     "noteId": "0a24ec09-7e16-45c1-85ec-0766ba0faec1",
-    "sourceSha256": "add2322488853cfa2390fc80a888c0ff9baef3fbe8ec9c3f402a4277d0917dec",
-    "publishedSha256": "cc2e7e8c84dc14efdbf9f9cee5280c42b82b274a1d98c254b70253c98e988861"
+    "sourceSha256": "2b67b9ad53609069c41888e9a6ba4754b0e35c0efa334aef224979b69affb430",
+    "publishedSha256": "2226e236265eb65d56ffa021b1efef4522b16f6d9ff50eef1e6e85d9856e7244"
   },
   {
     "slug": "keycloak",
     "noteId": "0f050987-2326-4259-8b72-4f552eaf6031",
-    "sourceSha256": "75f9dcb3cbc4837d9fb0f22d4760b604ada8d590d0e154c0dc20691465b11d35",
-    "publishedSha256": "e9b8e27278070ba8517920cadeb0a255de9a8a3d15835888986712c74ab505c7"
+    "sourceSha256": "ab81fe01010ea4334ab4728c13ec8a432fa9be449b7107e6cac2c75c6f904416",
+    "publishedSha256": "a900e5140fcbcc3ce053fee95f4234ee7c08cfebdcec0752c9308502b86e8fef"
   },
   {
     "slug": "cie",
     "noteId": "3c34f0e3-e0e4-4451-a1c2-8d4005a5f51d",
-    "sourceSha256": "a464e75d879e37e2aed52902192ae35649e9e731d70cc4e27a6006a5c91389f5",
-    "publishedSha256": "26bfded1c60940ad9f7d16849808617b636b6ac930ec340afbd0b762c6660700"
+    "sourceSha256": "a6f7ffce1b0091b7a00aac8c2b285e2be4e02774f3cf9503b0f3b180ea245f22",
+    "publishedSha256": "bc179d57e3927120ce981fe78eab2772e05303d7585aeae4681703a7c5cca361"
   },
   {
     "slug": "login",
     "noteId": "6e43c28a-618d-43a8-bcad-23c91ab262d1",
-    "sourceSha256": "0eed50a0eee6f85a0b1f46cfe90d6bbc36ed77553a7268fae826fcbd867d2907",
-    "publishedSha256": "634d45b496487fce526ebf10e67e56831645f985304cc4f4428fae13b9058333"
+    "sourceSha256": "12c9d5d2690116f77d3cc5171749274fb1aeda1d07562480d51781922c130e56",
+    "publishedSha256": "fabf4ee59da028530bbe68dec349e160fa27609a6a9a7ce57f01c920f916e432"
   },
   {
     "slug": "gateway",
     "noteId": "ad5b921d-7285-4de8-a7e6-cd1d10f2d469",
-    "sourceSha256": "4316a926d26740073eb05f49e1b648e7efb9dfa431b65fcc7ec6164541cba640",
-    "publishedSha256": "040186c99785dfcce258fa2f39ea3b8805a9a87dbbe487e04b1b2a6d8000acd0"
+    "sourceSha256": "9835bcd8589620ddf329cfc78b687bb5b01fb4038a3d9334b3c508bd579b1ff3",
+    "publishedSha256": "4d5252d0948fca988a42301a239a0ffe65bd9ee30596fc112ee564502f346dfc"
   },
   {
     "slug": "mcp",
     "noteId": "da83c92a-aa99-44a5-8a13-23aaac92882d",
-    "sourceSha256": "83665d99256aac56b66ad61f10e9408f22407eea592072188155fca6029b28f7",
-    "publishedSha256": "b2f26683904bc4b9f5c89df8c10f62b1713e46a48343aeaf1475472c217f8db5"
+    "sourceSha256": "6110b4bbce190a67c45bb320140df6c964a88cb24e0470345157a0731c8d555b",
+    "publishedSha256": "8f8e8b9531eafd8acf94cb145bf9d5795132f985f64afb897b9092962f25590f"
   },
   {
     "slug": "walkthrough",
     "noteId": "1505f7e0-4e6f-4376-b826-ede6ad08b9a6",
-    "sourceSha256": "1d1c87e6cae6d558f1bf2bdb13c12b30fd1e03917996012afea29f4dc3d5ba96",
-    "publishedSha256": "48fa2ff7a603fae0e3691b160753e27e2056ef95ceba0b47689626b48d2cc986"
+    "sourceSha256": "b2e624d64af4aef6825754c396e9c29e8e9645f4b16352ee99ee0c63511e226c",
+    "publishedSha256": "b2c7245debcb719e19b86c499c97aab0f2766adbde26a25a63854db827ec40d8"
   },
   {
     "slug": "lifecycle",
     "noteId": "95825d11-9057-4da5-bb84-fd0515da26ad",
-    "sourceSha256": "2c9b409ba7bc0de6ad26dd35bd237408604aefebc19fa6f9c8945beded955c69",
-    "publishedSha256": "5d9bbb7c56dde3c6ff4da80b01ee5866c245c7df5dfd8f6fc43cb9ca929c0091"
+    "sourceSha256": "55916a40e0369066cc6b54206f12d9e80db27b2c624bd017e43692535e393874",
+    "publishedSha256": "1e80498407f76a743cd3ff696107e25d7d76556a79fb4e5e5823c3aad2cf4e9b"
   },
   {
     "slug": "operations",
     "noteId": "1fe82b1c-35b8-41f4-b2f8-3ee0f07abb39",
-    "sourceSha256": "1fcfaf55fbd70ed7fb085a74481d3074d5c50de86b85f3bf62309090aff9c556",
-    "publishedSha256": "794e55bdc2a891cb1767a0f66beb946ace07b8dcb2e109ab9fae2e42d4e25a7e"
+    "sourceSha256": "b9725b2194b9d2e0f28303eb71d1610e7b65bfdb407d98c3b02bd35a649bd492",
+    "publishedSha256": "24215db0db8e146aa02caac7042472f2e528723550105a61d1bc18efcc2d91aa"
   },
   {
     "slug": "troubleshooting",
     "noteId": "70c16e1a-a994-4312-953c-5cbfb8f45ec8",
-    "sourceSha256": "5c93e108f454745e20c8a1866510105096f0f30363b2bf0e775992e5ed0b6bd2",
-    "publishedSha256": "5e3436a11038b69e104fed2435bcdb923c887de173ab05dbe4fb9c087b8cee56"
+    "sourceSha256": "7b5e5477d31c752918fadb8e8123a4622a1816e861d69e3fec54d8fcc2e3f68f",
+    "publishedSha256": "fa4581057008e6245ea8c72ef61d4f2ade65e26271480337237e6d4034413159"
   },
   {
     "slug": "labs",
     "noteId": "813d70c4-190d-4c9e-8344-3895941817e0",
-    "sourceSha256": "74536414835724b537f7b1ba793fad90d6d9c8a6bf24afba5663116c8dd5278c",
-    "publishedSha256": "d69ba63f53c614e4550e6bda3562d8d9df31573a852854acc142428938928bfd"
+    "sourceSha256": "451a7c0c3a1e9896ed22c48ce30c3e8f12ab4ece5d89de729ae3b35eda020455",
+    "publishedSha256": "cc080626e960ef489bb531e4034e43be8bbd6cbfbdb82ac5f6bb1b5860866bbd"
   },
   {
     "slug": "glossary",
     "noteId": "fbbce717-5d46-4e14-b8b0-5554c65a966b",
-    "sourceSha256": "e4c4aa17582066ae5299eaa39c14a665fbf8357be46c61734a1be2cf5da5d635",
-    "publishedSha256": "a748d4e9cc12548d7f93368fcf3caf0b71f36b0d4435691c081a6df03bf86a72"
+    "sourceSha256": "eb1fa09e3733d7632ba7a22089fa4a6f2c0635fde9a4e350ef40ea5461f56e56",
+    "publishedSha256": "9532ee918a6d78ff14b284d3db7a57ddf8803be3ae7507c414247314c563bd71"
   },
   {
     "slug": "evidence",
     "noteId": "ae0c3bd4-47f4-4e32-afb8-687521faeba8",
-    "sourceSha256": "2e87a2fa7fbcd12b60ca667db373aaae25c21b556548b9b8a58bb68842524f5e",
-    "publishedSha256": "bfb9478040d2d6c666528dad757833dfd72443fb95123aacf48ba5535c824187"
+    "sourceSha256": "cd6a8990fdac6ad84b2b804ace073defc7137d4d0a7972a1c0b427eb369714c6",
+    "publishedSha256": "e2882ca63ab5cd5b444d9042c492ede53b59e6bfe7b0986b594dadbd7765b88f"
   }
 ]

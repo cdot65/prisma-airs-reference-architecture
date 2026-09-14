@@ -4,6 +4,8 @@ title: "Keycloak and token contracts"
 sidebar_label: "Keycloak and token contracts"
 ---
 
+> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
+
 ## Identity starts with the issuer and subject
 
 Keycloak plays two protocol roles in the native harness flow: it is the OpenID Connect identity provider and the OAuth authorization server. It authenticates Alex and issues tokens. The MCP server and gateway validate the tokens and enforce their own access rules.

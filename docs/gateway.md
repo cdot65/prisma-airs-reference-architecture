@@ -4,6 +4,8 @@ title: "AI Gateway and AIRS enforcement"
 sidebar_label: "AI Gateway and AIRS enforcement"
 ---
 
+> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
+
 ## The gateway controls the inference boundary
 
 Prisma AIRS AI Gateway sits between the harness and the model endpoint. In this implementation, the gateway validates a human inference JWT, binds the request to an allowed workspace and saved configuration, and invokes mandatory input and output AIRS checks. The model provider credential remains on the server side.

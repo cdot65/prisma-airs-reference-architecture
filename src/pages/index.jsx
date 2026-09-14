@@ -6,7 +6,7 @@ import AuthorizationLab from '../components/AuthorizationLab';
 const components = [
   ['01', 'Harness', 'Runs the conversation and built-in Codex MCP client in one executable. Keeps separate credentials in the native store.', 'harness'],
   ['02', 'Keycloak', 'Authenticates the person. Issues separate tokens for inference and MCP.', 'keycloak'],
-  ['03', 'AI Gateway', 'Admits the request, selects the approved route, and invokes content checks.', 'gateway'],
+  ['03', 'AI Gateway', 'Receives both inference and MCP. Applies policy and manages upstream connections and OAuth.', 'gateway'],
   ['04', 'Cloud Identity Engine', 'Connects directory provisioning and federated authentication to consuming services.', 'cie'],
   ['05', 'Prisma AIRS MCP', 'Checks each read against the person’s scopes, roles, and resource bindings.', 'mcp'],
 ];
@@ -39,7 +39,7 @@ export default function Home() {
         </div>
       </section>
       <section className="container sectionSpace" aria-labelledby="components-title">
-        <div className="sectionIntro"><p className="eyebrow">Learn the responsibilities</p><h2 id="components-title">A place for every decision.</h2><p>One airs-harness executable sends inference through the gateway and uses its built-in Codex MCP client to call the remote read-only service directly. Each path has its own token. CIE’s directory and authentication integration is explained with explicit implementation boundaries.</p></div>
+        <div className="sectionIntro"><p className="eyebrow">Required architecture</p><h2 id="components-title">Inference and MCP both go through AI Gateway.</h2><p>The built-in Codex MCP client connects to the gateway MCP listener. The gateway proxies upstream servers and manages their OAuth. CAS and the organizational IdP support gateway-facing user login. Earlier direct-MCP lessons describe a rejected implementation and are marked accordingly.</p></div>
         <div className="componentGrid">{components.map(([number,title,body,slug]) =>
           <Link className="componentCard" to={`/learn/${slug}`} key={slug}><span className="componentNumber">{number}</span><h3>{title}</h3><p>{body}</p><span className="cardArrow" aria-hidden="true">↗</span></Link>
         )}</div>

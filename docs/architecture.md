@@ -4,100 +4,86 @@ title: "System architecture"
 sidebar_label: "System architecture"
 ---
 
-## One assistant, several responsibilities
+## Required architecture: both paths traverse AI Gateway
 
-The harness coordinates work locally. It sends a conversation and tool definitions to the gateway, receives a model-selected function call, then calls the MCP server itself. The model proposes an action; the receiving service still decides whether Alex may perform it.
+Prisma AIRS Harness must use Prisma AIRS AI Gateway as the destination for both inference and remote MCP traffic. Its built-in Codex MCP client connects to the gateway's MCP listener. The gateway connects to upstream MCP servers. A direct connection from the harness to an upstream server does not meet this contract.
 
-The current integration uses one local executable, `airs-harness`, containing the Codex agent runtime and its built-in MCP client. The separate `airs-harness-mcp` candidate command is superseded. The remote `prisma-airs-mcp` resource server remains a separately deployed service with its own authorization policy and backend credentials.
-
-| Responsibility | Current location |
-| --- | --- |
-| Conversation, approvals and tool dispatch | Codex runtime inside `airs-harness` |
-| MCP browser OAuth, token storage/refresh and Streamable HTTP | Built-in Codex MCP client inside the same executable |
-| Tool declaration compatibility with the gateway | Harness adapter on the inference request/response boundary |
-| Human-to-object authorization and PAN API reads | Remote `prisma-airs-mcp` service |
-
-Alpha.12 already included the native MCP client. The alpha.13 integration repairs its gateway tool exposure and OAuth onboarding/refresh behavior; it does not introduce MCP support from scratch. See [Implementation status and public sources](./evidence.md) for the distinction between implemented changes and completed release acceptance.
-
-This diagram describes the implemented harness paths. Arrows label requests or trust relationships. A dotted JWKS arrow means public signing-key discovery; it does not carry Alex's password or refresh token.
+The September 13 implementation plan diverged from this requirement by choosing a direct MCP connection. Earlier versions of this course described that implementation as the accepted architecture. That was incorrect. The diagram below states the required architecture; the complete gateway-mediated harness flow still requires its own acceptance evidence.
 
 ```mermaid
 flowchart LR
-    accTitle: Implemented native architecture
-    accDescr: One airs-harness executable contains the agent runtime, gateway adapter and native MCP client. Inference goes through AI Gateway; the built-in client calls the separate MCP service directly with its own OAuth token.
-    subgraph workstation ["User workstation"]
+    accTitle: Required gateway-mediated inference and MCP architecture
+    accDescr: The harness contains the agent and built-in MCP client. Both connect to AI Gateway. The gateway routes inference to models and MCP to upstream servers. CAS and Keycloak support gateway-facing login; upstream OAuth credentials remain with the gateway.
+    subgraph local ["User workstation"]
         user["Alex"]
-        subgraph executable ["airs-harness executable"]
-            harness["Codex agent runtime"]
-            adapter["Gateway tool adapter"]
+        subgraph executable ["airs-harness"]
+            agent["Codex agent and gateway tool adapter"]
             client["Built-in Codex MCP client"]
         end
-        store["OS credential store"]
+        store["Native credential store"]
     end
-    subgraph identity ["Identity boundary"]
-        keycloak["Keycloak - Redtail realm"]
+    subgraph gw ["Prisma AIRS AI Gateway"]
+        inference["Inference listener"]
+        mcp["MCP proxy listener"]
+        upstreamAuth["Upstream OAuth and token lifecycle"]
+        policy["Configured policy and audit"]
     end
-    subgraph inference ["Inference boundary"]
-        gateway["Prisma AIRS AI Gateway"]
-        scanner["Prisma AIRS runtime scanner"]
-        model["Approved model endpoint"]
-    end
-    subgraph management ["Configuration read boundary"]
-        mcp["prisma-airs-mcp"]
-        panApi["PAN management APIs"]
-    end
-    user -->|"Question and approvals"| harness
-    harness -->|"Store inference token bundle"| store
-    client -->|"Store independent MCP token bundle"| store
-    harness -->|"Inference browser login and token requests"| keycloak
-    client -->|"MCP browser OAuth and token requests"| keycloak
-    harness <-->|"Canonical tool definitions and calls"| adapter
-    adapter <-->|"Inference token, flat tools and model responses"| gateway
-    harness <-->|"Discover tools, dispatch calls and receive results"| client
-    client <-->|"Streamable HTTP with MCP bearer token"| mcp
-    gateway -.->|"Read public JWKS"| keycloak
-    mcp -.->|"Read public JWKS"| keycloak
-    gateway -->|"Input and output checks"| scanner
-    gateway -->|"Approved inference request"| model
-    mcp -->|"Dedicated service credential reads"| panApi
+    keycloak["Keycloak: organizational IdP"]
+    cas["CAS: gateway-facing SSO"]
+    model["Upstream model"]
+    upstream["Upstream MCP servers"]
+    user --> agent
+    agent <--> client
+    agent -->|"Inference credential and conversation"| inference
+    client -->|"Gateway MCP credential and protocol calls"| mcp
+    agent <-->|"Inference SSO"| keycloak
+    client <-->|"Gateway OAuth discovery and token exchange"| mcp
+    mcp -.->|"User login via CAS"| cas
+    cas <-->|"Configured federation"| keycloak
+    agent <--> store
+    client <--> store
+    inference <--> model
+    mcp <--> upstream
+    mcp <--> upstreamAuth
+    upstreamAuth -.->|"Separate upstream authorization"| upstream
+    policy --- inference
+    policy --- mcp
 ```
 
-The MCP server reads gateway configuration through management APIs. It does not send those requests to the gateway's `/v1` inference endpoint. The AIRS scanner evaluates content. Reading a security profile through MCP does not execute a scan.
+Inference and MCP may use different hostnames or ports belonging to the same gateway deployment. Sharing the gateway does not require sharing a token: each listener validates the credential and permissions configured for that resource. Workspace API authentication is an alternative inference mode; a workspace API key is not a Keycloak JWT.
 
-“Built-in MCP” describes the client inside the harness. MCP traffic does not pass through the inference gateway, and the gateway never needs the user's MCP bearer token. The managed Prisma AIRS CLI remains a separate capability dependency for other workflows; this MCP connection does not launch that CLI as a transport or credential helper.
+The model proposes a tool call through the inference path. The harness dispatches the actual MCP call to the gateway MCP listener. The gateway applies its MCP controls and proxies to the registered upstream. Results return through the gateway to the harness and enter the next inference request. The tool-schema compatibility adapter affects inference serialization; it does not proxy MCP traffic.
 
-## Where Cloud Identity Engine fits
+## Authentication has two legs
 
-CIE has a directory role and an authentication role. Those functions are shown below as an adjacent identity integration. The reviewed SCIM worker targets the older Truffles realm. A separate Redtail CAS mapping exists for the related Truffles gateway OAuth flow. Matching these identities and connecting the Redtail harness population to the directory is an explicit integration task.
+| Leg | Responsibility | Credential location |
+| --- | --- | --- |
+| Harness → AI Gateway | Authenticate and authorize the human for gateway resources | Harness native store holds gateway-facing credentials |
+| AI Gateway → upstream MCP | Complete the configured upstream OAuth flow and renew upstream tokens | Gateway-managed upstream credential storage |
+
+The vendor calls CAS the gateway-facing OAuth authentication method in SCM deployments. CAS federates to the organization's IdP and resolves a provisioned user. Separately, the gateway's upstream OAuth integration handles consent and tokens for an external MCP server. These are both part of the gateway-mediated experience; they must not be collapsed into a direct harness login to the upstream server. See [OAuth in SCM](https://portkey.ai/docs/product/mcp-gateway/authentication/cas) and [MCP authentication layers](https://portkey.ai/docs/product/mcp-gateway/authentication).
+
+## CIE and CAS are part of the required login design
 
 ```mermaid
 flowchart LR
-    accTitle: CIE integration evidence boundaries
-    accDescr: An older realm provisions CIE through a Temporal SCIM worker. A related Redtail SAML flow uses CAS. A Redtail provisioning extension is proposed and has not been accepted.
-    legacyRealm["Older Keycloak realm"] -->|"Read users and groups"| sync["Temporal SCIM worker"]
-    sync -->|"Provision via SCIM"| directory["CIE Directory Sync"]
-    redtail["Redtail Keycloak"] -->|"Signed SAML assertion in related flow"| cas["CIE Cloud Authentication Service"]
-    directory -->|"Directory identity and groups"| gatewayIdentity["Gateway identity integration"]
-    cas -->|"Authentication result in related flow"| gatewayIdentity
-    redtail -.->|"Proposed dedicated provisioning integration"| syncExtension["Redtail SCIM mapping"]
-    syncExtension -.->|"Requires isolated connector and acceptance"| directory
+    accTitle: CIE provisioning and CAS gateway login prerequisites
+    accDescr: Directory identities and groups are provisioned into gateway workspaces through CIE. CAS federates user authentication to Keycloak. Both feed the gateway's user resolution and MCP access decision.
+    identity["Organizational identities and groups"] --> directory["CIE directory"]
+    directory --> mapping["Group-to-gateway-workspace mapping"]
+    mapping --> gateway["AI Gateway MCP user resolution and authorization"]
+    user["User browser"] --> cas["CAS login"]
+    cas <--> keycloak["Keycloak federation"]
+    cas --> gateway
+    gateway --> consent["Consent for registered MCP access"]
 ```
 
-The dotted arrows in this second diagram denote proposed work. They do not claim that the harness currently requires CIE to obtain its native OAuth tokens. CIE is part of the wider identity architecture without being an inline dependency of every request. See [Cloud Identity Engine and provisioning](./cie.md) for the evidence boundary and mapping problem.
+This is a required integration dependency for the CAS route. Existing records about another realm or workspace do not prove this harness workspace is provisioned correctly. Verify the selected directory, authentication profile, identity attribute and workspace membership against the deployed gateway. [CIE Directory Sync](https://portkey.ai/docs/product/enterprise-offering/org-management/directory-sync/cie-directory-sync).
 
-## Four different boundaries
+## What remains reusable, and what must change
 
-| Boundary | Purpose | Example artifact |
-| --- | --- | --- |
-| Identity | Establish a user and issue grants | Keycloak access token |
-| Inference | Select a model route and apply content policy | Gateway config and scan verdict |
-| Tool authorization | Permit a bounded configuration read | Subject-to-workspace binding |
-| Operations | Deliver code, policies, and server secrets | Image digest, ConfigMap, ExternalSecret |
+The built-in Codex MCP transport, local tool dispatch and gateway inference adapter remain useful. A read-only Prisma AIRS MCP server can remain an upstream service. Its deployment does not make it the harness's permitted destination.
 
-The operational plane configures the other boundaries. A CI runner builds an image; it does not need a human refresh token. The user selects a tool; the user does not receive the MCP server's PAN service-account secret.
+The direct-server onboarding commands and direct-path release acceptance are superseded. Correct acceptance must observe the harness talking to the gateway MCP listener, the gateway contacting the upstream, successful authorized reads, gateway denial of forbidden operations, and separate credential lifecycle behavior. A direct read or a scan on a later inference request is insufficient.
 
-## Check your understanding
-
-If CIE provisioning is delayed, must a valid direct MCP request stop working? **No.** The implemented server evaluates its configured issuer, token, roles, scopes, and resource binding. A gateway route that depends on synchronized CIE membership may behave differently. Name the actual consuming service before drawing a dependency.
-
-Implementation basis: [Implementation status and public sources](./evidence.md). Product context: [Prisma AIRS AI Gateway documentation](https://docs.paloaltonetworks.com/ai-runtime-security/administration/configure-ai-gateway).
+Continue with [Login from browser to authorized tools](./login.md) and [Implementation status and public sources](./evidence.md).

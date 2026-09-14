@@ -4,6 +4,18 @@ title: "Implementation status and public sources"
 sidebar_label: "Implementation status and public sources"
 ---
 
+> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
+
+## Acceptance correction
+
+The required architecture sends both inference and MCP through AI Gateway. The prior direct-server plan and documentation commit `bd9c804` incorrectly treated a divergent implementation as accepted. Native client tests, direct-server reads, the 30-minute soak and helper retirement do not establish gateway-mediated MCP or CAS acceptance.
+
+Read-only review on September 14 confirmed that the deployed gateway has an MCP listener and upstream OAuth Auto support, while the harness onboarding targets the upstream server directly. The control-plane integration list did not contain a harness MCP registration. These are remediation findings, not proof of a corrected live deployment. The source-reported machine client-credentials issue belongs to a different upstream auth mode; it cannot justify bypassing the gateway.
+
+The architecture, login and question-walkthrough lessons now describe the required path. Other lessons carry explicit correction notices while their historical examples are reconciled. Do not use the direct-server commands as deployment instructions. Required acceptance includes gateway-facing login, gateway-managed upstream OAuth, observed gateway request routing, authorization denials and both credential lifecycles.
+
+Primary product references: [SCM CAS login](https://portkey.ai/docs/product/mcp-gateway/authentication/cas), [gateway and upstream authentication](https://portkey.ai/docs/product/mcp-gateway/authentication), and [CIE workspace provisioning](https://portkey.ai/docs/product/enterprise-offering/org-management/directory-sync/cie-directory-sync).
+
 ## Read this case study with its evidence limits
 
 The curriculum was prepared on September 14, 2026 from the implementation source and dated acceptance records of a private lab. The public educational repository contains explanations and fictional examples. It does not distribute the running lab's application code, secrets, access, or production configuration.
