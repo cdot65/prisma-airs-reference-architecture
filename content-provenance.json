@@ -14,8 +14,8 @@
   {
     "slug": "harness",
     "noteId": "0a24ec09-7e16-45c1-85ec-0766ba0faec1",
-    "sourceSha256": "9d8a5f6325e696e3189063d3bc1ad4a7adf4f84f79f9862b59645b990e3a9309",
-    "publishedSha256": "4afa45c2399fa033f92069538e85a7280aa64c5f667e7aacb32dc0e27cb03283"
+    "sourceSha256": "a88cfea460f31cefa051304355b550a62109963cb468c02548e18ca4e769ba06",
+    "publishedSha256": "eaf04be517f3d3ba5c709998a880db8240676548807153920ab6625019307afc"
   },
   {
     "slug": "keycloak",

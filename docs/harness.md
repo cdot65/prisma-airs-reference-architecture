@@ -40,6 +40,8 @@ The inference header name is an implementation compatibility contract. It does n
 
 Token bundles live in the operating system credential store. Configuration records contain nonsecret settings and binding metadata. The implementation uses Linux Secret Service and macOS Keychain; Windows is outside this release’s distribution and end-to-end acceptance scope. Native MCP storage is explicitly configured as `keyring`; the upstream `auto` mode can fall back to a credentials file. A successful Linux login does not establish macOS desktop behavior.
 
+Native MCP keyring records are shared by operating-system user and keyed by server name and endpoint. A separate harness home alone does not isolate a matching MCP credential. The alpha.15 candidate coordinates refreshes across homes that share this record. Live acceptance runs use a unique MCP server name so their sign-in and logout checks remain separate from the user’s everyday credential; the gateway destination stays the same.
+
 The alpha.14 correction also covers gateway dynamic client registration. Adding a native OAuth server without an explicit client ID must preserve the existing inference environment and history. This behavior needs its own regression and installed-package checks.
 
 ## A real compatibility lesson
