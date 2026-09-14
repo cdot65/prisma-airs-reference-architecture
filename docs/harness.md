@@ -32,9 +32,9 @@ The cycle may repeat. A list call can discover an authorized workspace ID; a lat
 | Inference | Gateway Responses API | Human inference JWT in `x-portkey-api-key` |
 | Direct MCP | MCP Streamable HTTP endpoint | MCP resource JWT in `Authorization: Bearer` |
 
-The inference header name is an implementation compatibility contract. It does not mean the value is a permanent API key. The MCP bearer token is a different token, for a different audience and native client. The user identity must agree across both bindings.
+The inference header name is an implementation compatibility contract. It does not mean the value is a permanent API key. The MCP bearer token is a different token, for a different audience and native client. Use the same human account for both logins. The stock MCP client stores its OAuth credentials independently; the MCP server enforces its own subject policy.
 
-Token bundles live in the operating system credential store. Configuration records contain nonsecret settings and binding metadata. The implementation uses Linux Secret Service and macOS Keychain; earlier Windows persistence evidence exists, but the new direct MCP candidate has no recorded Windows end-to-end acceptance. A successful Linux login does not establish macOS desktop behavior.
+Token bundles live in the operating system credential store. Configuration records contain nonsecret settings and binding metadata. The implementation uses Linux Secret Service and macOS Keychain; Windows is outside this release’s distribution and end-to-end acceptance scope. Native MCP storage is explicitly configured as `keyring`; the upstream `auto` mode can fall back to a credentials file. A successful Linux login does not establish macOS desktop behavior.
 
 ## A real compatibility lesson
 

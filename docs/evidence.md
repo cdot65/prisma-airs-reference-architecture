@@ -10,20 +10,20 @@ The curriculum was prepared on September 14, 2026 from the implementation source
 
 | Area | Evidence reviewed | What readers may conclude |
 | --- | --- | --- |
-| Harness | Source revision f2f4359 and native acceptance records | Separate direct MCP OAuth and model/tool adapter are implemented in the reviewed candidate |
+| Harness | Runtime revision 6892b94a1, based on the published Codex 0.154 runtime | Built-in Codex MCP OAuth is retained; the gateway adapter restores callable tools |
 | MCP | Source revisions 5486021 and 158e57b with deployment record | Eight authorized read tools and bounded output projection are implemented |
 | Infrastructure | Source revision 3e23f42 and MCP receipts | GitOps, secret isolation and deployment pattern have recorded acceptance |
-| Linux and Apple Silicon | Native login, model-selected workflows and rotating refresh records | These candidate/platform combinations passed the recorded checks |
+| Linux and Apple Silicon | Release-specific native OAuth, signing and npm upgrade receipts | Acceptance must bind the exact runtime bytes and platform; see the release record |
 | Lifecycle | Replay, logout/expiry and binding-removal records | These specific revocation and refresh behaviors were exercised |
 | CIE provisioning | SCIM worker source and September 3 cutover narrative | A related older realm had a recorded SCIM integration |
 | CAS identity mapping | Redtail Truffles mapping source and narrative | The related gateway flow required email-aligned SAML fields |
 | Redtail harness through CIE | No complete acceptance chain found | A proposed extension requiring separate validation |
 
-Source presence is not a fresh production health check. No live infrastructure mutations or credential-based acceptance runs were performed to write this curriculum.
+Source presence is not a fresh production health check. The initial curriculum was written from source records. Its September 14 revision incorporates separately recorded live remediation tests using a disposable identity. Those checks do not represent the owner’s personal login.
 
 The recorded MCP production soak completed 61 calls over 30 minutes with rotating refresh, reporting approximately 2.25-second p95 latency for that workload. This is a bounded lab result, not a throughput benchmark or service-level commitment.
 
-The direct MCP candidate's Windows end-to-end behavior, public Internet reachability, alert receiver delivery, and the owner's personal browser acceptance are not established by the reviewed record. Earlier credential-store tests and previous package releases must not be substituted for these checks. In particular, the published alpha.12 baseline does not establish the newer candidate's direct MCP capabilities.
+This release’s Windows end-to-end behavior, public Internet reachability, alert receiver delivery, and the owner's personal browser acceptance are not established by the reviewed record. Earlier credential-store tests and previous package releases must not be substituted for these checks. The published alpha.12 runtime already contains Codex MCP OAuth. Its gateway path did not expose namespaced read tools successfully; alpha.13 adds gateway translation, explicit onboarding scopes and a correction that keeps refresh within the granted scopes. Older custom-helper candidate receipts are historical and do not validate the built-in MCP implementation.
 
 ## Primary references
 

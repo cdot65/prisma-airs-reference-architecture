@@ -53,7 +53,7 @@ The provisioned user has `Mail=alex@example.com`. The accepted SAML assertion ha
 
 **Time:** 15 minutes. **Objective:** reason about refresh rotation and persistence.
 
-Two helper processes load generation 4. Helper A consumes the refresh token and receives generation 5. Before it commits generation 5, the process crashes.
+In the inference credential-store exercise, two helper processes load generation 4. Helper A consumes the refresh token and receives generation 5. Before it commits generation 5, the process crashes.
 
 **Deliverable:** a sequence diagram that includes locking, a pending record, and recovery.
 

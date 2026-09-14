@@ -12,7 +12,7 @@ The reviewed MCP server publishes protected-resource metadata at `/.well-known/o
 
 ## End-to-end native login
 
-This sequence shows both native logins. The MCP login uses the same verified human identity as inference but a distinct client, resource, and token bundle. Browser redirects carry a short-lived code; tokens are obtained through a separate token-endpoint exchange.
+This sequence shows both native logins. The operator signs in as the same human for both resources. The built-in Codex MCP client maintains a distinct OAuth client registration and token bundle; it does not compare an MCP ID token with the inference identity. Browser redirects carry a short-lived code; tokens are obtained through a separate token-endpoint exchange.
 
 ```mermaid
 sequenceDiagram
@@ -48,8 +48,8 @@ sequenceDiagram
     browser->>harness: MCP loopback callback
     harness->>harness: Validate callback state and issuer
     harness->>keycloak: Exchange code with verifier and MCP resource
-    keycloak-->>harness: Separate MCP access, ID, and refresh tokens
-    harness->>harness: Verify same issuer and user plus MCP binding
+    keycloak-->>harness: Separate MCP access and refresh tokens
+    harness->>harness: Associate OAuth credentials with this MCP server
     harness->>store: Persist MCP token generation
     harness->>mcp: Initialize using MCP bearer token
     mcp->>mcp: Verify token and effective resource authorization
@@ -58,7 +58,7 @@ sequenceDiagram
     mcp-->>harness: Available tool definitions
 ```
 
-The browser may reuse its Keycloak session during the second authorization. That improves usability without reusing the inference access token. Each authorization attempt has a fresh verifier, state, and nonce. The client validates returned identity and resource bindings before committing credentials.
+The browser may reuse its Keycloak session during the second authorization. That improves usability without reusing the inference access token. Each OAuth authorization attempt has a fresh verifier and state. Inference additionally uses OIDC identity verification. The MCP login requests only `airs.gateway.read` and `airs.profiles.read`; it does not request `openid` or depend on an ID token.
 
 PKCE binds code redemption to the client that created the verifier. The challenge is derived from the verifier; the verifier is sent only during the token exchange. `state` correlates the callback, while OIDC `nonce` participates in ID-token validation. The mechanisms address different parts of the flow. [PKCE specification](https://www.rfc-editor.org/info/rfc7636/).
 
@@ -94,6 +94,6 @@ CAS is the SAML service provider in that exchange; Keycloak is the SAML IdP. The
 
 ## User-visible failures
 
-A canceled browser login returns the user to setup. A callback with mismatched state must fail. A different Keycloak user must not replace an existing identity binding silently. An inaccessible native credential store must surface a credential-store error; it must not create a plaintext fallback. `--no-browser` changes how the authorization URL is presented, not the authentication requirement.
+A canceled browser login returns the user to setup. A callback with mismatched state must fail. Inference protects its existing identity binding. MCP independently authorizes the subject in the access token at the server; sign in as the intended account in the second browser flow. Set `mcp_oauth_credentials_store = "keyring"` to require the native credential store and prevent the built-in auto mode from falling back to a file. `--no-browser` changes how the authorization URL is presented, not the authentication requirement.
 
 Continue with [Refresh revocation and identity changes](./lifecycle.md). Deployment-specific evidence is in [Implementation status and public sources](./evidence.md).

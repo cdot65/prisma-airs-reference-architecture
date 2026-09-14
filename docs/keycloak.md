@@ -20,7 +20,7 @@ The following JSON is an unsigned fictional claim illustration, not a valid JWT:
   "sub": "user-alex-example",
   "aud": "https://mcp.example.com/mcp",
   "azp": "learning-harness-mcp",
-  "scope": "openid airs.gateway.read",
+  "scope": "airs.gateway.read",
   "resource_access": {
     "learning-mcp-resource": {"roles": ["invoke", "gateway.read"]}
   },
