@@ -4,7 +4,7 @@ import Link from '@docusaurus/Link';
 import AuthorizationLab from '../components/AuthorizationLab';
 
 const components = [
-  ['01', 'Harness', 'Runs the conversation. Dispatches tools. Keeps credentials in the native store.', 'harness'],
+  ['01', 'Harness', 'Runs the conversation and built-in Codex MCP client in one executable. Keeps separate credentials in the native store.', 'harness'],
   ['02', 'Keycloak', 'Authenticates the person. Issues separate tokens for inference and MCP.', 'keycloak'],
   ['03', 'AI Gateway', 'Admits the request, selects the approved route, and invokes content checks.', 'gateway'],
   ['04', 'Cloud Identity Engine', 'Connects directory provisioning and federated authentication to consuming services.', 'cie'],
@@ -39,7 +39,7 @@ export default function Home() {
         </div>
       </section>
       <section className="container sectionSpace" aria-labelledby="components-title">
-        <div className="sectionIntro"><p className="eyebrow">Learn the responsibilities</p><h2 id="components-title">A place for every decision.</h2><p>The harness calls the model and the MCP server on separate paths. CIE’s directory and authentication integration is explained with explicit implementation boundaries.</p></div>
+        <div className="sectionIntro"><p className="eyebrow">Learn the responsibilities</p><h2 id="components-title">A place for every decision.</h2><p>One airs-harness executable sends inference through the gateway and uses its built-in Codex MCP client to call the remote read-only service directly. Each path has its own token. CIE’s directory and authentication integration is explained with explicit implementation boundaries.</p></div>
         <div className="componentGrid">{components.map(([number,title,body,slug]) =>
           <Link className="componentCard" to={`/learn/${slug}`} key={slug}><span className="componentNumber">{number}</span><h3>{title}</h3><p>{body}</p><span className="cardArrow" aria-hidden="true">↗</span></Link>
         )}</div>

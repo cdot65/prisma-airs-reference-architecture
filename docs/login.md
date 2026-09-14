@@ -10,6 +10,31 @@ The harness starts with an expected issuer, a registered native client, and a re
 
 The reviewed MCP server publishes protected-resource metadata at `/.well-known/oauth-protected-resource/mcp`. An unauthenticated MCP request receives a 401 challenge advertising metadata. The client checks the resource, authorization server, and requested scopes before beginning login. See [RFC 9728](https://www.rfc-editor.org/info/rfc9728/) for metadata and the [MCP authorization specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization) for its use in MCP.
 
+## Connect through the normal harness command
+
+This example uses fictional endpoints and a preconfigured `learning` inference environment. It illustrates the alpha.13 integration contract; use a build whose release acceptance is recorded before treating it as an installation guide.
+
+First set `mcp_oauth_credentials_store = "keyring"` at the top level of the selected environment's `config.toml`, before any TOML tables. Then add the remote server using its registered public client and explicit read scopes:
+
+```sh
+airs-harness --environment learning mcp add prisma-airs \
+  --url https://mcp.example.com/mcp \
+  --oauth-client-id learning-harness-mcp \
+  --scopes airs.gateway.read,airs.profiles.read
+```
+
+The built-in command starts browser authorization. Sign in as the intended human account. In this integration, protected-resource discovery already supplies `resource`; also passing `--oauth-resource` duplicates the parameter and causes the reviewed Keycloak registration to reject the request. Explicit scopes keep login limited to the two intended read permissions.
+
+```sh
+airs-harness --environment learning mcp list
+airs-harness --environment learning doctor --verify-access
+airs-harness --environment learning
+```
+
+`mcp list` confirms local registration. `doctor --verify-access` checks inference access. In the interactive harness, `/mcp` shows the MCP connection and tool inventory; a model-selected read with a returned result establishes that the complete path works. These checks answer different questions.
+
+For a later MCP login, use `airs-harness --environment learning mcp login prisma-airs --scopes airs.gateway.read,airs.profiles.read`. Adding native OAuth MCP configuration preserves the existing inference environment and history binding in the reviewed integration. Legacy helper or static-credential configurations have their own binding constraints and require a separate migration review.
+
 ## End-to-end native login
 
 This sequence shows both native logins. The operator signs in as the same human for both resources. The built-in Codex MCP client maintains a distinct OAuth client registration and token bundle; it does not compare an MCP ID token with the inference identity. Browser redirects carry a short-lived code; tokens are obtained through a separate token-endpoint exchange.

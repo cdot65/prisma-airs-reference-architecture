@@ -32,6 +32,10 @@ The sequence is a diagnostic aid, not a claim that every service uses the same e
 | Browser never opens | Native application/session | Authorization URL presentation and desktop availability |
 | Callback rejected | OAuth client | Expected state, issuer, redirect and current attempt |
 | Login succeeds but cannot save credentials | OS store | Desktop/keyring session and persistence error category |
+| MCP login requests unrelated permissions | OAuth scope selection | Explicit `airs.gateway.read,airs.profiles.read` scopes on the selected server |
+| Authorization rejects duplicate resource | Discovery/configuration | This integration discovers `resource`; remove the redundant explicit `--oauth-resource` |
+| MCP works until access-token expiry | OAuth refresh | Granted scopes versus refresh request; affected RMCP added ungranted `offline_access` |
+| npm upgrade still runs an old command | Local installation | Resolved executable, npm prefix and legacy PATH symlink |
 | MCP 401 | Token validation | Intended resource audience, issuer, client, expiry, signature |
 | MCP 403 | User authorization | Invoke role, effective scope and subject policy binding |
 | Generic unavailable object | Object authorization or absent object | Authorized workspace/profile context; do not enumerate foreign IDs |
@@ -49,6 +53,10 @@ Never paste a real JWT into a public decoder or issue. A decoded payload is also
 The user can obtain a model response and a direct MCP probe lists eight tools. That narrows the failure: TLS, basic inference, and basic MCP access work. Inspecting the inference request reveals tool declarations wrapped in a namespace that the gateway path drops. The model therefore has no callable functions.
 
 The implementation repair flattens names at the gateway boundary and restores namespaced call events. Acceptance then verifies a model-selected tool call and its actual result. Adding more Keycloak roles would not repair a missing schema.
+
+## Worked incident: login works, refresh fails
+
+Initial OAuth and tool reads succeeded, but real expiry testing exposed a refresh rejection. RMCP 3.2 added `offline_access` because discovery advertised it, even though the original grant contained only read scopes. Server support for a scope does not grant it to this client. The harness correction retains `offline_access` only when it was actually granted; its HTTP regression test covers both cases and checks the resource parameter. Final concurrent expiry acceptance still belongs to the exact installed release. Adding broader permissions would conceal the defect.
 
 ## Worked incident: authenticated identity cannot be found
 

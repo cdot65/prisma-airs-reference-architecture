@@ -47,6 +47,12 @@ sidebar_label: "Glossary and misconceptions"
 
 ## Misconceptions to retire
 
+**“Built-in MCP means the MCP server moved into the harness.”** The Codex MCP client runs inside `airs-harness`. The remote `prisma-airs-mcp` service still authenticates requests, checks object permissions and reads PAN APIs.
+
+**“We still need the separate MCP candidate executable.”** The current integration uses the normal `airs-harness` command and its native MCP subcommands. The separate `airs-harness-mcp` candidate is historical.
+
+**“One executable means one login or token.”** Inference and MCP have distinct client registrations, audiences and credential bundles. Their access is enforced by separate services.
+
 **“The model calls PAN APIs directly.”** The model requests a function. The harness invokes MCP; MCP authorizes and performs a backend read using its own service account.
 
 **“Read-only means every user can see everything.”** Read-only limits operations. Subject bindings, scopes, roles and object checks limit the visible resources.

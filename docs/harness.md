@@ -8,6 +8,8 @@ sidebar_label: "Harness and agent execution"
 
 Prisma AIRS Harness is a standalone Rust terminal application. Its local responsibilities include the conversation, repository access, tool dispatch, approval policy, and credential-store integration. The similarly named hosted application is a separate project and is not required for this architecture.
 
+Its inherited Codex MCP client handles remote tool discovery, browser OAuth and Streamable HTTP within the normal `airs-harness` process. Users manage this connection through `mcp add`, `mcp login`, `mcp list` and `mcp logout`, and inspect it with `/mcp` in the interactive terminal. No secondary MCP command is required. Upstream [Codex MCP documentation](https://developers.openai.com/codex/mcp/) describes the underlying client capabilities; the commands and release limits in this course describe the reviewed harness fork.
+
 When Alex asks about gateway protections, the harness makes tool schemas available to the model. A schema tells the model a tool's name, its purpose, and its required arguments. It does not give the model a service credential or permission to access every object matching those arguments.
 
 ```mermaid
@@ -18,7 +20,8 @@ flowchart LR
     request --> gateway["Gateway and model"]
     gateway --> functionCall["Function name and arguments"]
     functionCall --> dispatch["Harness validates and dispatches"]
-    dispatch --> mcp["MCP validates authorization"]
+    dispatch --> client["Built-in MCP client sends direct HTTP request"]
+    client --> mcp["Remote MCP service validates authorization"]
     mcp --> result["Bounded tool result"]
     result --> request
 ```

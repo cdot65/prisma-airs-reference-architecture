@@ -15,16 +15,19 @@ sequenceDiagram
     accTitle: One question from login prerequisites to grounded answer
     accDescr: The harness discovers tools, sends the question through inference policy, executes model-selected authorized MCP reads, and submits their bounded results for a final explanation.
     actor alex as Alex
-    participant harness as Harness
+    participant harness as airs-harness agent runtime
+    participant client as Built-in Codex MCP client
     participant gateway as AI Gateway
     participant scanner as AIRS scanner
     participant model as Model
     participant mcp as MCP server
     participant management as PAN management APIs
     alex->>harness: Explain my gateway configuration and protections
-    harness->>mcp: Initialize and list tools with MCP bearer token
-    mcp-->>harness: Read-only tool schemas
-    harness->>gateway: Conversation and tools with inference JWT
+    harness->>client: Initialize configured MCP connection
+    client->>mcp: Initialize and list tools with MCP bearer token
+    mcp-->>client: Read-only tool schemas
+    client-->>harness: Discovered tool definitions
+    harness->>gateway: Adapter sends flat tools and conversation with inference JWT
     gateway->>gateway: Verify identity and bind approved route
     gateway->>scanner: Evaluate input under configured profile
     scanner-->>gateway: Allow verdict
@@ -33,19 +36,24 @@ sequenceDiagram
     gateway->>scanner: Evaluate configured output content
     scanner-->>gateway: Allow verdict
     gateway-->>harness: Permitted function call
-    harness->>mcp: list_workspaces with MCP bearer token
+    harness->>harness: Adapter restores namespace for local dispatch
+    harness->>client: Dispatch list_workspaces
+    client->>mcp: list_workspaces with MCP bearer token
     mcp->>mcp: Check scope, role and subject bindings
     mcp->>management: Authorized read with backend service token
     management-->>mcp: Workspace data
-    mcp-->>harness: Permitted workspace summary
+    mcp-->>client: Permitted workspace summary
+    client-->>harness: Tool result with original call ID
     harness->>gateway: Continue with bounded tool result
     gateway->>model: Continue under the same enforced route
     model-->>gateway: Select configuration, guardrail and profile reads
     gateway-->>harness: Permitted follow-up calls
-    harness->>mcp: Execute each permitted read with explicit IDs
+    harness->>client: Dispatch each follow-up read with explicit IDs
+    client->>mcp: Execute reads with MCP bearer token
     mcp->>management: Read authorized objects
     management-->>mcp: Configuration and profile data
-    mcp-->>harness: Projected safe summaries
+    mcp-->>client: Projected safe summaries
+    client-->>harness: Follow-up tool results
     harness->>gateway: Ask model to explain observed results
     gateway->>model: Continue under configured checks
     model-->>gateway: Grounded explanation
@@ -54,6 +62,8 @@ sequenceDiagram
 ```
 
 Later inference exchanges abbreviate the same configured input/output checks shown on the first exchange. The diagram illustrates one possible sequence, not a deterministic promise about the model's choice or ordering of tools. The scanner arrows describe configured content evaluation, not an assertion that every structured field has separate scanner coverage.
+
+The agent runtime and built-in MCP client lifelines are parts of the same executable. The MCP server lifeline is a remote service. Only inference requests and returned tool results pass through the gateway; MCP protocol calls and the MCP bearer token go directly to the resource server.
 
 ## Read the evidence at each step
 

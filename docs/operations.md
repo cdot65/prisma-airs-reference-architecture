@@ -52,7 +52,13 @@ flowchart LR
 
 Each step answers a stronger question. A green readiness probe does not establish backend authorization. A successful direct `tools/call` does not establish that the model sees the tool schema. Successful metrics scraping does not establish alert notification delivery.
 
-Recorded acceptance includes all eight tools, authorization negatives, native Linux and Apple Silicon login/tool cycles, rotating refresh concurrency, a 30-minute production soak, namespace secret isolation, and a development recovery exercise. It does not establish Windows direct MCP acceptance, public Internet reachability, or alert receiver delivery.
+Historical service acceptance includes all eight tools, authorization negatives, native Linux and Apple Silicon candidate login/tool cycles, rotating refresh concurrency, a 30-minute production soak, namespace secret isolation, and a development recovery exercise. The candidate used the superseded helper path; its client results cannot establish the built-in client's lifecycle behavior. It does not establish Windows direct MCP acceptance, public Internet reachability, or alert receiver delivery.
+
+## Deliver the client integration separately
+
+The built-in MCP client ships in the normal `airs-harness` npm distribution for Linux x64 and Apple Silicon. The remote MCP server continues to use its own image and GitOps rollout. Updating the client does not embed or redeploy that service.
+
+The reviewed alpha.13 release work requires native OAuth/tool workflows, two real expiry intervals with concurrent fresh processes, npm installation and in-place upgrade checks, and matching native executable hashes. Mac signing and notarization are separate evidence. An old manual command symlink can shadow an npm upgrade, so acceptance must resolve the executable that actually runs. See [Implementation status and public sources](./evidence.md) for outstanding release gates.
 
 ## Recovery should restore an understood state
 

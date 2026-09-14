@@ -8,15 +8,30 @@ sidebar_label: "System architecture"
 
 The harness coordinates work locally. It sends a conversation and tool definitions to the gateway, receives a model-selected function call, then calls the MCP server itself. The model proposes an action; the receiving service still decides whether Alex may perform it.
 
+The current integration uses one local executable, `airs-harness`, containing the Codex agent runtime and its built-in MCP client. The separate `airs-harness-mcp` candidate command is superseded. The remote `prisma-airs-mcp` resource server remains a separately deployed service with its own authorization policy and backend credentials.
+
+| Responsibility | Current location |
+| --- | --- |
+| Conversation, approvals and tool dispatch | Codex runtime inside `airs-harness` |
+| MCP browser OAuth, token storage/refresh and Streamable HTTP | Built-in Codex MCP client inside the same executable |
+| Tool declaration compatibility with the gateway | Harness adapter on the inference request/response boundary |
+| Human-to-object authorization and PAN API reads | Remote `prisma-airs-mcp` service |
+
+Alpha.12 already included the native MCP client. The alpha.13 integration repairs its gateway tool exposure and OAuth onboarding/refresh behavior; it does not introduce MCP support from scratch. See [Implementation status and public sources](./evidence.md) for the distinction between implemented changes and completed release acceptance.
+
 This diagram describes the implemented harness paths. Arrows label requests or trust relationships. A dotted JWKS arrow means public signing-key discovery; it does not carry Alex's password or refresh token.
 
 ```mermaid
 flowchart LR
     accTitle: Implemented native architecture
-    accDescr: The local harness uses Keycloak for OAuth, sends inference through AI Gateway and its configured scanner, and calls MCP directly for authorized PAN management reads.
+    accDescr: One airs-harness executable contains the agent runtime, gateway adapter and native MCP client. Inference goes through AI Gateway; the built-in client calls the separate MCP service directly with its own OAuth token.
     subgraph workstation ["User workstation"]
         user["Alex"]
-        harness["Prisma AIRS Harness"]
+        subgraph executable ["airs-harness executable"]
+            harness["Codex agent runtime"]
+            adapter["Gateway tool adapter"]
+            client["Built-in Codex MCP client"]
+        end
         store["OS credential store"]
     end
     subgraph identity ["Identity boundary"]
@@ -32,10 +47,14 @@ flowchart LR
         panApi["PAN management APIs"]
     end
     user -->|"Question and approvals"| harness
-    harness -->|"Store separate token bundles"| store
-    harness -->|"Browser OAuth and token requests"| keycloak
-    harness -->|"Inference token and conversation"| gateway
-    harness -->|"MCP bearer token and tool arguments"| mcp
+    harness -->|"Store inference token bundle"| store
+    client -->|"Store independent MCP token bundle"| store
+    harness -->|"Inference browser login and token requests"| keycloak
+    client -->|"MCP browser OAuth and token requests"| keycloak
+    harness <-->|"Canonical tool definitions and calls"| adapter
+    adapter <-->|"Inference token, flat tools and model responses"| gateway
+    harness <-->|"Discover tools, dispatch calls and receive results"| client
+    client <-->|"Streamable HTTP with MCP bearer token"| mcp
     gateway -.->|"Read public JWKS"| keycloak
     mcp -.->|"Read public JWKS"| keycloak
     gateway -->|"Input and output checks"| scanner
@@ -44,6 +63,8 @@ flowchart LR
 ```
 
 The MCP server reads gateway configuration through management APIs. It does not send those requests to the gateway's `/v1` inference endpoint. The AIRS scanner evaluates content. Reading a security profile through MCP does not execute a scan.
+
+“Built-in MCP” describes the client inside the harness. MCP traffic does not pass through the inference gateway, and the gateway never needs the user's MCP bearer token. The managed Prisma AIRS CLI remains a separate capability dependency for other workflows; this MCP connection does not launch that CLI as a transport or credential helper.
 
 ## Where Cloud Identity Engine fits
 
