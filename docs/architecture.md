@@ -12,42 +12,27 @@ The gateway has separate inference and MCP listeners. Its development and produc
 
 ```mermaid
 flowchart LR
-    accTitle: Required gateway-mediated inference and MCP architecture
-    accDescr: The harness contains the agent and built-in MCP client. Both connect to AI Gateway. The gateway routes inference to models and MCP to upstream servers. CAS and Keycloak support gateway-facing login; upstream OAuth credentials remain with the gateway.
-    subgraph local ["User workstation"]
+    accTitle: Inference and MCP both traverse AI Gateway
+    accDescr: Inside airs-harness, the agent sends inference to the gateway inference listener and the native MCP client sends tool calls to the gateway MCP proxy. Only the gateway connects to upstream models and MCP servers. The gateway owns upstream MCP OAuth.
+    subgraph workstation ["User workstation"]
         user["Alex"]
-        subgraph executable ["airs-harness"]
-            agent["Codex agent and gateway tool adapter"]
-            client["Built-in Codex MCP client"]
+        subgraph harness ["airs-harness"]
+            agent["Codex agent"]
+            client["Native MCP client"]
         end
-        store["Native credential store"]
+        user --> agent
+        agent <-->|"Tool dispatch and results"| client
     end
-    subgraph gw ["Prisma AIRS AI Gateway"]
+    subgraph gateway ["Prisma AIRS AI Gateway"]
         inference["Inference listener"]
         mcp["MCP proxy listener"]
-        upstreamAuth["Upstream OAuth and token lifecycle"]
-        policy["Configured policy and audit"]
     end
-    keycloak["Keycloak: organizational IdP"]
-    cas["CAS: gateway-facing SSO"]
     model["Upstream model"]
     upstream["Upstream MCP servers"]
-    user --> agent
-    agent <--> client
-    agent -->|"Inference credential and conversation"| inference
-    client -->|"Gateway MCP credential and protocol calls"| mcp
-    agent <-->|"Inference SSO"| keycloak
-    client <-->|"Gateway OAuth discovery and token exchange"| mcp
-    mcp -.->|"User login via CAS"| cas
-    cas <-->|"Configured federation"| keycloak
-    agent <--> store
-    client <--> store
-    inference <--> model
-    mcp <--> upstream
-    mcp <--> upstreamAuth
-    upstreamAuth <-->|"Upstream authorization code and refresh"| keycloak
-    policy --- inference
-    policy --- mcp
+    agent -->|"Inference credential"| inference
+    client -->|"Gateway MCP token"| mcp
+    inference <-->|"Model requests and responses"| model
+    mcp <-->|"Gateway-owned upstream OAuth"| upstream
 ```
 
 Inference and MCP may use different hostnames or ports belonging to the same gateway deployment. Sharing the gateway does not require sharing a token: each listener validates the credential and permissions configured for that resource. Workspace API authentication is an alternative inference mode; a workspace API key is not a Keycloak JWT.
