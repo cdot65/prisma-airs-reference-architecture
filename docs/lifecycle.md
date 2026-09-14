@@ -84,6 +84,11 @@ Full lifecycle acceptance requires two actual gateway-facing expiration interval
 
 Logout is not immediate global invalidation of every self-contained JWT. Built-in `mcp logout` deletes the local gateway-facing credential. It does not revoke the gateway's upstream token bundle, terminate every Keycloak session or invalidate copied tokens. Server-side revocation is a separate operator action. For urgent MCP removal, the operator can remove the server binding and reconcile all replicas, then revoke the IdP sessions/grants.
 
+Inference logout also attempts issuer revocation of the saved refresh token. In the deployed Keycloak 26.2.4, this removes the authenticated client session associated with that token. Other logins sharing the same browser SSO session and inference client can therefore lose renewal access even when their local credential stores are separate. This is distinct from gateway MCP logout and does not imply revoking every organizational application. See the [Keycloak revocation implementation](https://github.com/keycloak/keycloak/blob/26.2.4/services/src/main/java/org/keycloak/protocol/oidc/endpoints/TokenRevocationEndpoint.java).
+
+Parallel acceptance runs must finish their workflows before either performs issuer logout. The test controller coordinates cleanup across Linux and Mac; an early failure still waits for its peer. Unique native MCP keyring names protect local records, while coordinated cleanup protects the shared server-side inference session.
+
+
 CIE's observed worker schedule is 15 minutes, but that is not a proven maximum deprovisioning time. Failed runs, consumer caching, and already issued credentials affect the full interval. Measure removal at the resource that actually enforces the access.
 
 ## Renames and account changes

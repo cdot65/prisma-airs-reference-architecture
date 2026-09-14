@@ -14,8 +14,8 @@
   {
     "slug": "harness",
     "noteId": "0a24ec09-7e16-45c1-85ec-0766ba0faec1",
-    "sourceSha256": "a88cfea460f31cefa051304355b550a62109963cb468c02548e18ca4e769ba06",
-    "publishedSha256": "eaf04be517f3d3ba5c709998a880db8240676548807153920ab6625019307afc"
+    "sourceSha256": "86c0076e6702dc1dcd92a0056569a484d97a44ebedd56df5e9fb0b318706d2b9",
+    "publishedSha256": "a2c6a5838e2e9b98a70f18393bc987b832660e3270eacbb901b1851a58b8b0fd"
   },
   {
     "slug": "keycloak",
@@ -56,8 +56,8 @@
   {
     "slug": "lifecycle",
     "noteId": "95825d11-9057-4da5-bb84-fd0515da26ad",
-    "sourceSha256": "f852fcd071abab31146cae44ccc941ee553b701ff72b96d204c268c21e2fba83",
-    "publishedSha256": "3adeb149511393032dccd87ec7355ac452ff2e83a4391e424606233317c548f9"
+    "sourceSha256": "5cfc6c440b18bb84cd2e9cca241b1b01bb1abb6f292f448c08c64c5a16d61daf",
+    "publishedSha256": "09953d165439856e8338195c51f9e61f0becba808087e1037aff5365bad50d72"
   },
   {
     "slug": "operations",
@@ -86,7 +86,7 @@
   {
     "slug": "evidence",
     "noteId": "ae0c3bd4-47f4-4e32-afb8-687521faeba8",
-    "sourceSha256": "49d17480b982e7ae4c0a1bdad4d8df3eff42a0c6f354988bc5de479e402a917a",
-    "publishedSha256": "e1ba8bb47b83430ff107fe2703921dc59effc9cd8b0dc2325b65107042043982"
+    "sourceSha256": "d202054b5be1c9248168c7b704e3ce5fc252bc4f7cd18953d9d0f0783fa8998e",
+    "publishedSha256": "2c6eee75df470cacf58525b1c6fc7b7a865ffaad60c0eb1897b5a57dfa6986c8"
   }
 ]
