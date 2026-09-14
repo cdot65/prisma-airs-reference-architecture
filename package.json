@@ -1,0 +1,39 @@
+{
+  "name": "prisma-airs-reference-architecture",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An educational reference architecture for identity-aware AI inference and read-only MCP tools",
+  "engines": {
+    "node": ">=22.14"
+  },
+  "scripts": {
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve --host 127.0.0.1 --port 4173",
+    "export:vault": "node scripts/export-vault.mjs",
+    "check:content": "node scripts/check-content.mjs",
+    "test:browser": "playwright test",
+    "check": "npm run check:content && npm run build && npm run test:browser"
+  },
+  "dependencies": {
+    "@docusaurus/core": "3.10.2",
+    "@docusaurus/preset-classic": "3.10.2",
+    "@docusaurus/theme-mermaid": "3.10.2",
+    "@mdx-js/react": "3.1.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "mermaid": "11.17.2",
+    "@mermaid-js/layout-elk": "0.1.9"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  },
+  "overrides": {
+    "serialize-javascript": "7.1.1",
+    "sockjs": {
+      "uuid": "11.1.1"
+    },
+    "qs": "6.16.0",
+    "lodash-es": "4.18.1"
+  }
+}
