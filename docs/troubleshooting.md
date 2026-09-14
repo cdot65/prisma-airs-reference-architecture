@@ -32,6 +32,7 @@ The sequence is a diagnostic aid, not a claim that every service uses the same e
 | Browser never opens | Native application/session | Authorization URL presentation and desktop availability |
 | Callback rejected | OAuth client | Expected state, issuer, redirect and current attempt |
 | Login succeeds but cannot save credentials | OS store | Desktop/keyring session and persistence error category |
+| Gateway login saves successfully but the first MCP connection needs sign-in | Gateway-held upstream OAuth | Gateway upstream grant state and IdP refresh error; native credential persistence alone does not prove upstream access |
 | MCP login requests unrelated permissions | OAuth scope selection | Gateway scopes from gateway discovery; upstream read scopes belong to the gateway integration |
 | Authorization rejects duplicate resource | Discovery/configuration | Check the failing OAuth leg and its discovered resource before adding an explicit override |
 | Tools stop after prolonged inactivity | Upstream or inference refresh session | Check the refresh grant and SSO idle limit, not only the gateway access token; renew the affected login |
@@ -45,7 +46,7 @@ The sequence is a diagnostic aid, not a claim that every service uses the same e
 | Generic unavailable object | Object authorization or absent object | Authorized workspace/profile context; do not enumerate foreign IDs |
 | Inference succeeds but model never calls MCP | Tool exposure/selection | Actual outbound function definitions and returned call events |
 | Direct tool call works but model call fails | Harness/gateway adapter | Namespace mapping, arguments and preserved call ID |
-| Backend denies MCP's request | PAN IAM/service credential | Correct environment/account and required read permission |
+| Backend denies MCP's request | PAN IAM/service credential | HTTP status, operator request UUID, allowlisted IAM code, remaining token lifetime and required read permission |
 | SAML succeeds but gateway identity resolution fails | CAS/directory join | NameID, consumed username attribute and directory lookup field |
 | CIE membership remains stale | Provisioning/consumer | Last successful reconciliation, warnings and consumer refresh |
 | Old token works after logout | Token lifecycle | Token expiry and resource-side binding state |
@@ -53,6 +54,10 @@ The sequence is a diagnostic aid, not a claim that every service uses the same e
 Never paste a real JWT into a public decoder or issue. A decoded payload is also untrusted until the signature and context checks pass. Capture the comparison result—such as “audience mismatched”—rather than the credential.
 
 Do not repair a failed gateway route by changing the harness destination to the upstream resource. Check the gateway integration, upstream-host allowlist and upstream OAuth callback/client configuration.
+
+The adapter retries an authorized read once after refreshing a cached service token rejected with HTTP 401. It does not retry HTTP 403 or 404. A production diagnostic observed a 403 while the token still had 890 seconds remaining, followed by a successful read. Preserve its request correlation and investigate the denial; a fresh human login or broader service permissions is not an established repair.
+
+A completed gateway-facing login can coexist with an expired gateway-held upstream refresh grant. In one observed startup failure, Keycloak reported `Token is not active` when the gateway attempted upstream refresh. A fresh gateway/upstream consent flow restored tool access. Check both OAuth legs before attributing such a failure to the native credential store.
 
 ## Browser callbacks when the harness runs remotely
 

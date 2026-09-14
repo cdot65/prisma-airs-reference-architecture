@@ -68,8 +68,8 @@
   {
     "slug": "troubleshooting",
     "noteId": "70c16e1a-a994-4312-953c-5cbfb8f45ec8",
-    "sourceSha256": "d2bae2cb4689646474d6eb7a6dfa2c17eec116b49ac6979e497e793c3b7089eb",
-    "publishedSha256": "00cb9ef439002737114cfb036619cec85a72dbe3b84863c753eafc60cf640cd7"
+    "sourceSha256": "d9cd4570589494983daf245a9e22307af4cbe29707123cfcb38553ebbcdb7ef1",
+    "publishedSha256": "c596d5dd23bc69b7cc1e19c8cb9c2d301abf5712bd3d7569455152ed703d4e97"
   },
   {
     "slug": "labs",
@@ -86,7 +86,7 @@
   {
     "slug": "evidence",
     "noteId": "ae0c3bd4-47f4-4e32-afb8-687521faeba8",
-    "sourceSha256": "d202054b5be1c9248168c7b704e3ce5fc252bc4f7cd18953d9d0f0783fa8998e",
-    "publishedSha256": "2c6eee75df470cacf58525b1c6fc7b7a865ffaad60c0eb1897b5a57dfa6986c8"
+    "sourceSha256": "f88591b85ed763db43f43934d15cfb3be72e4892030690838ee7ac51711ce5b1",
+    "publishedSha256": "91b92e6c4506f788057125f6a918c411425d196ff2c1ffd28dfe8819f1b84a3e"
   }
 ]
