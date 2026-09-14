@@ -10,6 +10,8 @@ Both inference and native MCP use Prisma AIRS AI Gateway in the required archite
 
 The owner repaired a missing CIE group-to-harness-workspace mapping and confirmed membership in SCM. A native desktop gateway login then completed, and the model successfully used all eight tools through the development gateway. Gateway telemetry and upstream request logs recorded those reads. These diagnostic calls used the existing alpha.13 executable; they establish the live proxy and identity repair, while exact alpha.14 release acceptance remains separate.
 
+At 12:55 UTC, both exact installed alpha.14 packages completed production gateway consent, native credential storage, inference access and all eight model-selected production tools. Each platform has matching gateway and upstream tool observations. Two real one-hour frontend token-expiry cycles are now running; publication awaits those results.
+
 | Area | Current evidence | Release status |
 | --- | --- | --- |
 | Runtime | Frozen source `6195ca83e` includes native dynamic-registration history preservation and the alpha.14 version correction | Linux x64 and Apple Silicon builds complete |
@@ -19,7 +21,8 @@ The owner repaired a missing CIE group-to-harness-workspace mapping and confirme
 | Apple Silicon distribution | Developer ID signature, hardened runtime, Apple notarization and native Keychain checks | Passed |
 | Gateway and upstream | Production and development proxy integrations; upstream client allowlists enforced | Live |
 | CIE and CAS | Workspace mapping repaired; owner completed native desktop login and development tool workflow | Observed |
-| Exact alpha.14 gateway lifecycle | Interactive production login, all eight tools, two real native expiry cycles and upstream renewal correlation | In progress; browser consent required |
+| Exact alpha.14 production workflow | Native inference and gateway MCP login, native credential storage, all eight model-selected tools and matching gateway/upstream observations | Passed on both installed packages |
+| Exact alpha.14 gateway lifecycle | Two real native expiry cycles, concurrent fresh processes and upstream renewal correlation | Expiry tests running; publication remains gated |
 | Publication | Alpha.13 remains the published package until alpha.14 acceptance completes | Alpha.14 is an unpublished candidate |
 
 The gateway's observed frontend MCP token is opaque and lasts 3,600 seconds. The separate upstream Keycloak JWT lasts 300 seconds. Acceptance waits for real expiration, launches two concurrent native processes, records nonsecret token-generation fingerprints, and correlates gateway tool telemetry with upstream requests. Changing a local expiry field or reusing direct-route receipts would not establish this behavior.

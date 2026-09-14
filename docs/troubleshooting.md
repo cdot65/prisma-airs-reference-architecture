@@ -53,6 +53,12 @@ Never paste a real JWT into a public decoder or issue. A decoded payload is also
 
 Do not repair a failed gateway route by changing the harness destination to the upstream resource. Check the gateway integration, upstream-host allowlist and upstream OAuth callback/client configuration.
 
+## Browser callbacks when the harness runs remotely
+
+A browser can run on a different computer from the harness, but `127.0.0.1` in the callback always refers to the browser's computer. In the headless Linux acceptance test, an SSH reverse tunnel forwarded the browser computer's loopback callback port to the Linux harness process. The native client, PKCE verifier and credential store stayed on Linux.
+
+Confirm that the tunnel is listening before opening consent, and keep it and the native login process alive until the CLI reports success. The tested native MCP callback expires after five minutes. A browser “cannot connect to localhost” error after that deadline requires a fresh native attempt; reopening an old consent tab cannot revive the listener. Browser completion also needs a successful native credential save, followed by a real tool connection.
+
 ## Worked incident: tools disappear
 
 In the historical alpha.13 incident, the user could obtain a model response and a direct MCP probe listed eight tools. That narrows the failure: TLS, basic inference, and basic MCP access work. Inspecting the inference request reveals tool declarations wrapped in a namespace that the gateway path drops. The model therefore has no callable functions.

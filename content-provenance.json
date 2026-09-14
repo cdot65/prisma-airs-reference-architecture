@@ -62,14 +62,14 @@
   {
     "slug": "operations",
     "noteId": "1fe82b1c-35b8-41f4-b2f8-3ee0f07abb39",
-    "sourceSha256": "aea30a4c9cf3c066301a8eb03c5b1e8cb06caab16d0c84c047782ca1394b8c4a",
-    "publishedSha256": "0114ec91aadb58a5a6d0172a2b12cc026239d5b1d72fff4234c8923be7dbbea6"
+    "sourceSha256": "55757139c99d087e23c271432261c71be06e6b477930948bdeb83fc679029a94",
+    "publishedSha256": "9c0e06cf722356db57b52516b0e8463f2dc5c75cd582d61d38f50b04d928a610"
   },
   {
     "slug": "troubleshooting",
     "noteId": "70c16e1a-a994-4312-953c-5cbfb8f45ec8",
-    "sourceSha256": "0161fe1825dc564e23c61886820090440566b6b4fcb3e71439e122e761df4d65",
-    "publishedSha256": "8568c4472cd36ddd625e51264047ce9e5798015abc3f192c076c5b17f6b6abca"
+    "sourceSha256": "0e6bc264ee698048fbdb4e46a13ffef33481a86007406483f1c7c990aa5d8539",
+    "publishedSha256": "875f77feb274d26b128f449cc79077d4788f1f91438515e81beb9c6e41a4e983"
   },
   {
     "slug": "labs",
@@ -86,7 +86,7 @@
   {
     "slug": "evidence",
     "noteId": "ae0c3bd4-47f4-4e32-afb8-687521faeba8",
-    "sourceSha256": "5b117e0a75746607bffa88a2995e7050dd40afa646ed2a5dbb5ecd58ed418cc2",
-    "publishedSha256": "e67c6f0b1ffafa1d67339c6e040a9cba33699eaf8bdf121819d1561ddebdbb84"
+    "sourceSha256": "d4e2f945f09e29e4b0f77e1f1febf5757015692df5c3252016d7019da3b0b6e1",
+    "publishedSha256": "69dd79080674c1c169daa89173e8c1576a9dadaa22b0b08cea1e8e06a7169ce3"
   }
 ]
