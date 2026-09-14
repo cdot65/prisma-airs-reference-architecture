@@ -4,6 +4,12 @@ title: "Refresh revocation and identity changes"
 sidebar_label: "Refresh revocation and identity changes"
 ---
 
+## Active refresh and idle sign-in are different outcomes
+
+The observed deployment issues one-hour gateway-facing MCP access tokens and five-minute upstream Keycloak access tokens. Keycloak also has a 30-minute SSO idle limit, and the observed upstream refresh grants expired after 30 minutes without renewal. The gateway cannot use an expired upstream refresh grant merely because the harness still holds a valid gateway credential. Inference sign-in and MCP sign-in may both need renewal after prolonged inactivity.
+
+Release acceptance therefore exercises normal active use across real frontend expiry: periodic authorized reads maintain the shorter sessions, those reads must not change the frontend token early, and two concurrent fresh processes then run after its expiration. The initial silent-hour test failed because it exceeded the existing idle policy. No wider session lifetime or offline grant was enabled to conceal that limit.
+
 ## A login creates a credential lifecycle
 
 Access tokens are short lived. Refresh tokens let the client obtain a new generation without repeating the whole browser flow. The reviewed upstream MCP access-token limit is 300 seconds, with five seconds of validation clock tolerance. The observed gateway-facing opaque MCP access token lasts 3,600 seconds. Treat those numbers as deployment settings, not OAuth defaults.

@@ -21,13 +21,6 @@ const config = {
     theme: {customCss: './src/css/custom.css'},
   }]],
   themeConfig: {
-    announcementBar: {
-      id: 'gateway-mcp-architecture-correction-2026-09-14',
-      content: 'Architecture correction: both inference and MCP must traverse AI Gateway. Earlier direct-MCP lessons describe a rejected implementation. <a href="/prisma-airs-reference-architecture/learn/architecture/">Read the corrected contract</a>.',
-      backgroundColor: '#fff3cd',
-      textColor: '#332701',
-      isCloseable: false,
-    },
     colorMode: {defaultMode: 'light', respectPrefersColorScheme: true},
     navbar: {
       title: 'AIRS / Architecture Lab',

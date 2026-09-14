@@ -34,6 +34,7 @@ The sequence is a diagnostic aid, not a claim that every service uses the same e
 | Login succeeds but cannot save credentials | OS store | Desktop/keyring session and persistence error category |
 | MCP login requests unrelated permissions | OAuth scope selection | Gateway scopes from gateway discovery; upstream read scopes belong to the gateway integration |
 | Authorization rejects duplicate resource | Discovery/configuration | Check the failing OAuth leg and its discovered resource before adding an explicit override |
+| Tools stop after prolonged inactivity | Upstream or inference refresh session | Check the refresh grant and SSO idle limit, not only the gateway access token; renew the affected login |
 | MCP works until access-token expiry | OAuth refresh | Granted scopes versus refresh request; affected RMCP added ungranted `offline_access` |
 | npm upgrade still runs an old command | Local installation | Resolved executable, npm prefix and legacy PATH symlink |
 | MCP 401 | Token validation | Intended resource audience, issuer, client, expiry, signature |

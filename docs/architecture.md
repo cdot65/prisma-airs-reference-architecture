@@ -69,6 +69,6 @@ This is a required integration dependency for the CAS route. Existing records ab
 
 The `airs-harness` package contains the agent, native MCP client and inference tool adapter. The AI Gateway deployment owns proxy routing and upstream OAuth integration. The `prisma-airs-mcp` deployment owns read tools, human resource authorization and backend service credentials. Updating one component does not automatically deploy the other two.
 
-The earlier alpha.13 direct-server onboarding is superseded. Acceptance observes the harness talking to the gateway MCP listener, the gateway contacting the upstream, successful authorized reads, gateway denial of forbidden operations, and separate credential lifecycle behavior. A direct read or a scan on a later inference request is insufficient.
+The earlier alpha.13 direct-server onboarding is superseded. Acceptance observes the harness talking to the gateway MCP listener, the gateway contacting the upstream, successful authorized reads, gateway rejection of invalid credentials, and separate credential lifecycle behavior. A direct read or a scan on a later inference request is insufficient.
 
 Continue with [Login from browser to authorized tools](./login.md) and [Implementation status and public sources](./evidence.md).
