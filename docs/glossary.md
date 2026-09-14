@@ -4,8 +4,6 @@ title: "Glossary and misconceptions"
 sidebar_label: "Glossary and misconceptions"
 ---
 
-> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
-
 ## Vocabulary for this architecture
 
 | Term | Meaning here |
@@ -27,6 +25,7 @@ sidebar_label: "Glossary and misconceptions"
 | Resource role | Keycloak role belonging to a specific resource client |
 | Binding | Server policy mapping a subject to permitted resources and scopes |
 | JWT | Signed token representation; decoding is different from verification |
+| Opaque access token | A resource credential interpreted by its issuer; the observed gateway MCP token is opaque |
 | JWKS | Published keys used to verify signatures from a trusted issuer |
 | ID token | OIDC identity assertion intended for the client |
 | Access token | Credential presented to its intended resource |
@@ -62,6 +61,8 @@ sidebar_label: "Glossary and misconceptions"
 **“A successful Keycloak login grants MCP access.”** The native client registration grants no workspace access by itself. The server checks resource-specific grants and explicit bindings.
 
 **“The ID token can be sent to any API.”** The ID token establishes identity for the client. Resource APIs require the appropriate access token.
+
+**“Keycloak SSO means every token is a Keycloak JWT.”** The gateway-facing MCP token in this deployment is opaque. Inference and upstream MCP use separate Keycloak JWTs.
 
 **“CAS login also supplies the upstream MCP token.”** CAS supports gateway-facing organizational SSO. The gateway separately obtains and stores upstream OAuth tokens. CIE directory/workspace access and upstream resource grants are distinct requirements.
 

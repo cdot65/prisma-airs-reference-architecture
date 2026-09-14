@@ -4,11 +4,11 @@ title: "System architecture"
 sidebar_label: "System architecture"
 ---
 
-## Required architecture: both paths traverse AI Gateway
+## Both paths traverse AI Gateway
 
 Prisma AIRS Harness must use Prisma AIRS AI Gateway as the destination for both inference and remote MCP traffic. Its built-in Codex MCP client connects to the gateway's MCP listener. The gateway connects to upstream MCP servers. A direct connection from the harness to an upstream server does not meet this contract.
 
-The September 13 implementation plan diverged from this requirement by choosing a direct MCP connection. Earlier versions of this course described that implementation as the accepted architecture. That was incorrect. The diagram below states the required architecture; the complete gateway-mediated harness flow still requires its own acceptance evidence.
+The gateway has separate inference and MCP listeners. Its development and production MCP integrations proxy the read-only Prisma AIRS MCP service. Both upstream deployments accept only their dedicated gateway OAuth client. The service remains a remote application; no secondary local MCP executable is required. Exact package and lifecycle acceptance is tracked in [Implementation status and public sources](./evidence.md).
 
 ```mermaid
 flowchart LR
@@ -45,7 +45,7 @@ flowchart LR
     inference <--> model
     mcp <--> upstream
     mcp <--> upstreamAuth
-    upstreamAuth -.->|"Separate upstream authorization"| upstream
+    upstreamAuth <-->|"Upstream authorization code and refresh"| keycloak
     policy --- inference
     policy --- mcp
 ```
@@ -80,10 +80,10 @@ flowchart LR
 
 This is a required integration dependency for the CAS route. Existing records about another realm or workspace do not prove this harness workspace is provisioned correctly. Verify the selected directory, authentication profile, identity attribute and workspace membership against the deployed gateway. [CIE Directory Sync](https://portkey.ai/docs/product/enterprise-offering/org-management/directory-sync/cie-directory-sync).
 
-## What remains reusable, and what must change
+## Three independently delivered components
 
-The built-in Codex MCP transport, local tool dispatch and gateway inference adapter remain useful. A read-only Prisma AIRS MCP server can remain an upstream service. Its deployment does not make it the harness's permitted destination.
+The `airs-harness` package contains the agent, native MCP client and inference tool adapter. The AI Gateway deployment owns proxy routing and upstream OAuth integration. The `prisma-airs-mcp` deployment owns read tools, human resource authorization and backend service credentials. Updating one component does not automatically deploy the other two.
 
-The direct-server onboarding commands and direct-path release acceptance are superseded. Correct acceptance must observe the harness talking to the gateway MCP listener, the gateway contacting the upstream, successful authorized reads, gateway denial of forbidden operations, and separate credential lifecycle behavior. A direct read or a scan on a later inference request is insufficient.
+The earlier alpha.13 direct-server onboarding is superseded. Acceptance observes the harness talking to the gateway MCP listener, the gateway contacting the upstream, successful authorized reads, gateway denial of forbidden operations, and separate credential lifecycle behavior. A direct read or a scan on a later inference request is insufficient.
 
 Continue with [Login from browser to authorized tools](./login.md) and [Implementation status and public sources](./evidence.md).

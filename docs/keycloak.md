@@ -4,8 +4,6 @@ title: "Keycloak and token contracts"
 sidebar_label: "Keycloak and token contracts"
 ---
 
-> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
-
 ## Identity starts with the issuer and subject
 
 Keycloak authenticates Alex for inference and federates organizational login through CAS for gateway-facing MCP access. The gateway exposes the MCP OAuth endpoints used by the native client. A separate Keycloak OAuth registration supplies the gateway with upstream MCP tokens. Each receiver enforces its own token and access contract.
@@ -43,7 +41,7 @@ The following JSON illustrates an upstream token held by the gateway. It is unsi
 
 Decoding JSON is not validation. The receiver must verify the signature with trusted keys and reject an unexpected algorithm, issuer, audience, or lifetime. The reviewed MCP service pins RS256, checks required claims, and uses public keys from its fixed issuer's JWKS.
 
-## One SSO experience, separate token contracts
+## Three token contracts, one SSO experience
 
 ```mermaid
 flowchart LR
@@ -60,6 +58,14 @@ flowchart LR
     upstreamToken --> server["prisma-airs-mcp"]
 ```
 
+| Credential | Issued by | Held by | Used at |
+| --- | --- | --- | --- |
+| Inference access JWT | Keycloak | Harness identity store | Gateway inference listener |
+| Opaque MCP access token | Gateway OAuth endpoint after CAS login | Native MCP credential store | Gateway MCP listener |
+| Upstream MCP access JWT | Keycloak, for the confidential gateway client | Gateway | Upstream MCP resource server |
+
+The observed gateway 2.22.0 MCP access lifetime is 3,600 seconds; the upstream JWT lifetime is 300 seconds. The gateway-facing token is opaque. A Keycloak browser login does not make it a JWT. These are deployment settings, not OAuth defaults.
+
 A browser SSO session may avoid a second password prompt. It does not make the issued access tokens interchangeable. The native harness is a public OAuth client and uses PKCE. The gateway upstream integration has a separate confidential client whose secret stays server-side. The provisioned alpha.14 upstream registration uses authorization code with PKCE S256 and disables service-account, password and implicit grants.
 
 An **ID token** lets the client verify the authenticated identity. An **access token** authorizes access at a resource server. A **refresh token** is presented to the authorization server to obtain a new token generation. Send each artifact only to its intended receiver. The separate PAN backend token described in [Read-only MCP authorization](./mcp.md) represents a server-side service account.
@@ -71,6 +77,3 @@ Keycloak groups can grant resource-client roles. Client scope mappings control w
 **Checkpoint:** a signed token has the correct issuer but the inference audience. Should MCP accept it because Alex is a legitimate user? **No.** It was issued for another resource.
 
 Protocol background: [Keycloak OIDC endpoints](https://www.keycloak.org/securing-apps/oidc-layers). Native-client rationale: [RFC 8252](https://www.rfc-editor.org/info/rfc8252/). Implementation-specific checks are documented in [Implementation status and public sources](./evidence.md).
-
-
-September 14 runtime inspection of gateway 2.22.0 found opaque gateway-facing MCP access tokens with a 3600-second lifetime. The upstream Keycloak access token has a separate 300-second lifetime. These are deployment observations, not OAuth defaults. A Keycloak browser login does not imply that the gateway returns a JWT to the native MCP client; do not decode or exchange the two credential types as if they were interchangeable.

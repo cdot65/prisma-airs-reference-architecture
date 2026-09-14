@@ -4,8 +4,6 @@ title: "Troubleshooting by trust boundary"
 sidebar_label: "Troubleshooting by trust boundary"
 ---
 
-> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
-
 ## Find the first failed boundary
 
 “Login failed” can mean the browser never reached Keycloak, the callback failed validation, the OS store rejected persistence, or the resource refused authorization after a successful login. Start with the observed stage and expected contract.
@@ -40,6 +38,8 @@ The sequence is a diagnostic aid, not a claim that every service uses the same e
 | npm upgrade still runs an old command | Local installation | Resolved executable, npm prefix and legacy PATH symlink |
 | MCP 401 | Token validation | Intended resource audience, issuer, client, expiry, signature |
 | Gateway MCP 403 | Gateway authorization | CAS identity, directory membership and workspace/integration access |
+| `access_denied`: user does not have workspace access | CIE-to-workspace mapping | Existing group mapping, Full Sync and workspace Members tab |
+| Browser says complete but CLI login fails | Native persistence | CLI completion and Keychain/Secret Service session |
 | Upstream MCP 403 | Resource authorization | Human invoke/read roles, issued scopes and subject binding |
 | Generic unavailable object | Object authorization or absent object | Authorized workspace/profile context; do not enumerate foreign IDs |
 | Inference succeeds but model never calls MCP | Tool exposure/selection | Actual outbound function definitions and returned call events |
@@ -68,6 +68,12 @@ Initial OAuth and tool reads succeeded, but real expiry testing exposed a refres
 CAS accepts a SAML assertion, but the gateway cannot resolve a provisioned user. The directory has `alex@example.com`; the consumed assertion field contains `alex`. In the related case study, correcting NameID alone was insufficient because a second `username` attribute was also consumed. Mapping both according to the configured contract resolved the consent step.
 
 That proves identity formatting at that step. It does not prove cross-realm account linking, downstream MCP authorization, or complete end-to-end tool execution. Preserve those as separate checks.
+
+## Worked incident: CIE user exists, workspace access is denied
+
+The native gateway login returned `access_denied` even though the user existed in Keycloak and CIE and belonged to the expected source group. The gateway-provided short connection URL produced the same result. Adding the existing CIE group-to-harness-workspace mapping, running Full Sync and confirming the Members tab repaired this boundary. The next desktop native login and all eight development tool reads succeeded.
+
+The general workspace-detail API still showed an empty `users` field, so it was not a valid substitute for the directory-backed member check. No wider administrator grant, upstream policy relaxation or direct-server bypass was needed.
 
 ## A useful incident record
 

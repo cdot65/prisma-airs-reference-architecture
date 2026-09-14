@@ -4,8 +4,6 @@ title: "Deployment and operations"
 sidebar_label: "Deployment and operations"
 ---
 
-> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
-
 ## Deliver a service without mixing identities
 
 The MCP deployment separates the identity that builds an image, the identity that retrieves runtime secrets, the service accounts that call PAN APIs, and the human identity making an MCP request. Each exists for a different boundary.
@@ -38,7 +36,7 @@ This diagram describes the recorded deployment pattern. The educational GitHub P
 
 The reviewed service loads its policy at startup. A policy update must reach all replicas before the change is effective everywhere. Hashed policy ConfigMaps help trigger a workload rollout. A Git commit is desired state; the running replicas and a negative authorization probe establish applied state.
 
-Development has one replica and production two in the recorded acceptance. The server uses a nonroot process, a read-only filesystem, network restrictions, and no mounted Kubernetes API token. Public ingress exposes MCP and metadata paths; health, readiness, and metrics remain internal.
+Development has one ready replica and production two after the September 14 gateway OAuth cutover. Both configurations accept only their own gateway upstream client. Changing the static client-allowlist ConfigMap also requires a pod-template change or equivalent managed rollout; an updated ConfigMap alone does not restart an existing process. The server uses a nonroot process, a read-only filesystem, network restrictions, and no mounted Kubernetes API token. Public ingress exposes MCP and metadata paths; health, readiness, and metrics remain internal.
 
 ## Health is layered evidence
 
@@ -62,7 +60,7 @@ Historical service acceptance includes all eight tools, authorization negatives,
 
 The built-in MCP client ships in the normal `airs-harness` npm distribution for Linux x64 and Apple Silicon. The remote MCP server continues to use its own image and GitOps rollout. Updating the client does not embed or redeploy that service.
 
-Alpha.13 is published with direct-route receipts. Alpha.14 gateway acceptance requires native OAuth/tool workflows, two real expiry intervals with concurrent fresh processes, npm installation and in-place upgrade checks, and matching native executable hashes. Correlate native calls with gateway ingress and upstream requests, and exercise both OAuth token lifecycles. Mac signing and notarization are separate evidence. An old manual command symlink can shadow an npm upgrade, so acceptance must resolve the executable that actually runs. See [Implementation status and public sources](./evidence.md) for outstanding release gates.
+Alpha.13 is published with direct-route receipts. Alpha.14 gateway acceptance requires native OAuth/tool workflows, two real expiry intervals with concurrent fresh processes, npm installation and in-place upgrade checks, and matching native executable hashes. Correlate native calls with gateway ingress and upstream requests, and exercise both OAuth token lifecycles. Mac signing and notarization are separate evidence. An old manual command symlink can shadow an npm upgrade, so acceptance must resolve the executable that actually runs. Both platform builds, installed native tests and npm upgrade checks have passed; production browser and lifecycle acceptance remains in progress. See [Implementation status and public sources](./evidence.md) for the release gates.
 
 ## Recovery should restore an understood state
 

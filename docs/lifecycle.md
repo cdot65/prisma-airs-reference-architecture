@@ -4,11 +4,9 @@ title: "Refresh revocation and identity changes"
 sidebar_label: "Refresh revocation and identity changes"
 ---
 
-> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
-
 ## A login creates a credential lifecycle
 
-Access tokens are short lived. Refresh tokens let the client obtain a new generation without repeating the whole browser flow. The reviewed upstream MCP access-token limit is 300 seconds, with five seconds of validation clock tolerance. Gateway-facing token lifetime is a separate setting. Treat those numbers as deployment settings, not OAuth defaults.
+Access tokens are short lived. Refresh tokens let the client obtain a new generation without repeating the whole browser flow. The reviewed upstream MCP access-token limit is 300 seconds, with five seconds of validation clock tolerance. The observed gateway-facing opaque MCP access token lasts 3,600 seconds. Treat those numbers as deployment settings, not OAuth defaults.
 
 Inference and MCP have separate credential implementations. Inference uses the harness identity store. Gateway-facing MCP uses the existing Codex OAuth client and its native credential store. The gateway holds and refreshes upstream MCP tokens independently. Concurrent refresh is an acceptance requirement: two fresh harness processes must obtain usable credentials after expiry without an additional browser login. The diagram below describes the coordination design; the measured release behavior and enabled configuration belong in the implementation-status record.
 
@@ -19,11 +17,11 @@ sequenceDiagram
     participant first as Client process A
     participant second as Client process B
     participant store as Native store and lock
-    participant keycloak as Gateway OAuth token endpoint
+    participant gateway as Gateway OAuth token endpoint
     first->>store: Acquire refresh lock and read current generation
     second->>store: Wait for same binding lock
-    first->>keycloak: Refresh gateway-facing MCP access
-    keycloak-->>first: New access and refresh tokens
+    first->>gateway: Refresh gateway-facing MCP access
+    gateway-->>first: New gateway token generation
     first->>store: Commit new generation before token use
     first->>store: Release lock
     second->>store: Acquire lock and reload generation
@@ -54,7 +52,7 @@ A historical direct-route expiry test found that the MCP SDK appended `offline_a
 
 The integration now prevents that automatic addition when the saved grant lacks `offline_access`. An existing grant that includes it is preserved. The regression test inspects the SDK’s actual HTTP refresh request, including its resource indicator. Server support, client registration and the permissions granted in a particular login are three different facts. A refresh request must remain within the original grant. [OAuth refresh requirements, RFC 6749 section 6](https://www.rfc-editor.org/rfc/rfc6749#section-6).
 
-Alpha.14 acceptance must measure both gateway-facing refresh in the native client and upstream refresh performed by the gateway. The earlier direct-client result covers neither the CAS chain nor gateway-managed upstream storage.
+Alpha.14 acceptance measures two actual gateway-facing expiration intervals with concurrent fresh native processes. It compares native token-generation fingerprints and expiry metadata without publishing credentials, and correlates gateway tool telemetry with upstream calls after the separate five-minute JWT lifetime. Successful initial login alone cannot prove either renewal path. The earlier direct-client result covers neither the CAS chain nor gateway-managed upstream storage.
 
 ## Revocation has several clocks
 

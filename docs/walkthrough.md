@@ -8,7 +8,7 @@ sidebar_label: "End-to-end question walkthrough"
 
 > Which gateway configuration can I use, and what security protections are attached to it?
 
-The required path sends inference and actual MCP protocol calls through AI Gateway. Assume the user has gateway access, the upstream integration is provisioned to the workspace, and its required upstream OAuth consent is complete. These are prerequisites to test, not established results from the earlier direct-path experiment.
+The required path sends inference and actual MCP protocol calls through AI Gateway. Assume the user has gateway access, the upstream integration is provisioned to the workspace, and its required upstream OAuth consent is complete. The native client has already completed its own gateway login; the gateway holds the separate upstream grant.
 
 ```mermaid
 sequenceDiagram
@@ -38,15 +38,19 @@ sequenceDiagram
     harness->>harness: Restore namespace and apply local dispatch policy
     harness->>gateway: MCP tools/call with gateway MCP credential
     gateway->>gateway: Authorize integration and tool, then record request
-    gateway->>scanner: Configured MCP request checks
-    scanner-->>gateway: Verdict
+    opt MCP request policy explicitly configured
+        gateway->>scanner: Apply configured MCP request check
+        scanner-->>gateway: Verdict
+    end
     gateway->>upstream: Proxy tool call using upstream credential
     upstream->>upstream: Enforce backend object permissions
     upstream->>management: Authorized configuration read
     management-->>upstream: Configuration data
     upstream-->>gateway: Bounded tool result
-    gateway->>scanner: Configured MCP response checks
-    scanner-->>gateway: Verdict
+    opt MCP response policy explicitly configured
+        gateway->>scanner: Apply configured MCP response check
+        scanner-->>gateway: Verdict
+    end
     gateway-->>harness: Permitted MCP response
     harness->>gateway: Continue inference with tool result
     gateway->>model: Continue under inference policy
@@ -55,7 +59,7 @@ sequenceDiagram
     harness-->>user: Explanation and evidence limits
 ```
 
-The scanner arrows identify where configured controls belong. Their presence in a diagram does not prove a particular rule or structured field is scanned. Acceptance must verify the actual policies and verdicts attached to both request paths. Subsequent inference exchanges abbreviate the same configured enforcement shown on the first exchange.
+The inference scanner arrows represent the configured input/output policy. The optional MCP blocks show where a separately configured policy would apply; routing through the gateway alone does not establish that those content checks are enabled. Their presence in a diagram does not prove a particular rule or structured field is scanned. Acceptance must verify the actual policies and verdicts attached to both request paths. Subsequent inference exchanges abbreviate the same configured enforcement shown on the first exchange.
 
 ## What proves the route
 

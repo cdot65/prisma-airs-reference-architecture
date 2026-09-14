@@ -4,8 +4,6 @@ title: "Cloud Identity Engine and provisioning"
 sidebar_label: "Cloud Identity Engine and provisioning"
 ---
 
-> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
-
 ## Two jobs inside CIE
 
 Cloud Identity Engine's **Directory Sync** makes user and group information available to consuming security services. Its **Cloud Authentication Service**, or CAS, integrates authentication with configured identity providers. Directory membership and a successful browser login are different facts. A service must correlate them and apply its policy. [CIE component overview](https://docs.paloaltonetworks.com/pan-os/10-1/pan-os-new-features/identity-features/cloud-identity-engine).
@@ -30,7 +28,7 @@ CAS authentication and CIE directory/workspace resolution are prerequisites of t
 
 The initial source review found an older Truffles SCIM worker and a Redtail CAS SAML email-mapping correction for another workspace. That source alone did not establish the harness population. A later September 14 live inspection found two Redtail reconciliation deployments and verified the intended harness user and MCP group in their CIE directories.
 
-The owner's native gateway login then returned `access_denied` with “User does not have access to this workspace.” Changing to the gateway-supplied connection URL produced the same denial. The owner added the existing MCP group's mapping to the harness workspace, ran Full Sync and confirmed the user in the workspace Members tab. This establishes the operator-reported provisioning repair; successful gateway OAuth, upstream OAuth and tool calls still require separate evidence.
+The owner's native gateway login then returned `access_denied` with “User does not have access to this workspace.” Changing to the gateway-supplied connection URL produced the same denial. The owner added the existing MCP group's mapping to the harness workspace, ran Full Sync and confirmed the user in the workspace Members tab. A subsequent native desktop login completed, and all eight model-selected tools succeeded through the development gateway integration. This connects the provisioning repair to an observed user workflow; exact alpha.14 package and refresh results are tracked separately.
 
 The lesson is concrete: an identity can exist in Keycloak and CIE, belong to the correct source group, and authenticate through CAS while still lacking a gateway workspace assignment. Keep the connected directory and existing mappings; add the intended group-to-workspace mapping instead of granting a broad administrator role or changing the upstream MCP policy. The SDK's general workspace-detail `users` field remained empty after the operator saw the member in SCM, so that field is not a reliable directory-membership check in this deployment.
 
@@ -73,7 +71,9 @@ The SCIM connector credential is a machine provisioning credential. It never bec
 
 An email match alone must not silently merge accounts across issuers. The operator needs a documented correlation policy, unique ownership checks, and a tested rename/deprovisioning procedure. Likewise, a successful SAML test does not prove that directory synchronization or workspace authorization succeeded. [CIE SAML authentication setup](https://docs.paloaltonetworks.com/identity/cloud-identity-engine/authenticate-users-with-the-cloud-identity-engine/set-up-a-saml-2-0-authentication-type).
 
-## Verifying the required harness mapping
+## Verify the workspace mapping
+
+In SCM, use **AI Gateway → Admin Settings → Authentication → Directory Sync**. Map the existing intended CIE group to its gateway workspace—for example, `stacks.learning.users` to `learning-harness`. Run Full Sync and verify the intended member in the workspace Members tab. Keep the connected directory and its other mappings.
 
 Inspect the existing configured directory before deciding whether another connector is needed. If adapting a reconciliation worker, use isolated ownership: it can delete destination objects absent from its source. Verify the supported population, identity join, SAML resolution, harness workspace mapping, allowed and denied users, rename behavior and measured deprovisioning delay. A missing mapping must be repaired at this boundary; it does not authorize a direct upstream connection.
 

@@ -4,8 +4,6 @@ title: "Labs and answer keys"
 sidebar_label: "Labs and answer keys"
 ---
 
-> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
-
 ## Start with tabletop labs
 
 These exercises use fictional records. They need no tenant, production login, or cloud credential. Each has an observable deliverable and an answer key. Treat the optional live lab as a separate integration exercise after the concepts are clear.

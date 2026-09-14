@@ -4,8 +4,6 @@ title: "Start here"
 sidebar_label: "Start here"
 ---
 
-> **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
-
 ## The goal
 
 Build an AI assistant that can explain the AI infrastructure a person is allowed to inspect. The assistant should use an approved model route, pass configured content checks, and retrieve configuration through tools that enforce the person's permissions.
@@ -44,7 +42,7 @@ Allow roughly three hours for the reading path and another two for the tabletop 
 
 ## How to read the evidence labels
 
-**Implemented** means the reviewed harness/MCP source implements the behavior. **Recorded acceptance** means a dated deployment receipt reports a live test; it does not mean we retested it today. **Related deployment** describes the Truffles CIE/CAS integration and must not be silently attributed to the harness. **Required but unverified** identifies gateway routing, CAS/CIE workspace access or lifecycle behavior that must pass before alpha.14 acceptance. Alpha.13 is the latest published build; its direct MCP results do not satisfy that contract.
+**Implemented** describes the reviewed source. **Observed deployment** describes a dated live check. **Release acceptance** applies only to the exact installed package and its recorded lifecycle tests. The gateway and upstream proxy configuration is live; alpha.14 package acceptance is still in progress. [Implementation status and public sources](./evidence.md) records the current distinction and supersedes the earlier direct-route acceptance claims.
 
 All example domains, subjects, workspaces, and user records in these lessons are fictional. Example identifiers illustrate the contract; they are not runnable configuration or signed credentials. Read [Implementation status and public sources](./evidence.md) for dated findings, limits, and primary references.
 
