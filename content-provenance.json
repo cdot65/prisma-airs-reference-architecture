@@ -2,14 +2,14 @@
   {
     "slug": "start-here",
     "noteId": "285d579c-10cf-4695-a130-7e264c7e34ed",
-    "sourceSha256": "42d66be1b6a4937353e9d7ff1dc1f59537fa5cad1a8aa15823f841b25261716f",
-    "publishedSha256": "9154292aa25415f61440d81a7227684642d805d7ff4392d1757add4ac4ae0cbc"
+    "sourceSha256": "3032f1ab2be30bcb1d245e92a7ba015300cc7be2c5cd4e1fc41fe9b5ff12cadf",
+    "publishedSha256": "28db899c2b71db4a09f983c6c48074fb142f1bce90b5a120469576d91eeda844"
   },
   {
     "slug": "architecture",
     "noteId": "3f00eb86-27db-4f23-b84d-5a6941ec32f6",
-    "sourceSha256": "53cefd4d9f4fadcc9d83e715d2aaf2a8cd0a15165d216eed388a7309d14cbb16",
-    "publishedSha256": "5eafc18f554d0b3f6c54bd0e92dfd99c67784dfb443a285fa338c027aebbe7a9"
+    "sourceSha256": "32055491b3e0f64288635958851b1b30ad93301833c2a475732857cfcde09a81",
+    "publishedSha256": "4d934e98483bad44e5813e5f0704856c8fc42264a0187abd0f9a5ed32221adca"
   },
   {
     "slug": "harness",
@@ -56,26 +56,26 @@
   {
     "slug": "lifecycle",
     "noteId": "95825d11-9057-4da5-bb84-fd0515da26ad",
-    "sourceSha256": "6a9611fe204b6fc4b05a35e708782bfeb2d494488779a15da7f9661351187f70",
-    "publishedSha256": "6fe8e4bb58f1aac226a88d3e797fbf3aeeeb9a82737e7fbe32b0b048ed2c9c35"
+    "sourceSha256": "8aa1e2fe363a58066e42554bd614a6fba09135d8aa7077420038caca8a409bf2",
+    "publishedSha256": "2f92f15ca6dc9f47d31f90292a7d172ed9206c96d5611f00955eac6009a2b8cf"
   },
   {
     "slug": "operations",
     "noteId": "1fe82b1c-35b8-41f4-b2f8-3ee0f07abb39",
-    "sourceSha256": "55757139c99d087e23c271432261c71be06e6b477930948bdeb83fc679029a94",
-    "publishedSha256": "9c0e06cf722356db57b52516b0e8463f2dc5c75cd582d61d38f50b04d928a610"
+    "sourceSha256": "e0d643c3ce792c6d86aab06fff60432c3494d52064fdcec1ced5e7d18630d735",
+    "publishedSha256": "589b2c384cb34f1baea1a195b498ec58318bbe130125b410bda99789d08b8256"
   },
   {
     "slug": "troubleshooting",
     "noteId": "70c16e1a-a994-4312-953c-5cbfb8f45ec8",
-    "sourceSha256": "0e6bc264ee698048fbdb4e46a13ffef33481a86007406483f1c7c990aa5d8539",
-    "publishedSha256": "875f77feb274d26b128f449cc79077d4788f1f91438515e81beb9c6e41a4e983"
+    "sourceSha256": "d2bae2cb4689646474d6eb7a6dfa2c17eec116b49ac6979e497e793c3b7089eb",
+    "publishedSha256": "00cb9ef439002737114cfb036619cec85a72dbe3b84863c753eafc60cf640cd7"
   },
   {
     "slug": "labs",
     "noteId": "813d70c4-190d-4c9e-8344-3895941817e0",
-    "sourceSha256": "db5f600bf5016225742a114da0eb2432cae3b3fcb29112712d899aea570c1fcd",
-    "publishedSha256": "daef2da1e2fd051eb971de0fe764a90924f9888b4977455a5c1cd1202903e65b"
+    "sourceSha256": "5591bca418ca276322a540a29b7ae128912f1b026a0eea5d084bce8004ef36ad",
+    "publishedSha256": "f6fe7944e1b153b1c506da034d3564e5dace4ad7c0a9c6e8efd17374d47d8c37"
   },
   {
     "slug": "glossary",
@@ -86,7 +86,7 @@
   {
     "slug": "evidence",
     "noteId": "ae0c3bd4-47f4-4e32-afb8-687521faeba8",
-    "sourceSha256": "d4e2f945f09e29e4b0f77e1f1febf5757015692df5c3252016d7019da3b0b6e1",
-    "publishedSha256": "69dd79080674c1c169daa89173e8c1576a9dadaa22b0b08cea1e8e06a7169ce3"
+    "sourceSha256": "acc419a07b2c98a8f4337d5f7cdc30042a2a5e897fce4c38cba23b8df2116267",
+    "publishedSha256": "ec6aa5b50d79eb9f78de56878d701ab521fb6974a984d39e47f08e640245c922"
   }
 ]

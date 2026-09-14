@@ -42,7 +42,7 @@ Allow roughly three hours for the reading path and another two for the tabletop 
 
 ## How to read the evidence labels
 
-**Implemented** describes the reviewed source. **Observed deployment** describes a dated live check. **Release acceptance** applies only to the exact installed package and its recorded lifecycle tests. The gateway and upstream proxy configuration is live; alpha.14 package acceptance is still in progress. [Implementation status and public sources](./evidence.md) records the current distinction and supersedes the earlier direct-route acceptance claims.
+**Implemented** describes the reviewed source. **Observed deployment** describes a dated live check. **Release acceptance** applies only to the exact installed package and its recorded lifecycle tests. The gateway and upstream proxy configuration is live; alpha.14 uses an owner-authorized internal alpha release scope, with hourly frontend refresh explicitly unverified. [Implementation status and public sources](./evidence.md) records the current distinction and supersedes the earlier direct-route acceptance claims.
 
 All example domains, subjects, workspaces, and user records in these lessons are fictional. Example identifiers illustrate the contract; they are not runnable configuration or signed credentials. Read [Implementation status and public sources](./evidence.md) for dated findings, limits, and primary references.
 

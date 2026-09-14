@@ -81,7 +81,7 @@ An access token expires at 12:05. The user signs out at 12:01. A CIE sync is sch
 
 ## Optional isolated integration lab
 
-This exercise needs a maintainer-provided alpha.14 candidate with native MCP, isolated test identities and CIE workspace mapping, an upstream MCP deployment with an explicit fixture binding, dedicated read-only PAN credentials, and gateway inference and MCP routes. A model-only mock can teach the protocol but does not establish PAN integration acceptance.
+This exercise needs alpha.14 with native MCP, isolated test identities and CIE workspace mapping, an upstream MCP deployment with an explicit fixture binding, dedicated read-only PAN credentials, and gateway inference and MCP routes. A model-only mock can teach the protocol but does not establish PAN integration acceptance.
 
 Do not use the retired fixture from the implementation's acceptance record. Create a new fixture under an explicit test plan in the isolated environment. No commands in this curriculum mutate the production lab.
 
