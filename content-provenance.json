@@ -56,8 +56,8 @@
   {
     "slug": "lifecycle",
     "noteId": "95825d11-9057-4da5-bb84-fd0515da26ad",
-    "sourceSha256": "b9f61f1c7e0cb39a342725e32e32bd7757415ec961f8706d2daa12503a628943",
-    "publishedSha256": "a7d725ce2b87649da98e478f641079202e8a459fac988c05a95e9b5c81c5a9b8"
+    "sourceSha256": "f852fcd071abab31146cae44ccc941ee553b701ff72b96d204c268c21e2fba83",
+    "publishedSha256": "3adeb149511393032dccd87ec7355ac452ff2e83a4391e424606233317c548f9"
   },
   {
     "slug": "operations",
@@ -86,7 +86,7 @@
   {
     "slug": "evidence",
     "noteId": "ae0c3bd4-47f4-4e32-afb8-687521faeba8",
-    "sourceSha256": "045810e5df7d077240a0579254ab3ea94309ddca84f0a9034017bda9095b9696",
-    "publishedSha256": "69599d0cc2b62f58b06cf579ebd1a38f636f2f3e2200634f23485eb5c7249912"
+    "sourceSha256": "06812b458d9adaf78a650d5f89efec5d9813d3dca61fcfaa0fac6c18b36efd4a",
+    "publishedSha256": "cad6a5d4e805ba2646309544726c88ef9295b897642dbfefaa594e16ed8c8f76"
   }
 ]
