@@ -14,17 +14,17 @@ These exercises use fictional records. They need no tenant, production login, or
 
 **Time:** 15 minutes. **Objective:** distinguish inference from tool execution.
 
-Draw Alex, the harness, Keycloak, AI Gateway, AIRS scanner, model, MCP server, PAN management API, and CIE. Label the issuer of each token and its receiver. Place CIE provisioning beside the native request path with the correct evidence label.
+Draw Alex, the harness, Keycloak, AI Gateway, AIRS scanner, model, MCP server, PAN management API, and CIE. Label the issuer of each token and its receiver. Include CAS login and CIE workspace resolution on the gateway-facing MCP authorization path.
 
 **Deliverable:** a diagram and a one-paragraph explanation of who executes `get_gateway_config`.
 
-**Answer key:** the harness dispatches the MCP request; the MCP server authorizes the read and calls PAN APIs. The model emits a function call. The inference token goes to the gateway; the MCP token goes to MCP; the backend token goes from MCP to PAN APIs. CIE's related/proposed edges must not be portrayed as mandatory native token hops.
+**Answer key:** the harness sends both inference and MCP to AI Gateway. The model emits a function call; the gateway proxies the MCP request using its own upstream user token. The MCP server authorizes the read and calls PAN APIs using separate backend credentials. CAS/CIE supports gateway-facing identity and workspace access. The harness never receives the gateway's upstream refresh token.
 
 ### Lab 2 — Evaluate an authorization matrix
 
 **Time:** 20 minutes. **Objective:** apply all conditions, not just one grant.
 
-Assume the server expects the learning issuer, the MCP resource audience, client `learning-harness-mcp`, and a valid current signature. Alex's server binding permits only `workspace-learning` and `profile-learning`. The policy grants both read scopes.
+Assume the server expects the learning issuer, the MCP resource audience, gateway upstream client `learning-gateway-mcp`, and a valid current signature. Alex's server binding permits only `workspace-learning` and `profile-learning`. The policy grants both read scopes.
 
 | Case | Credential/permission condition | Requested action |
 | --- | --- | --- |
@@ -77,29 +77,29 @@ An MCP result says the saved route references an AIRS profile with prompt-inject
 
 An access token expires at 12:05. The user signs out at 12:01. A CIE sync is scheduled for 12:15. MCP subject policy is removed and finishes rolling out at 12:02.
 
-**Deliverable:** a timeline identifying which control ends direct MCP access and which observations remain unknown.
+**Deliverable:** a timeline identifying which control ends upstream MCP access and which observations remain unknown.
 
-**Answer key:** direct MCP access can be rejected by the removed binding once all serving replicas use it, even before token expiry. Logout prevents further refresh under the revoked session but does not necessarily invalidate an already signed JWT. The CIE schedule does not control this direct MCP decision. CIE consumer deprovisioning needs its own measured result after successful sync and consumer propagation.
+**Answer key:** the upstream server rejects requests for the removed binding once all replicas load it, including requests proxied by the gateway. Local harness logout alone does not revoke the gateway's upstream refresh token or an issued JWT. Gateway workspace deprovisioning has a separate CIE/session propagation delay that must be measured. Either effective denial boundary can stop access.
 
 ## Optional isolated integration lab
 
-This exercise needs a maintainer-provided native harness build with direct MCP support, an isolated Keycloak realm, an MCP deployment with an explicit fixture binding, dedicated read-only PAN credentials, and an approved gateway route. A model-only mock can teach the protocol but does not establish PAN integration acceptance.
+This exercise needs a maintainer-provided alpha.14 candidate with native MCP, isolated test identities and CIE workspace mapping, an upstream MCP deployment with an explicit fixture binding, dedicated read-only PAN credentials, and gateway inference and MCP routes. A model-only mock can teach the protocol but does not establish PAN integration acceptance.
 
 Do not use the retired fixture from the implementation's acceptance record. Create a new fixture under an explicit test plan in the isolated environment. No commands in this curriculum mutate the production lab.
 
 | Step | Action | Required observation |
 | --- | --- | --- |
-| 1 | Request MCP without a credential | 401 and protected-resource metadata challenge |
-| 2 | Complete native PKCE login | Correct issuer/user binding and durable native-store persistence |
-| 3 | Initialize and list tools | Eight expected read tools available to the intended fixture |
+| 1 | Request the gateway MCP URL without a credential | Gateway 401 and protected-resource metadata challenge |
+| 2 | Complete native gateway OAuth with CAS/Keycloak | Correct directory identity, workspace access and native-store persistence |
+| 3 | Complete gateway-managed upstream OAuth, initialize and list tools | Correlated gateway/upstream requests and eight tools for the intended fixture |
 | 4 | Run all permitted list/detail reads | Only bound objects and projected fields returned |
 | 5 | Try wrong audience/client and missing grants | Authentication/authorization denial at expected boundary |
 | 6 | Ask the running-example question | Model-selected tool calls, preserved call IDs, grounded answer |
-| 7 | Exercise concurrent refresh | One durable generation, no successful refresh replay |
+| 7 | Exercise both token lifecycles | Native gateway-facing refresh and separately observed gateway-managed upstream refresh |
 | 8 | Remove fixture policy and reconcile | Existing unexpired token denied by all serving replicas |
 | 9 | Revoke session and remove fixture | No lingering fixture grants, credentials, or policy entries |
 
-Collect only outcomes, timestamps, correlation IDs and synthetic object labels in public evidence. Full token values and backend configuration never belong in the lab report. A CIE integration adds its own isolated SCIM/SAML/identity-resolution and deprovisioning tests; it cannot borrow the native MCP result as proof.
+Collect only outcomes, timestamps, correlation IDs and synthetic object labels in public evidence. Full token values and backend configuration never belong in the lab report. CAS/CIE identity-resolution, workspace authorization and deprovisioning are required checks for this route; direct native-to-upstream tests cannot substitute for them.
 
 ## Assessment rubric
 

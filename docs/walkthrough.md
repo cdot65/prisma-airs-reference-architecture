@@ -71,4 +71,4 @@ The scanner arrows identify where configured controls belong. Their presence in 
 
 Reading a security profile proves configuration visibility, not execution of its protections. A direct MCP probe proves upstream reachability, not gateway mediation. A model response without a tool event does not prove configuration inspection.
 
-Continue with [Implementation status and public sources](./evidence.md). The earlier direct-server labs remain historical until rewritten and accepted against this required path.
+Continue with [Implementation status and public sources](./evidence.md). The labs now exercise this required path. Their instructions are learning exercises, not completed deployment acceptance.

@@ -23,7 +23,7 @@ The initial `prisma-airs-mcp` server exposes eight configuration-read tools. It 
 
 ## Authorization is an intersection
 
-A request must pass token validation and have this resource's `invoke` role. Its effective read permission is the intersection of the issued scope, the corresponding resource role, and the server policy's permitted scopes. Access to the requested object must also be inside the subject's explicit workspace/profile binding.
+The gateway first authenticates its caller and enforces workspace/integration access. It then presents a separate upstream token. At this resource server, that request must pass token validation and have this resource's `invoke` role. Its effective read permission is the intersection of the issued scope, the corresponding resource role, and the server policy's permitted scopes. Access to the requested object must also be inside the subject's explicit workspace/profile binding.
 
 ```mermaid
 flowchart LR
@@ -49,19 +49,23 @@ For inaccessible object details, the server avoids distinguishing a foreign obje
 ```mermaid
 sequenceDiagram
     accTitle: Separate human and backend credentials
-    accDescr: The harness presents a human MCP token. The server authorizes it, obtains its own PAN service-account token when needed, reads the backend, and projects a safe result.
+    accDescr: The harness calls the gateway with its gateway token. The gateway forwards the call with its upstream user token. The resource server uses separate PAN credentials for the backend read.
     participant harness as Harness
-    participant mcp as MCP server
+    participant gateway as AI Gateway MCP listener
+    participant mcp as Upstream MCP server
     participant panAuth as PAN token endpoint
     participant panApi as PAN management API
-    harness->>mcp: Tool call with human MCP JWT
+    harness->>gateway: Tool call with gateway-facing token
+    gateway->>gateway: Authorize workspace and integration
+    gateway->>mcp: Tool call with gateway-managed upstream user JWT
     mcp->>mcp: Authorize user, action, and object
     mcp->>panAuth: Client credentials for selected backend account
     panAuth-->>mcp: Backend access token
     mcp->>panApi: Read permitted configuration using backend token
     panApi-->>mcp: Backend response
     mcp->>mcp: Validate schema and project allowed fields
-    mcp-->>harness: Bounded tool result
+    mcp-->>gateway: Bounded tool result
+    gateway-->>harness: MCP result
 ```
 
 The backend token may be cached; the sequence shows acquisition when needed. The human JWT is not forwarded to PAN management APIs. Separate service accounts support gateway reads and runtime-profile reads in each environment. Gateway IAM permissions are workspace scoped. Runtime profile inventory is tenant scoped upstream, so explicit server-side profile filtering remains necessary.

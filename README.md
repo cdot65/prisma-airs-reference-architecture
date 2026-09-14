@@ -4,7 +4,7 @@ An independent educational site explaining how Prisma AIRS Harness, Keycloak, Pr
 
 **Site:** https://cdot65.github.io/prisma-airs-reference-architecture/
 
-The course includes 15 lessons, 18 Mermaid diagrams, six tabletop labs with answer keys, an optional isolated integration lab, and an interactive authorization exercise. It distinguishes implemented native flows from the related CIE/CAS integration and the proposed Redtail provisioning extension.
+The course includes 15 lessons, 18 Mermaid diagrams, six tabletop labs with answer keys, an optional isolated integration lab, and an interactive authorization exercise. It explains the required gateway path for both inference and MCP, CAS/CIE workspace authorization, and separate gateway-managed upstream OAuth. Alpha.13 is the published direct-route baseline; alpha.14 gateway acceptance remains pending.
 
 ## Develop
 

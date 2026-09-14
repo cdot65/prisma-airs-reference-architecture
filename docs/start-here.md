@@ -14,11 +14,11 @@ Our running example is a platform engineer, Alex, asking:
 
 > Which gateway configuration can I use, and what security protections are attached to it?
 
-The answer requires more than a model. The Prisma AIRS Harness runs the conversation and tools on Alex's computer. Keycloak authenticates Alex and issues access tokens. Prisma AIRS AI Gateway controls the inference route and invokes configured AIRS content checks. The `prisma-airs-mcp` server supplies bounded, authorized configuration reads. Cloud Identity Engine supplies directory and authentication integration for participating Palo Alto services; its exact connection depends on the deployment.
+The answer requires more than a model. The Prisma AIRS Harness runs the conversation and tools on Alex's computer. Keycloak authenticates Alex and issues access tokens. Prisma AIRS AI Gateway receives both inference and MCP traffic, invokes configured inference checks, and proxies upstream MCP services. The `prisma-airs-mcp` upstream supplies bounded, authorized configuration reads. CIE Directory Sync and CAS support the gateway-facing MCP user and workspace authorization.
 
 ## What this course teaches
 
-By the end, you should be able to trace one question from login through inference and tool execution, explain why the client holds two access tokens, locate the service that makes each authorization decision, distinguish SCIM provisioning from SAML authentication, and investigate a failed request without exposing credentials.
+By the end, you should be able to trace one question from login through inference and tool execution, explain the client-held inference and gateway MCP credentials and the separate gateway-held upstream tokens, locate the service that makes each authorization decision, distinguish SCIM provisioning from SAML authentication, and investigate a failed request without exposing credentials.
 
 You need basic familiarity with HTTP, JSON, command-line applications, and containers. OAuth, OIDC, SAML, SCIM, and MCP are introduced where they enter the story. The first labs use fictional records and need no tenant or production credentials. An optional integration lab requires an isolated, licensed environment and a maintainer-provided configuration.
 
@@ -44,7 +44,7 @@ Allow roughly three hours for the reading path and another two for the tabletop 
 
 ## How to read the evidence labels
 
-**Implemented** means the reviewed harness/MCP source implements the behavior. **Recorded acceptance** means a dated deployment receipt reports a live test; it does not mean we retested it today. **Related deployment** describes the Truffles CIE/CAS integration and must not be silently attributed to the harness. **Proposed extension** describes work needed to connect the Redtail population to an equivalent CIE integration.
+**Implemented** means the reviewed harness/MCP source implements the behavior. **Recorded acceptance** means a dated deployment receipt reports a live test; it does not mean we retested it today. **Related deployment** describes the Truffles CIE/CAS integration and must not be silently attributed to the harness. **Required but unverified** identifies gateway routing, CAS/CIE workspace access or lifecycle behavior that must pass before alpha.14 acceptance. Alpha.13 is the latest published build; its direct MCP results do not satisfy that contract.
 
 All example domains, subjects, workspaces, and user records in these lessons are fictional. Example identifiers illustrate the contract; they are not runnable configuration or signed credentials. Read [Implementation status and public sources](./evidence.md) for dated findings, limits, and primary references.
 

@@ -14,7 +14,7 @@ sidebar_label: "Glossary and misconceptions"
 | Agent loop | Repeated model request, tool selection, tool execution and continuation |
 | MCP | Protocol used by the harness to discover and call the server's tools |
 | Resource server | API that validates an access token and enforces access |
-| Authorization server | Service issuing OAuth tokens; Keycloak for the native paths |
+| Authorization server | Service issuing OAuth tokens; gateway-facing MCP and upstream MCP use separate authorization contracts |
 | IdP | Identity provider authenticating the user; a role Keycloak also plays |
 | OIDC | Identity layer used to verify the authenticated user |
 | OAuth 2.0 | Framework for obtaining and presenting delegated access credentials |
@@ -49,13 +49,13 @@ sidebar_label: "Glossary and misconceptions"
 
 ## Misconceptions to retire
 
-**“Built-in MCP means the MCP server moved into the harness.”** The Codex MCP client runs inside `airs-harness`. The remote `prisma-airs-mcp` service still authenticates requests, checks object permissions and reads PAN APIs.
+**“Built-in MCP means the MCP server moved into the harness.”** The Codex MCP client runs inside `airs-harness`. The remote `prisma-airs-mcp` service remains upstream of AI Gateway. It authenticates gateway-forwarded user tokens, checks object permissions and reads PAN APIs.
 
 **“We still need the separate MCP candidate executable.”** The current integration uses the normal `airs-harness` command and its native MCP subcommands. The separate `airs-harness-mcp` candidate is historical.
 
-**“One executable means one login or token.”** Inference and MCP have distinct client registrations, audiences and credential bundles. Their access is enforced by separate services.
+**“One executable means one login or token.”** Inference and MCP have distinct client registrations, audiences and credential bundles. The gateway enforces its inference and MCP contracts; the upstream server additionally enforces the gateway-held resource token.
 
-**“The model calls PAN APIs directly.”** The model requests a function. The harness invokes MCP; MCP authorizes and performs a backend read using its own service account.
+**“The model calls PAN APIs directly.”** The model requests a function. The harness sends the MCP call to AI Gateway; the gateway proxies it to the resource server, which authorizes and performs a backend read using its own service account.
 
 **“Read-only means every user can see everything.”** Read-only limits operations. Subject bindings, scopes, roles and object checks limit the visible resources.
 
@@ -63,7 +63,7 @@ sidebar_label: "Glossary and misconceptions"
 
 **“The ID token can be sent to any API.”** The ID token establishes identity for the client. Resource APIs require the appropriate access token.
 
-**“CIE issues the harness's direct MCP token.”** Keycloak issues that token in the implemented flow. CIE provisioning and CAS authentication belong to an explicitly configured adjacent integration.
+**“CAS login also supplies the upstream MCP token.”** CAS supports gateway-facing organizational SSO. The gateway separately obtains and stores upstream OAuth tokens. CIE directory/workspace access and upstream resource grants are distinct requirements.
 
 **“Matching emails mean matching identities.”** The same email can occur under distinct issuers and subjects. Correlation requires a deliberate ownership and linking contract.
 

@@ -6,11 +6,11 @@ sidebar_label: "AI Gateway and AIRS enforcement"
 
 > **Architecture correction — September 14, 2026:** The required harness sends both inference and remote MCP traffic through Prisma AIRS AI Gateway. Earlier direct-MCP flows and their acceptance records describe a divergent implementation. They do not validate the required gateway/CAS path. Read [System architecture](./architecture.md) for the corrected contract.
 
-## The gateway controls the inference boundary
+## The gateway is the destination for both traffic paths
 
 Prisma AIRS AI Gateway sits between the harness and the model endpoint. In this implementation, the gateway validates a human inference JWT, binds the request to an allowed workspace and saved configuration, and invokes mandatory input and output AIRS checks. The model provider credential remains on the server side.
 
-The product supports SaaS and hybrid deployment models. This case study uses a hybrid data plane with centrally managed configuration. Product support for MCP proxying does not mean every MCP request in this project uses that proxy: the harness connects directly to `prisma-airs-mcp`. [Gateway product overview](https://docs.paloaltonetworks.com/ai-runtime-security/administration/configure-ai-gateway).
+The product supports SaaS and hybrid deployment models. This case study uses a hybrid data plane with centrally managed configuration. Both inference and MCP are required to use this gateway. The inference listener forwards model requests; the MCP listener authorizes the user and proxies the configured upstream service with gateway-managed OAuth. Alpha.13 used a divergent direct MCP route; alpha.14 remediation must establish the required route. [Gateway product overview](https://docs.paloaltonetworks.com/ai-runtime-security/administration/configure-ai-gateway).
 
 ## Follow a request through the policies
 
@@ -49,7 +49,7 @@ The gateway references the active profile by name in this deployment. An updated
 
 ## The tool loop crosses inference again
 
-After the MCP server returns a safe configuration summary, the harness can include that result in the next model request. That next request travels through the inference gateway. The direct MCP transport itself is not routed through the gateway scanner in this architecture. Server-side authorization, output projection, and content scanning are distinct controls.
+After the MCP server returns a safe configuration summary, the harness can include that result in the next model request. That next request travels through the inference gateway. MCP protocol traffic must also traverse the gateway MCP listener. That routing requirement alone does not prove that any particular scanner runs on each MCP message. Verify configured MCP checks and their execution separately. Gateway authorization, upstream object policy, output projection and content scanning remain distinct controls.
 
 Read-only data can still contain misleading names or descriptions. Treat tool output as data, not as a new instruction source. Content checks help evaluate inputs and outputs; they do not grant workspace access or replace local tool approval rules.
 

@@ -19,12 +19,12 @@ flowchart LR
     directorySource["Authoritative users and groups"] -->|"SCIM provisioning"| cieDirectory["CIE Directory Sync"]
     browser["User browser"] -->|"Interactive login"| idp["Keycloak IdP"]
     idp -->|"Signed SAML assertion via browser"| cas["CIE CAS"]
-    cieDirectory -->|"Identity and membership context"| consumer["Participating security service"]
+    cieDirectory -->|"Identity and membership context"| consumer["AI Gateway MCP workspace"]
     cas -->|"Authenticated identity"| consumer
     consumer -->|"Local policy decision"| outcome["Allow or deny resource access"]
 ```
 
-This is a conceptual CIE integration. It is not the harness's direct MCP token flow. For the native flow, follow [Login from browser to authorized tools](./login.md).
+CAS authentication and CIE directory/workspace resolution are prerequisites of the required gateway-facing MCP route. For the native client flow, follow [Login from browser to authorized tools](./login.md).
 
 ## What the reviewed implementation actually proves
 
@@ -33,7 +33,7 @@ There are two related pieces of source evidence:
 1. A Temporal worker reads the **older Truffles realm** through the Keycloak Admin API and writes users and groups into a CIE SCIM connector. Its source config declares a 15-minute schedule; its README records a September 3 live cutover. This is recorded evidence, not a fresh liveness check.
 2. A **Redtail CAS SAML client** was adjusted for the Truffles gateway OAuth flow. Its NameID and consumed `username` attribute were mapped to email to resolve a provisioned account. This is an identity-formatting correction, not proof of automatic account linking between realms.
 
-The inspected SCIM configuration does not target the Redtail harness realm. The direct harness/MCP source does not call CIE to issue or validate its native resource token. The curriculum therefore treats Redtail-to-CIE provisioning as an extension that needs its own evidence.
+The older worker configuration does not establish the harness population or workspace mapping. A working related CAS flow also does not establish access to the harness workspace. The required integration must verify the selected CIE directory, authentication profile, identity attribute and group-to-workspace mapping. These remain acceptance prerequisites, not optional extensions.
 
 ## Provisioning is a reconciliation process
 
@@ -74,9 +74,9 @@ The SCIM connector credential is a machine provisioning credential. It never bec
 
 An email match alone must not silently merge accounts across issuers. The operator needs a documented correlation policy, unique ownership checks, and a tested rename/deprovisioning procedure. Likewise, a successful SAML test does not prove that directory synchronization or workspace authorization succeeded. [CIE SAML authentication setup](https://docs.paloaltonetworks.com/identity/cloud-identity-engine/authenticate-users-with-the-cloud-identity-engine/set-up-a-saml-2-0-authentication-type).
 
-## Completing a Redtail extension
+## Verifying the required harness mapping
 
-Use an isolated connector and explicit ownership before adapting the worker; its reconciliation can delete destination objects absent from its source. Define the supported user/group population and identity join. Verify SCIM convergence, SAML identity resolution, workspace policy, allowed and denied users, rename behavior, and measured deprovisioning delay. Document which gateway route actually consumes CIE. Keep the existing direct MCP token contract unless a separately reviewed architecture changes it.
+Inspect the existing configured directory before deciding whether another connector is needed. If adapting a reconciliation worker, use isolated ownership: it can delete destination objects absent from its source. Verify the supported population, identity join, SAML resolution, harness workspace mapping, allowed and denied users, rename behavior and measured deprovisioning delay. A missing mapping must be repaired at this boundary; it does not authorize a direct upstream connection.
 
 **Checkpoint:** SAML login succeeds but the gateway cannot resolve Alex. Inspect the emitted identity attributes and provisioned directory record before changing the password or weakening the resource policy.
 

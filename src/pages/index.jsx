@@ -39,7 +39,7 @@ export default function Home() {
         </div>
       </section>
       <section className="container sectionSpace" aria-labelledby="components-title">
-        <div className="sectionIntro"><p className="eyebrow">Required architecture</p><h2 id="components-title">Inference and MCP both go through AI Gateway.</h2><p>The built-in Codex MCP client connects to the gateway MCP listener. The gateway proxies upstream servers and manages their OAuth. CAS and the organizational IdP support gateway-facing user login. Earlier direct-MCP lessons describe a rejected implementation and are marked accordingly.</p></div>
+        <div className="sectionIntro"><p className="eyebrow">Required architecture</p><h2 id="components-title">Inference and MCP both go through AI Gateway.</h2><p>The built-in Codex MCP client connects to the gateway MCP listener. The gateway proxies upstream servers and manages their OAuth. CAS and the organizational IdP support gateway-facing user login. Alpha.13 direct-MCP receipts are historical. The required gateway correction targets alpha.14.</p></div>
         <div className="componentGrid">{components.map(([number,title,body,slug]) =>
           <Link className="componentCard" to={`/learn/${slug}`} key={slug}><span className="componentNumber">{number}</span><h3>{title}</h3><p>{body}</p><span className="cardArrow" aria-hidden="true">↗</span></Link>
         )}</div>
@@ -56,7 +56,7 @@ export default function Home() {
           <Link to="/learn/labs"><strong>Practice with answer keys</strong><span>Audience errors, identity joins, refresh races, and revocation →</span></Link>
         </div>
       </section>
-      <section className="container evidenceStrip"><strong>Know what the evidence supports.</strong><p>The course distinguishes implemented behavior, dated acceptance, related deployments, and proposed extensions.</p><Link to="/learn/evidence">Read the status and sources →</Link></section>
+      <section className="container evidenceStrip"><strong>Know what the evidence supports.</strong><p>The course distinguishes implemented behavior, dated acceptance, related deployments, and required alpha.14 work awaiting validation.</p><Link to="/learn/evidence">Read the status and sources →</Link></section>
     </main>
   </Layout>;
 }

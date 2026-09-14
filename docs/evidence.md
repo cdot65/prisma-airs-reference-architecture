@@ -12,7 +12,7 @@ The required architecture sends both inference and MCP through AI Gateway. The p
 
 Read-only review on September 14 confirmed that the deployed gateway has an MCP listener and upstream OAuth Auto support, while the harness onboarding targets the upstream server directly. The control-plane integration list did not contain a harness MCP registration. These are remediation findings, not proof of a corrected live deployment. The source-reported machine client-credentials issue belongs to a different upstream auth mode; it cannot justify bypassing the gateway.
 
-The architecture, login and question-walkthrough lessons now describe the required path. Other lessons carry explicit correction notices while their historical examples are reconciled. Do not use the direct-server commands as deployment instructions. Required acceptance includes gateway-facing login, gateway-managed upstream OAuth, observed gateway request routing, authorization denials and both credential lifecycles.
+The architecture, login, tool flow, lifecycle, operations and lab lessons now describe the required path. Historical compatibility incidents remain labeled as direct-route evidence. Do not use the direct-server commands as deployment instructions. Required acceptance includes gateway-facing login, gateway-managed upstream OAuth, observed gateway request routing, authorization denials and both credential lifecycles.
 
 Primary product references: [SCM CAS login](https://portkey.ai/docs/product/mcp-gateway/authentication/cas), [gateway and upstream authentication](https://portkey.ai/docs/product/mcp-gateway/authentication), and [CIE workspace provisioning](https://portkey.ai/docs/product/enterprise-offering/org-management/directory-sync/cie-directory-sync).
 
@@ -25,11 +25,11 @@ The curriculum was prepared on September 14, 2026 from the implementation source
 | Harness | Runtime revision 6892b94a1, based on the published Codex 0.154 runtime | Built-in Codex MCP OAuth is retained; the gateway adapter restores callable tools |
 | MCP | Source revisions 5486021 and 158e57b with deployment record | Eight authorized read tools and bounded output projection are implemented |
 | Infrastructure | Source revision 3e23f42 and MCP receipts | GitOps, secret isolation and deployment pattern have recorded acceptance |
-| Linux and Apple Silicon | September 14 release session: native builds and Mac signing/notarization recorded; final expiry/npm upgrade acceptance still in progress | Build/signing evidence does not establish completed release acceptance or publication |
+| Linux and Apple Silicon | Alpha.13 publication receipt at 5b2f7c194 and fresh registry lookup | Alpha.13 is published as latest/alpha, with direct-route native tests, expiry cycles, npm upgrades and Mac signing; gateway/CAS acceptance remains separate |
 | Lifecycle | Historical candidate replay, logout/expiry and binding-removal records; built-in refresh-scope correction and HTTP regression test | Service and candidate results remain dated; built-in concurrency must be accepted separately |
 | CIE provisioning | SCIM worker source and September 3 cutover narrative | A related older realm had a recorded SCIM integration |
 | CAS identity mapping | Redtail Truffles mapping source and narrative | The related gateway flow required email-aligned SAML fields |
-| Redtail harness through CIE | No complete acceptance chain found | A proposed extension requiring separate validation |
+| Harness through gateway/CAS/CIE | No complete acceptance chain found | Required alpha.14 work with separate live validation |
 
 Source presence is not a fresh production health check. The initial curriculum was written from source records. Its September 14 revision incorporates separately recorded live remediation tests using a disposable identity. Those checks do not represent the owner’s personal login.
 
@@ -41,7 +41,7 @@ This release’s Windows end-to-end behavior, public Internet reachability, aler
 
 The normal executable contains the existing Codex MCP client. The remote server remains independent. Source review covered the native MCP command/configuration path, gateway tool adapter, inference session binding, OAuth callback/storage path and refresh-scope regression test. Runtime correction `6892b94a1` keeps refresh within the original grant. Release tooling through `55d13d859` also binds npm acceptance to the resolved native executable hash and checks both legacy command-link upgrade layouts.
 
-The recorded session reports 303 MCP-client, 208 scoped CLI and 221 API/provider checks passing, plus native builds and Mac signing/notarization. These are reviewed results, not tests rerun by this documentation update. At this review, the release session still lists final native expiry, npm upgrade acceptance, alpha.13 publication and fresh registry verification as pending. This curriculum update does not establish their completion. Consult a later release receipt before assuming `latest` contains the integration fixes.
+The recorded session reports 303 MCP-client, 208 scoped CLI and 221 API/provider checks passing, plus native builds and Mac signing/notarization. These are reviewed results, not tests rerun by this documentation update. The later alpha.13 publication receipt records completed direct-route native expiry, npm upgrades and publication, and a fresh registry lookup confirms alpha.13 as latest. The owner assigned the gateway correction to alpha.14. Prepared changes cover native dynamic-registration history preservation, gateway-owned upstream OAuth configuration and a release gate that rejects historical direct receipts. These staged changes do not establish a live gateway deployment or alpha.14 publication.
 
 ## Primary references
 

@@ -34,12 +34,13 @@ The sequence is a diagnostic aid, not a claim that every service uses the same e
 | Browser never opens | Native application/session | Authorization URL presentation and desktop availability |
 | Callback rejected | OAuth client | Expected state, issuer, redirect and current attempt |
 | Login succeeds but cannot save credentials | OS store | Desktop/keyring session and persistence error category |
-| MCP login requests unrelated permissions | OAuth scope selection | Explicit `airs.gateway.read,airs.profiles.read` scopes on the selected server |
-| Authorization rejects duplicate resource | Discovery/configuration | This integration discovers `resource`; remove the redundant explicit `--oauth-resource` |
+| MCP login requests unrelated permissions | OAuth scope selection | Gateway scopes from gateway discovery; upstream read scopes belong to the gateway integration |
+| Authorization rejects duplicate resource | Discovery/configuration | Check the failing OAuth leg and its discovered resource before adding an explicit override |
 | MCP works until access-token expiry | OAuth refresh | Granted scopes versus refresh request; affected RMCP added ungranted `offline_access` |
 | npm upgrade still runs an old command | Local installation | Resolved executable, npm prefix and legacy PATH symlink |
 | MCP 401 | Token validation | Intended resource audience, issuer, client, expiry, signature |
-| MCP 403 | User authorization | Invoke role, effective scope and subject policy binding |
+| Gateway MCP 403 | Gateway authorization | CAS identity, directory membership and workspace/integration access |
+| Upstream MCP 403 | Resource authorization | Human invoke/read roles, issued scopes and subject binding |
 | Generic unavailable object | Object authorization or absent object | Authorized workspace/profile context; do not enumerate foreign IDs |
 | Inference succeeds but model never calls MCP | Tool exposure/selection | Actual outbound function definitions and returned call events |
 | Direct tool call works but model call fails | Harness/gateway adapter | Namespace mapping, arguments and preserved call ID |
@@ -50,11 +51,13 @@ The sequence is a diagnostic aid, not a claim that every service uses the same e
 
 Never paste a real JWT into a public decoder or issue. A decoded payload is also untrusted until the signature and context checks pass. Capture the comparison result—such as “audience mismatched”—rather than the credential.
 
+Do not repair a failed gateway route by changing the harness destination to the upstream resource. Check the gateway integration, upstream-host allowlist and upstream OAuth callback/client configuration.
+
 ## Worked incident: tools disappear
 
-The user can obtain a model response and a direct MCP probe lists eight tools. That narrows the failure: TLS, basic inference, and basic MCP access work. Inspecting the inference request reveals tool declarations wrapped in a namespace that the gateway path drops. The model therefore has no callable functions.
+In the historical alpha.13 incident, the user could obtain a model response and a direct MCP probe listed eight tools. That narrows the failure: TLS, basic inference, and basic MCP access work. Inspecting the inference request reveals tool declarations wrapped in a namespace that the gateway path drops. The model therefore has no callable functions.
 
-The implementation repair flattens names at the gateway boundary and restores namespaced call events. Acceptance then verifies a model-selected tool call and its actual result. Adding more Keycloak roles would not repair a missing schema.
+The inference adapter repair flattens names at the gateway boundary and restores namespaced call events. This historical diagnosis does not prove that MCP transport used the gateway; alpha.14 also needs correlated gateway MCP ingress and upstream requests. Acceptance then verifies a model-selected tool call and its actual result. Adding more Keycloak roles would not repair a missing schema.
 
 ## Worked incident: login works, refresh fails
 

@@ -22,8 +22,9 @@ flowchart LR
     request --> gateway["Gateway and model"]
     gateway --> functionCall["Function name and arguments"]
     functionCall --> dispatch["Harness validates and dispatches"]
-    dispatch --> client["Built-in MCP client sends direct HTTP request"]
-    client --> mcp["Remote MCP service validates authorization"]
+    dispatch --> client["Built-in MCP client sends request to AI Gateway"]
+    client --> mcpGateway["Gateway authorizes and proxies MCP"]
+    mcpGateway --> mcp["Upstream MCP service validates authorization"]
     mcp --> result["Bounded tool result"]
     result --> request
 ```
@@ -35,11 +36,13 @@ The cycle may repeat. A list call can discover an authorized workspace ID; a lat
 | Connection | Destination | Credential presentation in this implementation |
 | --- | --- | --- |
 | Inference | Gateway Responses API | Human inference JWT in `x-portkey-api-key` |
-| Direct MCP | MCP Streamable HTTP endpoint | MCP resource JWT in `Authorization: Bearer` |
+| MCP | AI Gateway MCP integration endpoint | Gateway-facing OAuth access token |
 
-The inference header name is an implementation compatibility contract. It does not mean the value is a permanent API key. The MCP bearer token is a different token, for a different audience and native client. Use the same human account for both logins. The stock MCP client stores its OAuth credentials independently; the MCP server enforces its own subject policy.
+The inference header name is an implementation compatibility contract. It does not mean the value is a permanent API key. The gateway-facing MCP token has its own OAuth contract and is stored independently. Use the intended human account for both logins. The gateway separately obtains upstream MCP access and refresh tokens; those credentials stay at the gateway. The upstream server still enforces its own subject policy.
 
 Token bundles live in the operating system credential store. Configuration records contain nonsecret settings and binding metadata. The implementation uses Linux Secret Service and macOS Keychain; Windows is outside this release’s distribution and end-to-end acceptance scope. Native MCP storage is explicitly configured as `keyring`; the upstream `auto` mode can fall back to a credentials file. A successful Linux login does not establish macOS desktop behavior.
+
+The alpha.14 correction also covers gateway dynamic client registration. Adding a native OAuth server without an explicit client ID must preserve the existing inference environment and history. This behavior needs its own regression and installed-package checks.
 
 ## A real compatibility lesson
 

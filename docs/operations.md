@@ -21,7 +21,8 @@ flowchart LR
     registry -->|"Pull immutable image"| deployment
     conjur["Conjur"] -->|"Namespace-authorized secret reads"| eso["External Secrets Operator"]
     eso -->|"Runtime secret material"| deployment
-    ingress["HTTPS ingress"] -->|"MCP and metadata paths"| deployment
+    gateway["AI Gateway MCP listener"] -->|"Upstream OAuth and MCP"| ingress["Upstream HTTPS ingress"]
+    ingress -->|"MCP and metadata paths"| deployment
     prometheus["Prometheus"] -->|"Internal scrape"| deployment
 ```
 
@@ -46,21 +47,22 @@ flowchart LR
     accTitle: Layers of acceptance evidence
     accDescr: Process health is followed by configuration readiness, OAuth resource access, authorized backend reads, model-selected tool workflows, and lifecycle checks.
     process["Process is alive"] --> config["Configuration is ready"]
-    config --> oauth["Valid token reaches resource"]
-    oauth --> tool["Authorized backend read succeeds"]
+    config --> oauth["CAS login and gateway workspace access"]
+    oauth --> upstream["Gateway upstream OAuth and correlated MCP requests"]
+    upstream --> tool["Authorized backend read succeeds"]
     tool --> agent["Model selects and completes tool workflow"]
     agent --> lifecycle["Refresh and revocation behave correctly"]
 ```
 
 Each step answers a stronger question. A green readiness probe does not establish backend authorization. A successful direct `tools/call` does not establish that the model sees the tool schema. Successful metrics scraping does not establish alert notification delivery.
 
-Historical service acceptance includes all eight tools, authorization negatives, native Linux and Apple Silicon candidate login/tool cycles, rotating refresh concurrency, a 30-minute production soak, namespace secret isolation, and a development recovery exercise. The candidate used the superseded helper path; its client results cannot establish the built-in client's lifecycle behavior. It does not establish Windows direct MCP acceptance, public Internet reachability, or alert receiver delivery.
+Historical service acceptance includes all eight tools, authorization negatives, native Linux and Apple Silicon candidate login/tool cycles, rotating refresh concurrency, a 30-minute production soak, namespace secret isolation, and a development recovery exercise. The candidate used the superseded helper path; its client results cannot establish the built-in client's lifecycle behavior. It does not establish the required gateway/CAS route, Windows MCP acceptance, public Internet reachability, or alert receiver delivery.
 
 ## Deliver the client integration separately
 
 The built-in MCP client ships in the normal `airs-harness` npm distribution for Linux x64 and Apple Silicon. The remote MCP server continues to use its own image and GitOps rollout. Updating the client does not embed or redeploy that service.
 
-The reviewed alpha.13 release work requires native OAuth/tool workflows, two real expiry intervals with concurrent fresh processes, npm installation and in-place upgrade checks, and matching native executable hashes. Mac signing and notarization are separate evidence. An old manual command symlink can shadow an npm upgrade, so acceptance must resolve the executable that actually runs. See [Implementation status and public sources](./evidence.md) for outstanding release gates.
+Alpha.13 is published with direct-route receipts. Alpha.14 gateway acceptance requires native OAuth/tool workflows, two real expiry intervals with concurrent fresh processes, npm installation and in-place upgrade checks, and matching native executable hashes. Correlate native calls with gateway ingress and upstream requests, and exercise both OAuth token lifecycles. Mac signing and notarization are separate evidence. An old manual command symlink can shadow an npm upgrade, so acceptance must resolve the executable that actually runs. See [Implementation status and public sources](./evidence.md) for outstanding release gates.
 
 ## Recovery should restore an understood state
 
