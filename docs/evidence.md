@@ -27,7 +27,7 @@ The curriculum was prepared on September 14, 2026 from the implementation source
 | Infrastructure | Source revision 3e23f42 and MCP receipts | GitOps, secret isolation and deployment pattern have recorded acceptance |
 | Linux and Apple Silicon | Alpha.13 publication receipt at 5b2f7c194 and fresh registry lookup | Alpha.13 is published as latest/alpha, with direct-route native tests, expiry cycles, npm upgrades and Mac signing; gateway/CAS acceptance remains separate |
 | Lifecycle | Historical candidate replay, logout/expiry and binding-removal records; built-in refresh-scope correction and HTTP regression test | Service and candidate results remain dated; built-in concurrency must be accepted separately |
-| CIE provisioning | SCIM worker source and September 3 cutover narrative | A related older realm had a recorded SCIM integration |
+| CIE provisioning | Initial source review plus September 14 live Redtail worker and directory readback | The intended user and MCP group exist in CIE; the owner added the harness workspace mapping and confirmed its member in SCM |
 | CAS identity mapping | Redtail Truffles mapping source and narrative | The related gateway flow required email-aligned SAML fields |
 | Harness through gateway/CAS/CIE | No complete acceptance chain found | Required alpha.14 work with separate live validation |
 
@@ -41,7 +41,7 @@ This release’s Windows end-to-end behavior, public Internet reachability, aler
 
 The normal executable contains the existing Codex MCP client. The remote server remains independent. Source review covered the native MCP command/configuration path, gateway tool adapter, inference session binding, OAuth callback/storage path and refresh-scope regression test. Runtime correction `6892b94a1` keeps refresh within the original grant. Release tooling through `55d13d859` also binds npm acceptance to the resolved native executable hash and checks both legacy command-link upgrade layouts.
 
-The recorded session reports 303 MCP-client, 208 scoped CLI and 221 API/provider checks passing, plus native builds and Mac signing/notarization. These are reviewed results, not tests rerun by this documentation update. The later alpha.13 publication receipt records completed direct-route native expiry, npm upgrades and publication, and a fresh registry lookup confirms alpha.13 as latest. The owner assigned the gateway correction to alpha.14. Prepared changes cover native dynamic-registration history preservation, gateway-owned upstream OAuth configuration and a release gate that rejects historical direct receipts. These staged changes do not establish a live gateway deployment or alpha.14 publication.
+The recorded session reports 303 MCP-client, 208 scoped CLI and 221 API/provider checks passing, plus native builds and Mac signing/notarization. These are reviewed results, not tests rerun by this documentation update. The later alpha.13 publication receipt records completed direct-route native expiry, npm upgrades and publication, and a fresh registry lookup confirms alpha.13 as latest. The owner assigned the gateway correction to alpha.14. Prepared changes cover native dynamic-registration history preservation, gateway-owned upstream OAuth configuration and a release gate that rejects historical direct receipts. The subsequent authorized rollout provisioned both gateway integrations and upstream clients, updated the gateway host allowlist, and cut over the development resource server. The owner repaired the CIE workspace mapping after browser access was denied. Production resource-server cutover, successful gateway tool/refresh acceptance and alpha.14 publication remain pending.
 
 ## Primary references
 
@@ -69,3 +69,8 @@ References were consulted on September 14, 2026. Recheck versioned protocol and 
 Change the explanation and its diagram together. Record the source revision or dated observation, state what passed and what remains untested, and update related labs if the permission contract changes. An extension graduates to “recorded acceptance” only after its own positive and negative checks.
 
 If an upstream product changes its tool or authentication behavior, keep the older observation dated and explain the new result. Do not silently turn a historical workaround into permanent protocol advice.
+
+
+## Alpha.14 rollout checkpoint
+
+The initial frozen remediation source compiled and passed 44 native tests per platform, with two platform-specific skips, plus Mac Keychain checks. Packaging exposed a native/npm version mismatch before publication. Source `6195ca83e` corrects the executable version to alpha.14 and adds a packaging rejection for mismatched versions; eleven packaging tests and eight targeted Rust tests pass. Both release binaries are rebuilding from that corrected source. Earlier version-mismatched binaries do not qualify as alpha.14 release evidence.

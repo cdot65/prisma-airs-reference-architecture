@@ -28,12 +28,11 @@ CAS authentication and CIE directory/workspace resolution are prerequisites of t
 
 ## What the reviewed implementation actually proves
 
-There are two related pieces of source evidence:
+The initial source review found an older Truffles SCIM worker and a Redtail CAS SAML email-mapping correction for another workspace. That source alone did not establish the harness population. A later September 14 live inspection found two Redtail reconciliation deployments and verified the intended harness user and MCP group in their CIE directories.
 
-1. A Temporal worker reads the **older Truffles realm** through the Keycloak Admin API and writes users and groups into a CIE SCIM connector. Its source config declares a 15-minute schedule; its README records a September 3 live cutover. This is recorded evidence, not a fresh liveness check.
-2. A **Redtail CAS SAML client** was adjusted for the Truffles gateway OAuth flow. Its NameID and consumed `username` attribute were mapped to email to resolve a provisioned account. This is an identity-formatting correction, not proof of automatic account linking between realms.
+The owner's native gateway login then returned `access_denied` with “User does not have access to this workspace.” Changing to the gateway-supplied connection URL produced the same denial. The owner added the existing MCP group's mapping to the harness workspace, ran Full Sync and confirmed the user in the workspace Members tab. This establishes the operator-reported provisioning repair; successful gateway OAuth, upstream OAuth and tool calls still require separate evidence.
 
-The older worker configuration does not establish the harness population or workspace mapping. A working related CAS flow also does not establish access to the harness workspace. The required integration must verify the selected CIE directory, authentication profile, identity attribute and group-to-workspace mapping. These remain acceptance prerequisites, not optional extensions.
+The lesson is concrete: an identity can exist in Keycloak and CIE, belong to the correct source group, and authenticate through CAS while still lacking a gateway workspace assignment. Keep the connected directory and existing mappings; add the intended group-to-workspace mapping instead of granting a broad administrator role or changing the upstream MCP policy. The SDK's general workspace-detail `users` field remained empty after the operator saw the member in SCM, so that field is not a reliable directory-membership check in this deployment.
 
 ## Provisioning is a reconciliation process
 

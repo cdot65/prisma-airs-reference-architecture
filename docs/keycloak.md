@@ -60,7 +60,7 @@ flowchart LR
     upstreamToken --> server["prisma-airs-mcp"]
 ```
 
-A browser SSO session may avoid a second password prompt. It does not make the issued access tokens interchangeable. The native harness is a public OAuth client and uses PKCE. The gateway upstream integration has a separate confidential client whose secret stays server-side. The proposed alpha.14 upstream registration uses authorization code with PKCE S256 and disables service-account, password and implicit grants.
+A browser SSO session may avoid a second password prompt. It does not make the issued access tokens interchangeable. The native harness is a public OAuth client and uses PKCE. The gateway upstream integration has a separate confidential client whose secret stays server-side. The provisioned alpha.14 upstream registration uses authorization code with PKCE S256 and disables service-account, password and implicit grants.
 
 An **ID token** lets the client verify the authenticated identity. An **access token** authorizes access at a resource server. A **refresh token** is presented to the authorization server to obtain a new token generation. Send each artifact only to its intended receiver. The separate PAN backend token described in [Read-only MCP authorization](./mcp.md) represents a server-side service account.
 
@@ -71,3 +71,6 @@ Keycloak groups can grant resource-client roles. Client scope mappings control w
 **Checkpoint:** a signed token has the correct issuer but the inference audience. Should MCP accept it because Alex is a legitimate user? **No.** It was issued for another resource.
 
 Protocol background: [Keycloak OIDC endpoints](https://www.keycloak.org/securing-apps/oidc-layers). Native-client rationale: [RFC 8252](https://www.rfc-editor.org/info/rfc8252/). Implementation-specific checks are documented in [Implementation status and public sources](./evidence.md).
+
+
+September 14 runtime inspection of gateway 2.22.0 found opaque gateway-facing MCP access tokens with a 3600-second lifetime. The upstream Keycloak access token has a separate 300-second lifetime. These are deployment observations, not OAuth defaults. A Keycloak browser login does not imply that the gateway returns a JWT to the native MCP client; do not decode or exchange the two credential types as if they were interchangeable.
