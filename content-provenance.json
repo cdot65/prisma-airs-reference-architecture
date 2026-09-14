@@ -2,8 +2,8 @@
   {
     "slug": "start-here",
     "noteId": "285d579c-10cf-4695-a130-7e264c7e34ed",
-    "sourceSha256": "3032f1ab2be30bcb1d245e92a7ba015300cc7be2c5cd4e1fc41fe9b5ff12cadf",
-    "publishedSha256": "28db899c2b71db4a09f983c6c48074fb142f1bce90b5a120469576d91eeda844"
+    "sourceSha256": "d9e773c95c57b0e20d6157fd78be1311d5d568fe3348b499a9d4ee7968d0d144",
+    "publishedSha256": "c9eb624ecfdc4c9cda07022e5c582c17aaab259a34e371f07a50f29dbffde19b"
   },
   {
     "slug": "architecture",
@@ -62,8 +62,8 @@
   {
     "slug": "operations",
     "noteId": "1fe82b1c-35b8-41f4-b2f8-3ee0f07abb39",
-    "sourceSha256": "e0d643c3ce792c6d86aab06fff60432c3494d52064fdcec1ced5e7d18630d735",
-    "publishedSha256": "589b2c384cb34f1baea1a195b498ec58318bbe130125b410bda99789d08b8256"
+    "sourceSha256": "0da6501932175da0a7511dd82ad47d1ea71b4e50c0c43eeaaaceacc7f9d32485",
+    "publishedSha256": "63706f69ad0e9af1a32635057dd4b78da5bffbc02ea8503fcb5f315ccddcee60"
   },
   {
     "slug": "troubleshooting",
@@ -86,7 +86,7 @@
   {
     "slug": "evidence",
     "noteId": "ae0c3bd4-47f4-4e32-afb8-687521faeba8",
-    "sourceSha256": "acc419a07b2c98a8f4337d5f7cdc30042a2a5e897fce4c38cba23b8df2116267",
-    "publishedSha256": "ec6aa5b50d79eb9f78de56878d701ab521fb6974a984d39e47f08e640245c922"
+    "sourceSha256": "7809f5844c752b7a56eb2fe663edf1ca2fba96c04960fde9ff54cdd936f1d72f",
+    "publishedSha256": "10c5be3874cbfe9c08b6043682a7686aef1cd0717befbb0f78c66559ab649a59"
   }
 ]
