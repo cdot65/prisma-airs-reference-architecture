@@ -37,7 +37,7 @@ sequenceDiagram
     gateway-->>harness: Permitted function call
     harness->>harness: Restore namespace and apply local dispatch policy
     harness->>gateway: MCP tools/call with gateway MCP credential
-    gateway->>gateway: Authorize integration and tool; record request
+    gateway->>gateway: Authorize integration and tool, then record request
     gateway->>scanner: Configured MCP request checks
     scanner-->>gateway: Verdict
     gateway->>upstream: Proxy tool call using upstream credential
