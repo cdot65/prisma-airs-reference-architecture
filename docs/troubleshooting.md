@@ -57,6 +57,8 @@ Do not repair a failed gateway route by changing the harness destination to the 
 
 The adapter retries an authorized read once after refreshing a cached service token rejected with HTTP 401. It does not retry HTTP 403 or 404. A production diagnostic observed a 403 while the token still had 890 seconds remaining, followed by a successful read. Preserve its request correlation and investigate the denial; a fresh human login or broader service permissions is not an established repair.
 
+An explicit `x-opa-decision: false` is a backend policy denial. Check the service account's tenant, custom role and workspace scope alongside the request's tenant context. The SDK supplies the configured tenant in `x-tsg-id`; a matching header identifies context and does not grant access. Keep this backend decision separate from gateway CAS membership and the upstream human MCP binding.
+
 A completed gateway-facing login can coexist with an expired gateway-held upstream refresh grant. In one observed startup failure, Keycloak reported `Token is not active` when the gateway attempted upstream refresh. A fresh gateway/upstream consent flow restored tool access. Check both OAuth legs before attributing such a failure to the native credential store.
 
 ## Browser callbacks when the harness runs remotely
