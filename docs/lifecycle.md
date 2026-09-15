@@ -26,6 +26,7 @@ sequenceDiagram
     participant gateway as Gateway OAuth token endpoint
     first->>store: Acquire refresh lock and read current generation
     second->>store: Wait for same binding lock
+    first->>store: Record durable refresh intent
     first->>gateway: Refresh gateway-facing MCP access
     gateway-->>first: New gateway token generation
     first->>store: Commit new generation before token use
@@ -34,19 +35,20 @@ sequenceDiagram
     store-->>second: Already refreshed token bundle
 ```
 
-If gateway-facing refresh succeeded but local persistence failed, the old refresh token may already be consumed. Do not assume a lost successful refresh can safely be replayed. The inference store has a durable pending-state mechanism; the separate Codex MCP implementation must be evaluated on its own behavior. Login is the recovery path when the saved refresh credential is rejected.
+If gateway-facing refresh succeeded but local persistence failed, the old refresh token may already be consumed. The alpha.15 candidate records durable intent before either human credential exchange. It saves the returned generation before using it, and storage retries reuse that returned generation. A lost or uncertain exchange requires sign-in rather than replaying a potentially consumed refresh token. The inference and native MCP stores implement this contract separately.
 
-This state chart describes the harness inference store. It must not be read as a claim that the stock MCP store has the same durable pending-state mechanism.
+This state chart describes the alpha.15 candidate's credential lifecycle. Restoring an active credential does not by itself restore permission to continue an old conversation: inference verifies identity continuity, while a fresh gateway MCP login requires a new conversation.
 
 ```mermaid
 stateDiagram-v2
-    accTitle: Inference credential lifecycle states
+    accTitle: Candidate human credential lifecycle states
     accDescr: A verified login activates credentials. Refresh enters a durable pending state. A successful commit returns to active; ambiguous interruption requires login. Local logout removes the saved session.
     [*] --> SignedOut
     SignedOut --> Active: Browser login and durable commit
     Active --> RefreshPending: Lock and record intent
     RefreshPending --> Active: Commit new generation
     RefreshPending --> LoginRequired: Interrupted or ambiguous refresh
+    RefreshPending --> SignedOut: Logout wins over late completion
     Active --> LoginRequired: Refresh rejected or identity mismatch
     Active --> SignedOut: Local logout
     LoginRequired --> Active: New verified browser login
