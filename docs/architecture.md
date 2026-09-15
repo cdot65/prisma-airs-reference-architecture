@@ -4,71 +4,71 @@ title: "System architecture"
 sidebar_label: "System architecture"
 ---
 
-## Both paths traverse AI Gateway
+## Two paths through AI Gateway
 
-Prisma AIRS Harness must use Prisma AIRS AI Gateway as the destination for both inference and remote MCP traffic. Its built-in Codex MCP client connects to the gateway's MCP listener. The gateway connects to upstream MCP servers. A direct connection from the harness to an upstream server does not meet this contract.
+The architecture is easier to hold as two request paths than as a list of products, so start with the path Alex's question takes. Prisma AIRS Harness sends both inference and remote MCP traffic to Prisma AIRS AI Gateway. The harness contains the agent and the native MCP client, so both paths originate on Alex's workstation. The gateway connects to the model on one path and to **mcp server 1** on the other.
 
-The gateway has separate inference and MCP listeners. Its development and production MCP integrations proxy the read-only Prisma AIRS MCP service. Both upstream deployments accept only their dedicated gateway OAuth client. The service remains a remote application; no secondary local MCP executable is required. Exact package and lifecycle acceptance is tracked in [Implementation status and public sources](./evidence.md).
+mcp server 1 is a separately deployed service. Its tools calculate, format, transform, encode, hash, generate identifiers and report time, and they execute on that server without downstream API calls. The word "local" in this course describes where those operations run: on the MCP server, not on the user's laptop.
 
 ```mermaid
 flowchart LR
-    accTitle: Inference and MCP both traverse AI Gateway
-    accDescr: Inside airs-harness, the agent sends inference to the gateway inference listener and the native MCP client sends tool calls to the gateway MCP proxy. Only the gateway connects to upstream models and MCP servers. The gateway owns upstream MCP OAuth.
+    accTitle: Inference and local utility execution through AI Gateway
+    accDescr: The harness sends inference to the gateway model listener and MCP to its proxy listener. The gateway calls an upstream model or mcp server 1. Utility execution ends on mcp server 1 and results return through the gateway.
     subgraph workstation ["User workstation"]
-        user["Alex"]
-        subgraph harness ["airs-harness"]
-            agent["Codex agent"]
-            client["Native MCP client"]
-        end
-        user --> agent
-        agent <-->|"Tool dispatch and results"| client
+        user["Alex"] --> agent["Harness agent"]
+        agent <-->|"Tool dispatch and results"| client["Native MCP client"]
     end
     subgraph gateway ["Prisma AIRS AI Gateway"]
         inference["Inference listener"]
-        mcp["MCP proxy listener"]
+        proxy["MCP proxy listener"]
     end
     model["Upstream model"]
-    upstream["Upstream MCP servers"]
-    agent -->|"Inference credential"| inference
-    client -->|"Gateway MCP token"| mcp
-    inference <-->|"Model requests and responses"| model
-    mcp <-->|"Gateway-owned upstream OAuth"| upstream
+    subgraph server ["mcp server 1"]
+        auth["Validate user token and utility grant"]
+        utilities["Compute utility result locally"]
+        auth --> utilities
+    end
+    agent <-->|"Inference requests and responses"| inference
+    inference <--> model
+    client <-->|"Gateway MCP credential and MCP messages"| proxy
+    proxy <-->|"Gateway-held upstream user token"| auth
 ```
 
-Inference and MCP may use different hostnames or ports belonging to the same gateway deployment. Sharing the gateway does not require sharing a token: each listener validates the credential and permissions configured for that resource. Workspace API authentication is an alternative inference mode; a workspace API key is not a Keycloak JWT.
+Read the diagram as one cycle. The model proposes a tool call in its inference response. The harness does not execute that proposal itself; it sends the call to the gateway MCP endpoint. The gateway authenticates the caller and proxies the request to mcp server 1. The server then checks its own authorization contract, validates the arguments and performs the operation. Results return through the gateway to the harness, where they can enter the next inference request. A single question can therefore cross the gateway several times, and each crossing is a separate authorization decision.
 
-The model proposes a tool call through the inference path. The harness dispatches the actual MCP call to the gateway MCP listener. The gateway applies its MCP controls and proxies to the registered upstream. Results return through the gateway to the harness and enter the next inference request. The tool-schema compatibility adapter affects inference serialization; it does not proxy MCP traffic.
+The two listeners may have different hostnames. Both belong to the gateway deployment, but each has its own credential contract, which is the reason to keep them apart in your model. A workspace API key, for example, is an alternative inference credential. It is not the user's MCP OAuth credential and would authorize nothing on the MCP path.
 
-## Authentication has two legs
+## Identity remains part of the architecture
 
-| Leg | Responsibility | Credential location |
-| --- | --- | --- |
-| Harness → AI Gateway | Authenticate and authorize the human for gateway resources | Harness native store holds gateway-facing credentials |
-| AI Gateway → upstream MCP | Complete the configured upstream OAuth flow and renew upstream tokens | Gateway-managed upstream credential storage |
-
-The vendor calls CAS the gateway-facing OAuth authentication method in SCM deployments. CAS federates to the organization's IdP and resolves a provisioned user. Separately, the gateway's upstream OAuth integration handles consent and tokens for an external MCP server. These are both part of the gateway-mediated experience; they must not be collapsed into a direct harness login to the upstream server. See [OAuth in SCM](https://portkey.ai/docs/product/mcp-gateway/authentication/cas) and [MCP authentication layers](https://portkey.ai/docs/product/mcp-gateway/authentication).
-
-## CIE and CAS are part of the required login design
+A calculator is still an authenticated service in this system, and the identity chain behind it has more than one link. CIE directory membership and CAS login determine whether Alex can reach the gateway at all. Reaching the gateway does not by itself produce the token that mcp server 1 accepts; the gateway obtains that user token separately.
 
 ```mermaid
 flowchart LR
-    accTitle: CIE provisioning and CAS gateway login prerequisites
-    accDescr: Directory identities and groups are provisioned into gateway workspaces through CIE. CAS federates user authentication to Keycloak. Both feed the gateway's user resolution and MCP access decision.
-    identity["Organizational identities and groups"] --> directory["CIE directory"]
-    directory --> mapping["Group-to-gateway-workspace mapping"]
-    mapping --> gateway["AI Gateway MCP user resolution and authorization"]
-    user["User browser"] --> cas["CAS login"]
-    cas <--> keycloak["Keycloak federation"]
+    accTitle: Identity, workspace membership and upstream utility access
+    accDescr: CIE supplies directory and workspace membership while CAS federates browser authentication to Keycloak. The gateway uses its registered upstream OAuth client to obtain a user token for mcp server 1. The server retrieves trusted signing keys for JWT verification.
+    directory["Users and groups"] --> cie["CIE Directory Sync"]
+    cie --> workspace["Gateway workspace membership"]
+    browser["User browser"] <--> cas["CAS"]
+    cas <--> keycloak["Keycloak"]
+    workspace --> gateway["AI Gateway access decision"]
     cas --> gateway
-    gateway --> consent["Consent for registered MCP access"]
+    gateway <-->|"Upstream OAuth for this user"| keycloak
+    gateway -->|"Proxied MCP with upstream access token"| server["mcp server 1"]
+    keycloak -.->|"Public signing keys for verification"| server
 ```
 
-This is a required integration dependency for the CAS route. Existing records about another realm or workspace do not prove this harness workspace is provisioned correctly. Verify the selected directory, authentication profile, identity attribute and workspace membership against the deployed gateway. [CIE Directory Sync](https://portkey.ai/docs/product/enterprise-offering/org-management/directory-sync/cie-directory-sync).
+Tool execution needs no management API or service-account token, so there is no downstream credential to protect on that side. Authentication is a different matter: verifying a signed token can still require DNS and retrieval of the issuer's public signing keys. Those requests support identity verification, not a tool's calculation, and keeping the two apart is what lets you say precisely what "no downstream API" means.
 
-## Three independently delivered components
+## Component ownership
 
-The `airs-harness` package contains the agent, native MCP client and inference tool adapter. The AI Gateway deployment owns proxy routing and upstream OAuth integration. The `prisma-airs-mcp` deployment owns read tools, human resource authorization and backend service credentials. Updating one component does not automatically deploy the other two.
+| Component | Owns |
+| --- | --- |
+| Harness | Conversation, local tools, inference requests, native MCP client and native credential storage |
+| Keycloak | Organizational authentication, inference tokens and upstream MCP user tokens |
+| CIE and CAS | Directory context, federation and the gateway-facing identity join |
+| AI Gateway | Inference routing and checks, MCP proxy access, upstream OAuth credentials |
+| mcp server 1 | Utility authorization, input validation and local execution |
 
-The earlier alpha.13 direct-server onboarding is superseded. Acceptance observes the harness talking to the gateway MCP listener, the gateway contacting the upstream, successful authorized reads, gateway rejection of invalid credentials, and separate credential lifecycle behavior. A direct read or a scan on a later inference request is insufficient.
+Ownership also sets the release boundaries. Updating the harness does not deploy mcp server 1, and updating the server's tool list does not change where the harness sends MCP traffic. Each component has its own delivery and validation evidence, so a passing check on one says nothing about the others.
 
-Continue with [Login from browser to authorized tools](./login.md) and [Implementation status and public sources](./evidence.md).
+Continue with [Login](./login.md), [MCP utility tools and authorization](./mcp.md) and [Implementation status](./evidence.md).

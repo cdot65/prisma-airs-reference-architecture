@@ -4,68 +4,67 @@ title: "Deployment and operations"
 sidebar_label: "Deployment and operations"
 ---
 
-## Deliver a service without mixing identities
+## Deliver the client, gateway and server separately
 
-The MCP deployment separates the identity that builds an image, the identity that retrieves runtime secrets, the service accounts that call PAN APIs, and the human identity making an MCP request. Each exists for a different boundary.
-
-```mermaid
-flowchart LR
-    accTitle: MCP delivery and runtime separation
-    accDescr: CI publishes an immutable image, Argo reconciles deployments, Conjur and External Secrets supply namespace-authorized secrets, ingress routes public requests, and Prometheus scrapes internal metrics.
-    source["Reviewed MCP source"] --> ci["Dedicated CI runner"]
-    ci -->|"Build, scan and publish"| registry["Private image registry"]
-    declaration["GitOps declarations"] --> argo["Argo CD"]
-    argo -->|"Reconcile image and policy"| deployment["MCP deployment"]
-    registry -->|"Pull immutable image"| deployment
-    conjur["Conjur"] -->|"Namespace-authorized secret reads"| eso["External Secrets Operator"]
-    eso -->|"Runtime secret material"| deployment
-    gateway["AI Gateway MCP listener"] -->|"Upstream OAuth and MCP"| ingress["Upstream HTTPS ingress"]
-    ingress -->|"MCP and metadata paths"| deployment
-    prometheus["Prometheus"] -->|"Internal scrape"| deployment
-```
-
-This diagram describes the recorded deployment pattern. The educational GitHub Pages site is a separate static publication with no connection to these runtime secrets. A reader should be able to explore the curriculum without authenticating to the lab infrastructure.
-
-## Three kinds of configuration
-
-| Kind | Example | Delivery |
-| --- | --- | --- |
-| Public trust/configuration | Issuer URL, resource URL, allowed client IDs | Deployment configuration |
-| Authorization policy | Subject-to-workspace/profile bindings | Versioned policy with rollout |
-| Secret | Backend client secret or cursor signing key | Secret manager and namespace-specific retrieval |
-
-The reviewed service loads its policy at startup. A policy update must reach all replicas before the change is effective everywhere. Hashed policy ConfigMaps help trigger a workload rollout. A Git commit is desired state; the running replicas and a negative authorization probe establish applied state.
-
-Development has one ready replica and production two after the September 14 gateway OAuth cutover. Both configurations accept only their own gateway upstream client. Changing the static client-allowlist ConfigMap also requires a pod-template change or equivalent managed rollout; an updated ConfigMap alone does not restart an existing process. The server uses a nonroot process, a read-only filesystem, network restrictions, and no mounted Kubernetes API token. Public ingress exposes MCP and metadata paths; health, readiness, and metrics remain internal.
-
-## Health is layered evidence
+One request from Alex crosses three separately delivered systems. The harness is distributed as a native npm package for Linux x64 and Apple Silicon. AI Gateway and mcp server 1 are separate deployments with their own pipelines. The user experiences one answer, but the release boundaries stay separate even when a single request crosses all three. Treating them as one is how a passing check on one component gets mistaken for acceptance of the whole path.
 
 ```mermaid
 flowchart LR
-    accTitle: Layers of acceptance evidence
-    accDescr: Process health is followed by configuration readiness, OAuth resource access, authorized backend reads, model-selected tool workflows, and lifecycle checks.
-    process["Process is alive"] --> config["Configuration is ready"]
-    config --> oauth["CAS login and gateway workspace access"]
-    oauth --> upstream["Gateway upstream OAuth and correlated MCP requests"]
-    upstream --> tool["Authorized backend read succeeds"]
-    tool --> agent["Model selects and completes tool workflow"]
-    agent --> lifecycle["Refresh and revocation behave correctly"]
+    accTitle: Independent client and MCP server delivery
+    accDescr: Harness source is built into Linux and signed Apple Silicon packages in the package registry. MCP source is built into an immutable container image, and GitOps reconciles mcp server 1. The gateway integration routes user traffic to that service.
+    clientSource["Harness source"] --> native["Native build and package checks"]
+    native --> npm["Private npm registry"]
+    npm --> workstation["User workstation"]
+    serverSource["Utility server source"] --> image["Built and scanned container image"]
+    image --> registry["Private image registry"]
+    declarations["Image pin and authorization policy"] --> argo["Argo CD"]
+    registry --> server["mcp server 1"]
+    argo --> server
+    workstation --> gateway["AI Gateway"]
+    gateway --> server
 ```
 
-Each step answers a stronger question. A green readiness probe does not establish backend authorization. A successful direct `tools/call` does not establish that the model sees the tool schema. Successful metrics scraping does not establish alert notification delivery.
+The diagram also shows which secrets live where. mcp server 1 does not need a management-API service account for its utility functions, because the tools compute locally. The deployment still needs its issuer, resource audience, allowed gateway client and subject policy, since authorization does not disappear just because the work is local. Registry delivery credentials and the gateway's upstream OAuth client secret serve different purposes and stay with their respective components.
 
-Historical service acceptance includes all eight tools, authorization negatives, native Linux and Apple Silicon candidate login/tool cycles, rotating refresh concurrency, a 30-minute production soak, namespace secret isolation, and a development recovery exercise. The candidate used the superseded helper path; its client results cannot establish the built-in client's lifecycle behavior. It does not establish the required gateway/CAS route, Windows MCP acceptance, public Internet reachability, or alert receiver delivery.
+## Separate health from successful use
 
-## Deliver the client integration separately
+"The process is up" and "the feature works" are different statements. In this system there are four such statements stacked on top of each other, and each one is a separate observation.
 
-The built-in MCP client ships in the normal `airs-harness` npm distribution for Linux x64 and Apple Silicon. The remote MCP server continues to use its own image and GitOps rollout. Updating the client does not embed or redeploy that service.
+```mermaid
+flowchart LR
+    accTitle: Operational checks for the local utility server
+    accDescr: Process health, configured readiness, authorization and a completed utility call are separate observations. The server may obtain public signing keys from Keycloak; execution of its utilities stays inside the server.
+    process["Process responds at healthz"] --> config["Issuer, client allowlist and policy configured"]
+    config --> auth["User token and utility grants accepted"]
+    auth --> tool["Actual calculate result equals 84"]
+    idp["Trusted issuer public keys"] -.-> auth
+    tool --> evidence["Correlate harness, gateway and server result"]
+```
 
-Alpha.14 is published with gateway workflow evidence and an explicit exception for hourly frontend refresh. The standard full gateway acceptance contract requires native OAuth/tool workflows, two real expiry intervals with concurrent fresh processes, npm installation and in-place upgrade checks, and matching native executable hashes. Correlate native calls with gateway ingress and upstream requests, and exercise both OAuth token lifecycles. Mac signing and notarization are separate evidence. An old manual command symlink can shadow an npm upgrade, so acceptance must resolve the executable that actually runs. Both platform builds, installed native tests and npm upgrade checks have passed; production browser login and all eight tools now pass on both installed packages. The owner authorized release without repeating the timed run after the initial silent wait exceeded Keycloak’s 30-minute refresh-grant idle limit. Hourly frontend refresh remains unverified; gateway-held upstream renewal was observed. See [Implementation status and public sources](./evidence.md) for the release gates.
+`healthz` proves the process responds. `readyz` reports whether the required client allowlist and subject bindings are configured; it is not a live OAuth or tool test, so a ready server can still deny every real user. A successful native login proves the OAuth leg but not the tool path, so it must be followed by tool discovery and a completed tool call before you can say the utility path works.
 
-## Recovery should restore an understood state
+Useful telemetry includes authorization-rejection categories, tool name, outcome, duration, request ID and serving image revision, because together they tell you which observation failed and on which build. Keep arguments, credentials and private conversation content out of public incident records.
 
-Pin images by accepted digest. For a bad rollout, restore the known accepted digest and verify serving replicas before checking the user path. For missing runtime secrets, inspect the ExternalSecret's source identity and reconciliation result without printing the secret. For an authorization regression, compare the active policy version and token generation.
+## Validate a release at the right boundary
 
-The recorded development recovery intentionally broke an image pull, restored the accepted image, and verified recreation of a deleted development secret. That does not mean every disaster-recovery scenario or backup restoration was exercised.
+The same logic applies to release validation. Each check below establishes one thing, and none of them establishes the row beneath it.
 
-The optional integration lab in [Labs and answer keys](./labs.md) collects sanitized outcome evidence. See [Implementation status and public sources](./evidence.md) for the public evidence summary; detailed operational receipts remain outside this publication.
+| Check | What it establishes |
+| --- | --- |
+| Source tests | The exercised behavior of the reviewed implementation |
+| Native executable checks | Behavior on the selected build and platform |
+| Signature and notarization | Apple Silicon signing identity and notarization verification |
+| Fresh registry installation | Published archive integrity and the executable users receive |
+| In-place upgrade | Configuration, history and command resolution survive the upgrade |
+| Gateway utility call | The current authenticated proxy path completed an actual operation |
+| Active and idle lifecycle exercises | Renewal and recovery across the tested time boundaries |
+
+An older successful call against another inventory does not establish current utility acceptance, because the check was made against a different server. And a package can be published for maintainer testing while timed production acceptance remains incomplete; publication and acceptance are separate rows, and [Implementation status](./evidence.md) records that distinction.
+
+## Recovery and rollout
+
+Pin server images and reconcile every serving replica, because a policy change that reaches only some replicas produces denials on some requests and not others, which looks like a client bug. When changing utility authorization, verify both an allowed subject and a denied subject; a test that only proves access does not prove the denial you intended. For connection failures, check the gateway integration and OAuth leg before changing server permissions, since the request may never have reached the server.
+
+On the workstation, native credentials belong in macOS Keychain or Linux Secret Service. An npm installation does not create an unlocked desktop credential store, so an install can succeed and still be unable to save a login. An upgrade can also leave an old manual executable earlier on `PATH`; verify the resolved command and `airs-harness --version` before concluding that an upgrade did not take.
+
+The educational site is delivered from a separate repository. Its explanations and diagrams should be reviewed alongside the implementation evidence whenever an interface or trust boundary changes.

@@ -2,7 +2,7 @@
   "name": "prisma-airs-reference-architecture",
   "version": "0.1.0",
   "private": true,
-  "description": "An educational reference architecture for identity-aware AI inference and read-only MCP tools",
+  "description": "An educational reference architecture for identity-aware AI inference and local MCP utility execution",
   "engines": {
     "node": ">=22.14"
   },

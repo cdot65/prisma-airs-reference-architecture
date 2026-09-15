@@ -4,91 +4,54 @@ title: "Implementation status and public sources"
 sidebar_label: "Implementation status and public sources"
 ---
 
-## September 15 owner testing release
+## Current implementation and publication scope
 
-Alpha.15 is published for owner testing on Apple Silicon and Linux x64 in the private package registry, under the `gateway-validation` tag. Install the exact version with:
+Every other lesson makes claims about how this system behaves. This lesson records what those claims rest on, as of the dates given, and where each piece of evidence stops. Reading it lets you tell the difference between something the reviewed source does, something a dated check observed, and something that has not been demonstrated yet.
 
-```sh
-npm install -g airs-harness@0.1.0-alpha.15 --registry=<your-private-registry-url>
-airs-harness --version
-```
+The current architecture sends both inference and native MCP through Prisma AIRS AI Gateway. The upstream **mcp server 1** exposes eight utility tools whose execution is local to that server. Its tool implementation no longer depends on a management API.
 
-The owner explicitly requested this publication to test on a remote Mac. The signed binaries are the frozen alpha.15 candidates; the package receipts preserve incomplete lifecycle validation and the previous failed runs. `latest` and `alpha` remain on alpha.14. This testing publication does not claim completed production token renewal or idle-return acceptance. The 30-minute idle policy is unchanged.
-
-The production MCP server now exposes eight local utility tools: `calculate`, `format_json`, `transform_text`, `encode_base64`, `decode_base64`, `hash_text`, `generate_uuid` and `current_time`. Both production replicas were checked. The former SCM management tools and backend client are removed. Earlier management-API denial observations below are historical; their investigation is stopped and is no longer a harness release prerequisite. Authenticated utility calls and lifecycle acceptance remain to be verified. The harness still targets AI Gateway for both inference and MCP.
-
-## September 14 deployment and release status
-
-Both inference and native MCP use Prisma AIRS AI Gateway in the required architecture. The gateway now has development and production MCP integrations, dedicated confidential upstream OAuth clients, the required upstream-host allowlist and separate workspace bindings. Both upstream resource deployments accept only the gateway-owned client for their environment. Development has one ready replica; production has two.
-
-The owner repaired a missing CIE group-to-harness-workspace mapping and confirmed membership in SCM. A native desktop gateway login then completed, and the model successfully used all eight tools through the development gateway. Gateway telemetry and upstream request logs recorded those reads. These diagnostic calls used the existing alpha.13 executable; they establish the live proxy and identity repair, while exact alpha.14 release acceptance remains separate.
-
-At 12:55 UTC, both exact installed alpha.14 packages completed production gateway consent, native credential storage, inference access and all eight model-selected production tools. Each platform has matching gateway and upstream tool observations. The initial silent-wait runs were stopped after discovering that the Keycloak refresh grants expire after 30 minutes idle. Their failed receipts are preserved. Alpha.14 is published with owner authorization to proceed without another timed authentication run. Hourly frontend refresh remains unverified, with zero completed cycles; the failed lifecycle receipts are retained. Gateway-held upstream JWT renewal was observed after actual expiry.
-
-| Area | Current evidence | Release status |
+| Area | Recorded evidence | Limit |
 | --- | --- | --- |
-| Runtime | Frozen source `6195ca83e` includes native dynamic-registration history preservation and the alpha.14 version correction | Linux x64 and Apple Silicon builds complete |
-| Native executable checks | 44-test suites on both platforms with two platform-specific skips | Passed |
-| Installed package checks | 44-test suites on both platforms with one platform-specific skip, including managed CLI integration | Passed |
-| npm upgrades | Ordinary alpha.13 → alpha.14 upgrade and both legacy command layouts preserve configuration and exact native bytes | Passed on both platforms |
-| Apple Silicon distribution | Developer ID signature, hardened runtime, Apple notarization and native Keychain checks | Passed |
-| Gateway and upstream | Production and development proxy integrations; upstream client allowlists enforced | Live |
-| CIE and CAS | Workspace mapping repaired; owner completed native desktop login and development tool workflow | Observed |
-| Exact alpha.14 production workflow | Native inference and gateway MCP login, native credential storage, all eight model-selected tools and matching gateway/upstream observations | Passed on both installed packages |
-| Exact alpha.14 gateway lifecycle | Two real native expiry cycles, concurrent fresh processes and upstream renewal correlation | Hourly frontend refresh unverified; owner-authorized release exception retains failed idle-session receipts |
-| Publication | Alpha.14 is published for Linux x64 and Apple Silicon; fresh anonymous registry downloads match tested native bytes and pass executable checks | Limited internal alpha scope; hourly frontend lifecycle not claimed |
+| Server inventory | Both production replicas were inspected and expose calculate, format_json, transform_text, encode_base64, decode_base64, hash_text, generate_uuid and current_time | Inventory is not proof that every authenticated call succeeded |
+| Utility execution | Reviewed implementation computes in process using local text/JSON/crypto operations, clock and random source | Authentication still uses trusted issuer public keys |
+| Native client | Built-in MCP client targets the gateway; inference uses the gateway's separate listener | No direct upstream bypass is part of the accepted architecture |
+| Alpha.15 maintainer testing | Published Linux x64 and signed Apple Silicon packages; fresh registry installs passed 44 executable checks per platform with one skip each | Full active-expiry acceptance was incomplete |
+| Manual idle recovery | The maintainer returned after about 30 minutes, used /signin and received a new inference reply in the same conversation | This did not test a subsequent MCP call or active renewal |
+| Alpha.16 source correction | Normal AIRS provider dispatch now preserves typed recovery; a real helper regression failed before the fix; 78 provider tests and scoped Clippy pass afterward | Installed production behavior must be distinguished from source tests |
+| Alpha.16 distribution | Publication receipts are completed alongside the binary release | Timed production renewal is not implied by package publication |
 
-The gateway's observed frontend MCP token is opaque and lasts 3,600 seconds. The separate upstream Keycloak JWT lasts 300 seconds. Acceptance waits for real expiration, launches two concurrent native processes, records nonsecret token-generation fingerprints, and correlates gateway tool telemetry with upstream requests. The deployment also has a 30-minute Keycloak SSO idle limit, and the observed upstream refresh grants expired after 30 minutes without renewal. The corrected runner uses periodic authorized reads to maintain normal activity, verifies that those reads do not rotate the frontend token early, and then tests concurrent processes after actual frontend expiry. This is active-session acceptance, not a claim of uninterrupted access after an hour idle. Changing a local expiry field or reusing direct-route receipts would not establish this behavior.
+The Limit column is the part to read carefully. Each row establishes one thing, and stacking the rows does not produce a stronger claim than any one of them makes: an inventory shows which tools exist, a package check shows what an installer receives, and a manual recovery shows that one path worked once. None of them stands in for the timed lifecycle acceptance that is still open.
 
-## Alpha.15 implementation in progress
+The failed alpha.15 lifecycle receipts remain in the private implementation repository. Earlier tests against configuration-read tools are historical observations from a previous tool inventory. They are not acceptance of this utility inventory, and the retired backend investigation is not a prerequisite for testing the harness.
 
-Before the utility-tool replacement, the production MCP adapter renewed its own management-API service-account token once after HTTP 401 rejects a cached token, then retries the authorized read once. Concurrent callers share acquisition; a late rejection cannot invalidate a newer cached generation. HTTP 403 and resource-not-found responses do not trigger this renewal. These are backend service credentials, separate from either human OAuth leg. The deployed adapter supplies its configured tenant in `x-tsg-id` and records bounded operator diagnostics: a vendor request UUID, an allowlisted IAM error code when present, the rejected token's remaining lifetime and an exact policy-decision flag. It retains no provider message or credential. All 59 backend tests, type checking and compilation passed; the image is deployed to development and both production replicas.
+## What alpha.16 changes
 
-The native client has merged durable refresh-intent handling, cross-environment coordination, same-identity inference restoration, typed failure guidance and the terminal sign-in action for the alpha.15 candidate. The combined authentication and terminal suites passed 5,833 tests, and four focused core MCP tests passed. Both installed native packages passed executable, secure-store and upgrade checks; Apple Silicon signing and notarization passed. Production login and all eight gateway tools passed on both platforms. The first concurrent expiry check failed on Linux when one management API read returned HTTP 403. Linux cleanup then revoked the inference client session shared with the Mac test; Keycloak rejected the Mac refresh because that client session was missing. Mac MCP credential renewal and Keychain saves succeeded, but neither platform completed an accepted frontend expiry cycle. Acceptance cleanup coordination is merged and its Linux-to-Mac controller check passed. At that point, the backend denial was under investigation and alpha.15 was unpublished.
+The 30-minute SSO idle policy stays in place; alpha.16 does not change how long a session may sit idle. What it corrects is a provider-routing bug that reduced a typed credential-recovery result to a generic fatal helper error. With that route fixed, the terminal can receive the classification it needs to display company sign-in guidance instead of an unexplained failure.
 
-At 23:47 UTC, fresh coordinated Mac and Linux runs had each completed production sign-in, native credential persistence and all eight actual tool results. Their two real frontend expiry checks were running unattended. An earlier Mac attempt completed gateway-facing login but its first MCP connection failed when Keycloak rejected the gateway's expired upstream refresh grant. A subsequent gateway/upstream consent flow obtained a fresh grant and all eight reads passed. This records a recovery, not a gateway fix. Separately, a production backend diagnostic observed HTTP 403 with 890 seconds remaining on a service token; the same read later passed. Token expiry alone does not explain that intermittent denial.
+Token storage and renewal transactions are carried forward from alpha.15, so the lifecycle mechanism is unchanged and only the recovery presentation moved. Successful manual inference restoration has been observed. Complete production active renewal, idle-return behavior on both platforms and MCP recovery against the utility inventory still require their own evidence, because a source-level fix and a manual observation are each narrower than a timed run on installed packages.
 
-At 00:14 UTC on September 15, the coordinated runs stopped after a backend workspace read returned HTTP 403 during their third scheduled activity interval. Both had passed initial tools and two activity intervals; neither reached its first frontend expiry. Cleanup waited for both workflows and then completed successfully. A separate bounded backend diagnostic captured `x-opa-decision: false`, establishing an explicit authorization denial for that request. Readback confirmed the expected workspace scope and six service-account read permissions. A candidate adapter change adds the configured `x-tsg-id` tenant header used by the SDK and records the policy decision in operator logs. Paired requests passed with and without the header, so the omission is not a proven cause of the intermittent denial. Alpha.15 was unpublished at that point.
+## How to read the claims
 
-The tenant-header and policy-diagnostic change is now deployed. At 00:31 UTC, a production backend check again received HTTP 403 with `x-opa-decision: false`, despite the correct tenant header and 894 seconds remaining on the service token. The other backend check was stopped after this recurrence; neither is claimed as passed lifecycle acceptance. That investigation requested an authorization trace explaining why SCM rejected the configured grant. The owner subsequently stopped this investigation and removed the SCM tools; obtaining this trace is no longer a prerequisite for harness work.
+The course uses four labels, and they are ordered by how much of the real system each one touches. **Implemented** means reviewed source contains the behavior; it says nothing about what is installed anywhere. **Observed** means a dated check saw the behavior, on that date and in that configuration. **Package verification** binds checks to the downloaded executable, which closes the gap between source and what a user actually runs. **Production lifecycle acceptance** exercises the real identity and gateway path across the relevant expiration and recovery boundaries, which is the only label that speaks to renewal and revocation over time. A claim carrying an earlier label should not be read as if it carried a later one.
 
-The broader core suite was not green. A comparison against published alpha.14 reproduced all 103 remaining failures; the candidate-only gateway test expectation was corrected and passed its focused rerun. Full workspace compilation also encountered an unavailable Rusty V8 Linux musl archive. These limits remain explicit in the evidence. The candidate keeps the 30-minute idle policy and prevents automatic replay of completed work. Opaque gateway MCP credentials still lack the trusted identity continuity needed to automatically restore an existing conversation after a new login.
-
-Alpha.15 is now published for owner testing under its own September 15 authorization, as described above. Full production lifecycle acceptance remains incomplete. Alpha.14 remains the default release; its earlier exception was not reused.
-
-## Evidence boundaries
-
-The public educational repository contains explanations and fictional examples. Operational credentials, identity records, private logs and full release receipts remain outside the publication. Deployment observations above were made on September 14, 2026; a source revision alone is not a live health check.
-
-Earlier direct-MCP documentation and alpha.13 receipts describe a superseded route. They remain historical evidence for the tool adapter and native client, but do not prove gateway/CAS routing. The earlier 30-minute upstream soak predates this integration and is neither a gateway benchmark nor a service-level commitment.
-
-Windows distribution, a full Rust workspace test run, independent release review and alert receiver delivery are not claimed by these scoped alpha checks. The GitHub Pages site is public; that does not establish unauthenticated public access to the private lab's inference or MCP services.
-
-Primary product references: [SCM CAS login](https://portkey.ai/docs/product/mcp-gateway/authentication/cas), [gateway and upstream authentication](https://portkey.ai/docs/product/mcp-gateway/authentication), and [CIE workspace provisioning](https://portkey.ai/docs/product/enterprise-offering/org-management/directory-sync/cie-directory-sync).
+No full Rust workspace pass, independent release review, Windows distribution or blanket immediate revocation is claimed. Public examples use fictional identities and endpoints. Credentials, private logs and operational identifiers stay outside this site.
 
 ## Primary references
 
-These links explain protocols and product behavior. The private implementation observations above are separately identified and are not vendor guarantees.
+These references explain protocols and product capabilities. The deployment observations above come from the reviewed implementation and operator checks; they describe one deployment on particular dates and are not guarantees made by the vendor.
 
-| Reference | Use in the course |
+| Reference | Topic |
 | --- | --- |
-| [OAuth for native apps — RFC 8252](https://www.rfc-editor.org/info/rfc8252/) | System browser, loopback callback and public-client rationale |
-| [PKCE — RFC 7636](https://www.rfc-editor.org/info/rfc7636/) | Verifier and challenge |
-| [Resource indicators — RFC 8707](https://www.rfc-editor.org/info/rfc8707/) | Resource-bound authorization requests |
-| [Protected resource metadata — RFC 9728](https://www.rfc-editor.org/info/rfc9728/) | Discovering the resource's authorization contract |
-| [MCP authorization, 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization) | Versioned MCP authorization reference |
-| [Codex MCP client](https://developers.openai.com/codex/mcp/) | Upstream Streamable HTTP, OAuth, MCP commands and interactive inventory; fork-specific behavior is verified against local source |
-| [Keycloak OIDC endpoints](https://www.keycloak.org/securing-apps/oidc-layers) | Authorization, token and discovery endpoints |
-| [SCIM protocol — RFC 7644](https://www.rfc-editor.org/info/rfc7644/) | Provisioning operations |
-| [CIE components](https://docs.paloaltonetworks.com/pan-os/10-1/pan-os-new-features/identity-features/cloud-identity-engine) | Directory Sync versus Cloud Authentication Service |
-| [CIE SCIM connector](https://docs.paloaltonetworks.com/identity/cloud-identity-engine/identify-users-and-devices-with-cie/choose-directory-type/configure-a-cloud-based-directory/configure-scim-connector-for-the-cloud-identity-engine) | Product provisioning integration |
-| [CIE SAML authentication](https://docs.paloaltonetworks.com/identity/cloud-identity-engine/authenticate-users-with-the-cloud-identity-engine/set-up-a-saml-2-0-authentication-type) | CAS federation and consumed attributes |
-| [Prisma AIRS AI Gateway](https://docs.paloaltonetworks.com/ai-runtime-security/administration/configure-ai-gateway) | Product architecture and deployment context |
+| [Gateway authentication layers](https://portkey.ai/docs/product/mcp-gateway/authentication) | Client-to-gateway and gateway-to-server authentication |
+| [Gateway CAS login](https://portkey.ai/docs/product/mcp-gateway/authentication/cas) | Organizational sign-in for the SCM gateway |
+| [CIE Directory Sync](https://portkey.ai/docs/product/enterprise-offering/org-management/directory-sync/cie-directory-sync) | Provisioning and consuming workspace context |
+| [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools) | Tool discovery, schemas and results |
+| [Native OAuth (RFC 8252)](https://www.rfc-editor.org/info/rfc8252/) | System browser and native client requirements |
+| [PKCE (RFC 7636)](https://www.rfc-editor.org/info/rfc7636/) | Authorization-code proof binding |
+| [Refresh (RFC 6749 section 6)](https://www.rfc-editor.org/rfc/rfc6749#section-6) | Renewal within the granted scope |
+| [Resource indicators (RFC 8707)](https://www.rfc-editor.org/info/rfc8707/) | Resource-bound OAuth grants |
+| [Protected resource metadata (RFC 9728)](https://www.rfc-editor.org/info/rfc9728/) | Discovery of resource authorization requirements |
+| [Keycloak OIDC endpoints](https://www.keycloak.org/securing-apps/oidc-layers) | Issuer endpoints and token operations |
+| [SCIM (RFC 7644)](https://www.rfc-editor.org/info/rfc7644/) | User and group provisioning |
 
-References were consulted on September 14, 2026. Recheck versioned protocol and product documentation when updating the course. Broad CIE documentation covers supported consuming products; the specific AI Gateway CAS behavior described here derives from the case-study implementation, not a claim inferred from a GlobalProtect setup guide.
-
-## Updating an architectural claim
-
-Change the explanation and its diagram together. Record the source revision or dated observation, state what passed and what remains untested, and update related labs if the permission contract changes. An extension graduates to “recorded acceptance” only after its own positive and negative checks.
-
-If an upstream product changes its tool or authentication behavior, keep the older observation dated and explain the new result. Do not silently turn a historical workaround into permanent protocol advice.
+The gateway authentication overview and MCP tool specification were rechecked on September 15, 2026. The other references retain their previously reviewed protocol or product context. Before copying any diagram from this course into another environment, verify that environment's deployed settings. The diagrams describe this case study's configuration, not protocol defaults.

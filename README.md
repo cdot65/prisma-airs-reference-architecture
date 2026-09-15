@@ -1,10 +1,10 @@
 # Prisma AIRS Reference Architecture
 
-An independent educational site explaining how Prisma AIRS Harness, Keycloak, Prisma AIRS AI Gateway, Cloud Identity Engine, and an OAuth-protected read-only MCP server fit together.
+An independent educational site explaining how Prisma AIRS Harness, Keycloak, Prisma AIRS AI Gateway, Cloud Identity Engine, and mcp server 1, an OAuth-protected utility server fit together.
 
 **Site:** https://cdot65.github.io/prisma-airs-reference-architecture/
 
-The course includes 15 lessons, 18 Mermaid diagrams, six tabletop labs with answer keys, an optional isolated integration lab, and an interactive authorization exercise. It explains the required gateway path for both inference and MCP, CAS/CIE workspace authorization, and separate gateway-managed upstream OAuth. Alpha.13 is the published direct-route baseline; alpha.14 gateway acceptance remains pending.
+The course includes 15 lessons, 18 Mermaid diagrams, six tabletop labs with answer keys, an optional isolated integration lab, and an interactive authorization exercise. It explains the required gateway path for both inference and MCP, CAS/CIE workspace authorization, and separate gateway-managed upstream OAuth. The current tools compute locally on mcp server 1 without downstream management API calls. Client package and lifecycle verification are tracked in the evidence lesson.
 
 ## Develop
 

@@ -4,93 +4,60 @@ title: "Troubleshooting by trust boundary"
 sidebar_label: "Troubleshooting by trust boundary"
 ---
 
-## Find the first failed boundary
+## Locate the failing step
 
-“Login failed” can mean the browser never reached Keycloak, the callback failed validation, the OS store rejected persistence, or the resource refused authorization after a successful login. Start with the observed stage and expected contract.
+Something failed. Before changing anything, decide which boundary it failed at. Follow the request from the harness to the intended gateway listener, then to the model or mcp server 1, and ask at each hop whether the problem is authentication (who are you), authorization (what may you do), argument validation (is the input acceptable) or tool execution (did the work succeed). Those are four different questions, and the fixes for them do not overlap: a new login does not repair a bad argument, and a corrected argument does not add a missing grant.
 
 ```mermaid
 flowchart LR
-    accTitle: Diagnose the first failed trust boundary
-    accDescr: Check endpoint reachability, browser login and credential persistence, token validity, action and object permission, then backend access and tool or content-policy behavior.
-    symptom["Request failed"] --> reach{"Reached intended service?"}
-    reach -->|"No"| network["Check DNS, TLS and endpoint"]
-    reach -->|"Yes"| login{"Browser flow and credential commit succeeded?"}
-    login -->|"No"| identity["Check callback, issuer and native store"]
-    login -->|"Yes"| token{"Resource accepts credential?"}
-    token -->|"No"| claims["Check audience, client, time and signature"]
-    token -->|"Yes"| policy{"Requested action and object allowed?"}
-    policy -->|"No"| grants["Check role, scope and explicit binding"]
-    policy -->|"Yes"| backend["Check backend read, content policy and tool adapter"]
+    accTitle: Diagnose inference and local MCP utility failures
+    accDescr: Identify the failing listener, check network reachability and credentials, inspect gateway and server grants, and then validate utility arguments and local execution. No downstream management API appears in the utility path.
+    failure["Request failed"] --> destination{"Which gateway listener?"}
+    destination --> inference["Inference: credential, route and content policy"]
+    destination --> mcp["MCP: gateway login and integration access"]
+    mcp --> upstream["Gateway upstream OAuth grant"]
+    upstream --> grant["mcp server 1 token, roles and subject binding"]
+    grant --> input["Tool name and argument schema"]
+    input --> execution["Local utility execution and result"]
 ```
 
-The sequence is a diagnostic aid, not a claim that every service uses the same error format. MCP transport errors, JSON-RPC tool errors, gateway policy errors, and OAuth token-endpoint errors must be interpreted in their own context.
+## Symptoms and useful checks
 
-## Symptoms and discriminating evidence
+Most of the checks below test a boundary rather than a component, so the first question is usually whether the request reached the place you think it reached.
 
-| Symptom | Likely boundary | First useful check |
-| --- | --- | --- |
-| Browser never opens | Native application/session | Authorization URL presentation and desktop availability |
-| Callback rejected | OAuth client | Expected state, issuer, redirect and current attempt |
-| Login succeeds but cannot save credentials | OS store | Desktop/keyring session and persistence error category |
-| Gateway login saves successfully but the first MCP connection needs sign-in | Gateway-held upstream OAuth | Gateway upstream grant state and IdP refresh error; native credential persistence alone does not prove upstream access |
-| MCP login requests unrelated permissions | OAuth scope selection | Gateway scopes from gateway discovery; upstream read scopes belong to the gateway integration |
-| Authorization rejects duplicate resource | Discovery/configuration | Check the failing OAuth leg and its discovered resource before adding an explicit override |
-| Tools stop after prolonged inactivity | Upstream or inference refresh session | Check the refresh grant and SSO idle limit, not only the gateway access token; renew the affected login |
-| MCP works until access-token expiry | OAuth refresh | Granted scopes versus refresh request; affected RMCP added ungranted `offline_access` |
-| npm upgrade still runs an old command | Local installation | Resolved executable, npm prefix and legacy PATH symlink |
-| MCP 401 | Token validation | Intended resource audience, issuer, client, expiry, signature |
-| Gateway MCP 403 | Gateway authorization | CAS identity, directory membership and workspace/integration access |
-| `access_denied`: user does not have workspace access | CIE-to-workspace mapping | Existing group mapping, Full Sync and workspace Members tab |
-| Browser says complete but CLI login fails | Native persistence | CLI completion and Keychain/Secret Service session |
-| Upstream MCP 403 | Resource authorization | Human invoke/read roles, issued scopes and subject binding |
-| Generic unavailable object | Object authorization or absent object | Authorized workspace/profile context; do not enumerate foreign IDs |
-| Inference succeeds but model never calls MCP | Tool exposure/selection | Actual outbound function definitions and returned call events |
-| Direct tool call works but model call fails | Harness/gateway adapter | Namespace mapping, arguments and preserved call ID |
-| Backend denies MCP's request | PAN IAM/service credential | HTTP status, operator request UUID, allowlisted IAM code, remaining token lifetime and required read permission |
-| SAML succeeds but gateway identity resolution fails | CAS/directory join | NameID, consumed username attribute and directory lookup field |
-| CIE membership remains stale | Provisioning/consumer | Last successful reconciliation, warnings and consumer refresh |
-| Old token works after logout | Token lifecycle | Token expiry and resource-side binding state |
+| Symptom | First useful check |
+| --- | --- |
+| Inference fails after about 30 minutes idle | Whether the inference grant is still renewable; use the company sign-in prompt |
+| Alpha.15 shows the generic bound-credential fatal error after idle | Enter `/signin`; alpha.16 includes the provider-routing correction for automatic guidance |
+| Login completes but credential save fails | Native Keychain or Secret Service availability and the reported storage category |
+| Browser cannot reach localhost | Whether the current native callback listener is still alive and reachable from that browser |
+| Gateway denies workspace access after CAS login | CIE group-to-workspace mapping and the workspace Members view |
+| Gateway MCP login succeeds but upstream needs consent | The separate gateway-held upstream OAuth grant |
+| mcp server 1 rejects the token | Issuer, signature, resource audience, allowed client and time limits |
+| mcp server 1 rejects authorization | `invoke`, `utilities.use` scope and role, and the subject's policy binding |
+| Resources list is empty | Inspect `/mcp` for tools; resources and tools are separate capabilities |
+| The model never selects a visible tool | Actual inference tool declarations and model-returned function calls |
+| `calculate` fails for division by zero | Correct the input; a new login does not repair arithmetic |
+| `decode_base64` rejects text | Canonical padding and valid decoded UTF-8 |
+| `current_time` differs from the workstation | The tool reports the MCP server's clock |
+| An upgrade still shows an older version | Resolved executable, npm prefix and `PATH` ordering |
 
-Never paste a real JWT into a public decoder or issue. A decoded payload is also untrusted until the signature and context checks pass. Capture the comparison result—such as “audience mismatched”—rather than the credential.
+Tool execution has no downstream management API to diagnose, which removes a whole class of failure from the utility path. The server's authentication layer can still depend on trusted signing-key retrieval, so DNS or issuer-key failures are real, but they belong to the identity boundary rather than to the tool.
 
-Do not repair a failed gateway route by changing the harness destination to the upstream resource. Check the gateway integration, upstream-host allowlist and upstream OAuth callback/client configuration.
+## The alpha.15 idle-return incident
 
-The adapter retries an authorized read once after refreshing a cached service token rejected with HTTP 401. It does not retry HTTP 403 or 404. A production diagnostic observed a 403 while the token still had 890 seconds remaining, followed by a successful read. Preserve its request correlation and investigate the denial; a fresh human login or broader service permissions is not an established repair.
+The maintainer returned after about 30 minutes idle and received a generic fatal credential-helper error. Manual `/signin` completed, preserved the same verified identity and conversation, and allowed the next inference reply. The credential path was fine; what failed was the guidance. The normal AIRS provider dispatch had bypassed the typed recovery handler, so the terminal never received the classification it uses to show sign-in guidance. Alpha.16 corrects that route so an expired or otherwise non-renewable sign-in reaches the terminal's guidance. A real helper integration test failed before the change and passes afterward; all 78 provider tests pass. Be precise about what that evidence covers: it establishes the source correction. It does not prove every production token-renewal case.
 
-An explicit `x-opa-decision: false` is a backend policy denial. Check the service account's tenant, custom role and workspace scope alongside the request's tenant context. The SDK supplies the configured tenant in `x-tsg-id`; a matching header identifies context and does not grant access. Keep this backend decision separate from gateway CAS membership and the upstream human MCP binding.
+## Browser callbacks on a remote machine
 
-A completed gateway-facing login can coexist with an expired gateway-held upstream refresh grant. In one observed startup failure, Keycloak reported `Token is not active` when the gateway attempted upstream refresh. A fresh gateway/upstream consent flow restored tool access. Check both OAuth legs before attributing such a failure to the native credential store.
+A callback to `127.0.0.1` reaches the browser's computer, which is not necessarily the harness's computer. When the harness runs elsewhere, a correctly bound tunnel must forward that callback to the native process; otherwise the callback lands on a machine where no harness is listening. The PKCE verifier and native credential store remain with the harness, which is why the login cannot simply be finished on the browser side.
 
-## Browser callbacks when the harness runs remotely
+Keep the current login attempt and tunnel alive until the native command reports completion. The callback window is five minutes in the tested flow, and an expired tab cannot complete a later login attempt because its state and verifier belong to the earlier one. Verify credential persistence and an actual request after browser completion; a success page in the browser is not the end of the login.
 
-A browser can run on a different computer from the harness, but `127.0.0.1` in the callback always refers to the browser's computer. In the headless Linux acceptance test, an SSH reverse tunnel forwarded the browser computer's loopback callback port to the Linux harness process. The native client, PKCE verifier and credential store stayed on Linux.
+## Capture a useful report
 
-Confirm that the tunnel is listening before opening consent, and keep it and the native login process alive until the CLI reports success. The tested native MCP callback expires after five minutes. A browser “cannot connect to localhost” error after that deadline requires a fresh native attempt; reopening an old consent tab cannot revive the listener. Browser completion also needs a successful native credential save, followed by a real tool connection.
+Record the package version, affected environment, approximate idle time, failing step and sanitized error. For MCP, include the actual tool name and whether it completed. Use request IDs to correlate gateway and server observations, since the same request looks different from each side. Never include tokens, refresh grants, client secrets or private tool input in public reports.
 
-## Worked incident: tools disappear
+A model's statement that tools are “working” is weaker evidence than a completed MCP call with a valid result, because the model can only report what it was told, and a returned function call is a request rather than a result.
 
-In the historical alpha.13 incident, the user could obtain a model response and a direct MCP probe listed eight tools. That narrows the failure: TLS, basic inference, and basic MCP access work. Inspecting the inference request reveals tool declarations wrapped in a namespace that the gateway path drops. The model therefore has no callable functions.
-
-The inference adapter repair flattens names at the gateway boundary and restores namespaced call events. This historical diagnosis does not prove that MCP transport used the gateway; alpha.14 also needs correlated gateway MCP ingress and upstream requests. Acceptance then verifies a model-selected tool call and its actual result. Adding more Keycloak roles would not repair a missing schema.
-
-## Worked incident: login works, refresh fails
-
-Initial OAuth and tool reads succeeded, but real expiry testing exposed a refresh rejection. RMCP 3.2 added `offline_access` because discovery advertised it, even though the original grant contained only read scopes. Server support for a scope does not grant it to this client. The harness correction retains `offline_access` only when it was actually granted; its HTTP regression test covers both cases and checks the resource parameter. Final concurrent expiry acceptance still belongs to the exact installed release. Adding broader permissions would conceal the defect.
-
-## Worked incident: authenticated identity cannot be found
-
-CAS accepts a SAML assertion, but the gateway cannot resolve a provisioned user. The directory has `alex@example.com`; the consumed assertion field contains `alex`. In the related case study, correcting NameID alone was insufficient because a second `username` attribute was also consumed. Mapping both according to the configured contract resolved the consent step.
-
-That proves identity formatting at that step. It does not prove cross-realm account linking, downstream MCP authorization, or complete end-to-end tool execution. Preserve those as separate checks.
-
-## Worked incident: CIE user exists, workspace access is denied
-
-The native gateway login returned `access_denied` even though the user existed in Keycloak and CIE and belonged to the expected source group. The gateway-provided short connection URL produced the same result. Adding the existing CIE group-to-harness-workspace mapping, running Full Sync and confirming the Members tab repaired this boundary. The next desktop native login and all eight development tool reads succeeded.
-
-The general workspace-detail API still showed an empty `users` field, so it was not a valid substitute for the directory-backed member check. No wider administrator grant, upstream policy relaxation or direct-server bypass was needed.
-
-## A useful incident record
-
-Record time, environment, source/image version, request correlation, failing boundary, sanitized expected/observed values, and the smallest reproducer. Record the post-fix positive and negative outcomes. Exclude tokens, full backend responses, private prompt content, and operational secret locations from public reports.
-
-Continue with [Labs and answer keys](./labs.md). Internal case-study provenance: [Implementation status and public sources](./evidence.md).
+Continue with [Labs and answer keys](./labs.md).

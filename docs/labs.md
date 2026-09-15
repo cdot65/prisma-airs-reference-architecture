@@ -4,103 +4,88 @@ title: "Labs and answer keys"
 sidebar_label: "Labs and answer keys"
 ---
 
-## Start with tabletop labs
+## Six tabletop exercises
 
-These exercises use fictional records. They need no tenant, production login, or cloud credential. Each has an observable deliverable and an answer key. Treat the optional live lab as a separate integration exercise after the concepts are clear.
+The lessons so far have asked the same two questions at every arrow: what crosses this boundary, and what authorizes the receiver to act? These exercises check whether you can answer them without the lesson text in front of you. Each one takes a situation the course has already explained and changes one condition, so the work is in noticing which condition decides the outcome.
 
-### Lab 1 — Put the arrows in the right place
+Use fictional identities and inputs throughout. None of the six exercises needs a production account or a cloud API credential; a whiteboard and the running example are enough.
 
-**Time:** 15 minutes. **Objective:** distinguish inference from tool execution.
+### Lab 1: Trace two requests
 
-Draw Alex, the harness, Keycloak, AI Gateway, AIRS scanner, model, MCP server, PAN management API, and CIE. Label the issuer of each token and its receiver. Include CAS login and CIE workspace resolution on the gateway-facing MCP authorization path.
+Draw the harness, Keycloak, CIE/CAS, AI Gateway, the model and mcp server 1. Then trace Alex's question: "Multiply 12 by 7 and return the MCP server's UTC time."
 
-**Deliverable:** a diagram and a one-paragraph explanation of who executes `get_gateway_config`.
+**Deliverable:** two labeled request paths and the execution location of each tool.
 
-**Answer key:** the harness sends both inference and MCP to AI Gateway. The model emits a function call; the gateway proxies the MCP request using its own upstream user token. The MCP server authorizes the read and calls PAN APIs using separate backend credentials. CAS/CIE supports gateway-facing identity and workspace access. The harness never receives the gateway's upstream refresh token.
+**Answer key:** there are two paths, and both end at the gateway before going anywhere else. Inference goes from the harness through the gateway to the model. MCP goes from the native client through the gateway to mcp server 1. The server computes the product and reads its own clock, so the execution location for both tools is the server, not the workstation and not the model. Results return through the gateway. The deciding detail is who holds which credential: the gateway holds the upstream OAuth credentials, and the harness never sees them.
 
-### Lab 2 — Evaluate an authorization matrix
+### Lab 2: Evaluate the utility grant
 
-**Time:** 20 minutes. **Objective:** apply all conditions, not just one grant.
+Assume a correctly signed, current token for the configured issuer and MCP audience unless a row says otherwise. For each case, decide what mcp server 1 does with the request.
 
-Assume the server expects the learning issuer, the MCP resource audience, gateway upstream client `learning-gateway-mcp`, and a valid current signature. Alex's server binding permits only `workspace-learning` and `profile-learning`. The policy grants both read scopes.
-
-| Case | Credential/permission condition | Requested action |
+| Case | Conditions | Action |
 | --- | --- | --- |
-| A | Correct token, invoke, gateway.read and airs.gateway.read | Read configuration in workspace-learning |
-| B | Same as A, but inference audience | Read configuration in workspace-learning |
-| C | Correct token and gateway scope, no gateway.read role | Read configuration in workspace-learning |
-| D | Same as A | Read configuration in workspace-finance |
-| E | Correct token, invoke, profiles.read and airs.profiles.read | Read profile-learning |
-| F | Same as E | Read profile-finance |
-| G | Correct issuer and audience, disallowed client | List workspaces |
-| H | All read grants, no subject binding | List profiles |
+| A | Allowed gateway client, invoke, utilities.use scope and role, matching subject policy | calculate |
+| B | Same grants as A, but an inference audience | calculate |
+| C | Same as A, but utilities.use is missing from the token | hash_text |
+| D | Same as A, but the utilities.use role belongs to another resource client | format_json |
+| E | Same as A, but no subject binding | current_time |
+| F | Same as A, but the client is not allowed | generate_uuid |
+| G | All grants from A, arguments request division by zero | calculate |
 
-**Deliverable:** allow/deny and the first failed condition for each row.
+**Deliverable:** distinguish authentication denial, authorization denial, successful execution and input failure.
 
-**Answer key:** A and E allow. B fails audience validation. C fails the effective grant intersection. D and F fail resource binding. G fails client validation. H fails subject binding. A role on another resource client cannot repair C.
+**Answer key:** the server checks these conditions in order, and the first failing check names the category. A passes every check and executes. B and F fail token or client validation before any grant is considered: B was issued for the wrong audience, and F arrived from a client the server does not allow. C, D and E fail authorization, because effective access is the intersection of the issued scope, the resource-specific role and the subject binding, and each row removes a different one of those three. G passes every identity and authorization check and then fails on its arguments, so it returns an input error. That is why login is not a repair for G: nothing about the credential was wrong.
 
-### Lab 3 — Debug a directory join
+### Lab 3: Separate directory lookup from login
 
-**Time:** 20 minutes. **Objective:** distinguish login success from account resolution.
+CIE has `alex@example.com`. CAS accepts a SAML assertion whose configured username field contains `alex`. The gateway cannot resolve a provisioned user. Another realm also contains the email `alex@example.com`.
 
-The provisioned user has `Mail=alex@example.com`. The accepted SAML assertion has NameID `alex@example.com`, but the CAS profile consumes `username=alex`. The gateway cannot resolve the user. A separate Redtail user also has email `alex@example.com`.
+**Deliverable:** name the mapping to inspect and explain why matching emails do not establish one identity.
 
-**Deliverable:** identify the mapping defect and explain why email equality does not prove that the two realm accounts can be merged.
+**Answer key:** the login succeeded and the directory record exists, so the failure is in the join between them. Compare the SAML attribute the gateway actually consumes (including NameID if that is the configured field) with the field the provisioned record is looked up by; here one side carries `alex` and the other carries `alex@example.com`. The second realm is the reason an email match cannot be the fix: an email is a lookup attribute, and two issuers can hold the same email for unrelated subjects, so the durable identity stays issuer plus subject. After the user resolves, verify gateway workspace membership separately, because resolving an identity and being a member of the intended workspace are different facts.
 
-**Answer key:** inspect the consumed username attribute as well as NameID. Align the configured lookup contract with the owned directory record. OIDC identity includes issuer and subject, so shared email alone is insufficient account-linking evidence. Verify unique ownership and a deliberate correlation process. Do not alter the harness's native audience to work around this lookup failure.
+### Lab 4: Interrupt rotating refresh
 
-### Lab 4 — Race a refresh on paper
+Two native processes share a credential binding. Process A retires refresh generation 4, receives generation 5, and crashes before saving it.
 
-**Time:** 15 minutes. **Objective:** reason about refresh rotation and persistence.
+**Deliverable:** show the lock, the pending state and the next user's recovery path.
 
-In the inference credential-store exercise, two helper processes load generation 4. Helper A consumes the refresh token and receives generation 5. Before it commits generation 5, the process crashes.
+**Answer key:** only one process exchanges a generation at a time, which is what the binding lock is for. Process A recorded its refresh intent before the exchange, so when the next process acquires the lock it finds unresolved state rather than a clean generation 4. It must request sign-in instead of replaying generation 4, because that refresh token may already have been consumed by the exchange that produced generation 5. The deciding fact is that rotation may already have consumed generation 4, so an uncertain exchange cannot be retried safely. In the normal case, generation 5 is saved before it is ever used, and the second process simply reloads it.
 
-**Deliverable:** a sequence diagram that includes locking, a pending record, and recovery.
+### Lab 5: State what utility output proves
 
-**Answer key:** only one helper may attempt refresh for the binding at a time. A pending record must survive interruption. The second process reloads under the lock; an unresolved pending state requires login. Retrying the consumed generation-4 refresh token is not a safe recovery strategy. On normal success, commit generation 5 before using or sharing its access token.
+`calculate` returns 84 and `current_time` returns a timestamp. The model says it has inspected the gateway's security profile and verified scanning.
 
-### Lab 5 — Explain what a read proves
+**Deliverable:** replace that answer with two defensible sentences.
 
-**Time:** 15 minutes. **Objective:** distinguish configuration evidence from execution evidence.
+**Answer key:** "mcp server 1 returned 84 for 12 × 7. Its clock reported the displayed UTC timestamp." Each sentence claims only what a completed tool result establishes. Neither utility inspected a security profile or returned a scanner verdict, so the model's original statement asserts evidence that no tool in this inventory can produce.
 
-An MCP result says the saved route references an AIRS profile with prompt-injection protection. There is no runtime correlation ID or scanner verdict in the result.
+### Lab 6: Reason about idle return and revocation
 
-**Deliverable:** write a two-sentence answer to Alex that stays within the evidence.
+A gateway MCP access token remains valid for another 30 minutes, but the upstream user grant has exceeded its idle limit. Separately, an operator removes the user's binding from mcp server 1.
 
-**Answer key:** “The permitted configuration references an AIRS profile with prompt-injection protection. This inventory result does not show whether a particular request was scanned or what verdict it received.” A runtime claim requires correlated execution evidence.
+**Deliverable:** explain why a valid gateway credential may still be insufficient.
 
-### Lab 6 — Measure revocation honestly
+**Answer key:** the gateway credential only gets the request as far as the gateway. To proxy the call, the gateway also needs a usable upstream grant for this user, and that grant expired on its own clock; renewing it may require consent again. The binding removal is a third clock: once every server replica has loaded the new policy, that subject is denied even if it presents an unexpired upstream JWT, because the binding is one of the server's own authorization checks rather than a claim inside the token. CIE workspace deprovisioning would propagate along yet another path. The reason one valid token is not enough is that each receiver enforces its own contract, and those contracts expire and revoke independently.
 
-**Time:** 20 minutes. **Objective:** separate independent propagation clocks.
+## Optional isolated integration exercise
 
-An access token expires at 12:05. The user signs out at 12:01. A CIE sync is scheduled for 12:15. MCP subject policy is removed and finishes rolling out at 12:02.
+The tabletop labs test the model. This exercise tests it against a real gateway route, and it only makes sense in an isolated environment: use a maintainer-provided gateway route, test identity, workspace mapping and utility-server binding. The exercise needs no management-API service account, because the utility tools do not call one. Native credentials still require the appropriate OS store, since that is where the harness keeps them.
 
-**Deliverable:** a timeline identifying which control ends upstream MCP access and which observations remain unknown.
+| Step | Observation to record |
+| --- | --- |
+| Request gateway MCP without a credential | OAuth challenge from the intended gateway |
+| Complete gateway and required upstream login | Native save succeeds; correct identity and integration selected |
+| Discover tools | Exactly the expected eight utility names |
+| Call each tool with synthetic valid input | Completed result with the expected type and content |
+| Submit invalid arithmetic, JSON and encoding inputs | Bounded tool errors without losing authorization |
+| Test missing scope, role or binding in the isolated fixture | Denial at the intended boundary |
+| Continue real activity across token expiry | Actual utility success with renewed credentials |
+| Return after the preserved idle timeout | Clear sign-in guidance and verified restoration behavior |
+| Finish and remove the fixture | Local credentials and test grants removed without disrupting another test |
 
-**Answer key:** the upstream server rejects requests for the removed binding once all replicas load it, including requests proxied by the gateway. Local harness logout alone does not revoke the gateway's upstream refresh token or an issued JWT. Gateway workspace deprovisioning has a separate CIE/session propagation delay that must be measured. Either effective denial boundary can stop access.
+Two operational cautions follow from the lifecycle lesson. Use dedicated fixture bindings and coordinate issuer logout when tests share a browser SSO session, because inference logout can revoke the client session that another login is relying on. And do not turn a quiet terminal into a keepalive test: idle expiry is an intended policy outcome, so the test should observe it rather than prevent it.
 
-## Optional isolated integration lab
+Score the explanation on request routing, execution location, credential separation, the complete utility grant and the limits of the evidence. Keep the last of those honest: a successful utility call shows that the path worked once, and it does not by itself prove timed renewal.
 
-This exercise needs alpha.14 with native MCP, isolated test identities and CIE workspace mapping, an upstream MCP deployment with an explicit fixture binding, dedicated read-only PAN credentials, and gateway inference and MCP routes. A model-only mock can teach the protocol but does not establish PAN integration acceptance.
-
-Do not use the retired fixture from the implementation's acceptance record. Create a new fixture under an explicit test plan in the isolated environment. No commands in this curriculum mutate the production lab.
-
-| Step | Action | Required observation |
-| --- | --- | --- |
-| 1 | Request the gateway MCP URL without a credential | Gateway 401 and protected-resource metadata challenge |
-| 2 | Complete native gateway OAuth with CAS/Keycloak | Correct directory identity, workspace access and native-store persistence |
-| 3 | Complete gateway-managed upstream OAuth, initialize and list tools | Correlated gateway/upstream requests and eight tools for the intended fixture |
-| 4 | Run all permitted list/detail reads | Only bound objects and projected fields returned |
-| 5 | Try wrong audience/client and missing grants | Authentication/authorization denial at expected boundary |
-| 6 | Ask the running-example question | Model-selected tool calls, preserved call IDs, grounded answer |
-| 7 | Exercise both token lifecycles | Native gateway-facing refresh and separately observed gateway-managed upstream refresh |
-| 8 | Remove fixture policy and reconcile | Existing unexpired token denied by all serving replicas |
-| 9 | Revoke session and remove fixture | No lingering fixture grants, credentials, or policy entries |
-
-Collect only outcomes, timestamps, correlation IDs and synthetic object labels in public evidence. Full token values and backend configuration never belong in the lab report. CAS/CIE identity-resolution, workspace authorization and deprovisioning are required checks for this route; direct native-to-upstream tests cannot substitute for them.
-
-## Assessment rubric
-
-Award two points each for correct component ownership, token separation, complete authorization intersection, honest CIE evidence boundaries, and a diagnosis grounded in observed results. Passing is 8/10 with no audience-reuse or unverified cross-realm-linking claim. This is a course exercise, not a product certification.
-
-Use [System architecture](./architecture.md), [Read-only MCP authorization](./mcp.md), and [Refresh revocation and identity changes](./lifecycle.md) to review missed concepts.
+Review [Architecture](./architecture.md), [Utility authorization](./mcp.md) and [Credential lifecycle](./lifecycle.md).

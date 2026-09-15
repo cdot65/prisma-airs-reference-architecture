@@ -1,81 +1,76 @@
 ---
 id: mcp
-title: "Read-only MCP authorization"
-sidebar_label: "Read-only MCP authorization"
+title: "MCP utility tools and authorization"
+sidebar_label: "MCP utility tools and authorization"
 ---
 
-## Give the assistant a small, enforceable tool surface
+## Eight tools, executed on mcp server 1
 
-The initial `prisma-airs-mcp` server exposes eight configuration-read tools. It returns projected summaries rather than raw upstream JSON. This lets Alex ask useful questions without receiving server credentials, full authentication configuration, prompts, or logs.
+When Alex asks for 12 times 7 and the server's time, the work is done by mcp server 1, a separately deployed service that exposes utility operations through MCP. The gateway proxies the calls, and the server performs the work using its own process, its own clock and its operating-system random source. Nothing is fetched from a management API behind these tools; that is what the course means when it calls the execution local. If you are used to tools that wrap another API, notice that this server has no downstream call to make, which is why the interesting part of this lesson is not what the tools do but what has to be true before the server will do it.
 
-| Scope | Tool | Purpose |
+| Tool | Inputs and behavior | Example |
 | --- | --- | --- |
-| `airs.gateway.read` | `list_workspaces` | Enumerate permitted workspaces |
-| `airs.gateway.read` | `get_workspace` | Read one permitted workspace |
-| `airs.gateway.read` | `list_gateway_configs` | List configurations in a permitted workspace |
-| `airs.gateway.read` | `get_gateway_config` | Read a configuration with its workspace ID |
-| `airs.gateway.read` | `list_gateway_guardrails` | List guardrails in a permitted workspace |
-| `airs.gateway.read` | `get_gateway_guardrail` | Read a guardrail with its workspace ID |
-| `airs.profiles.read` | `list_security_profiles` | List explicitly permitted profiles |
-| `airs.profiles.read` | `get_security_profile` | Read one permitted profile |
+| `calculate` | Two finite numbers and add, subtract, multiply, divide, modulo or power | `{"operation":"multiply","a":12,"b":7}` returns `84` |
+| `format_json` | JSON text and indentation from 0 to 4; 0 produces compact output | `{"text":"{\"ready\":true}","indent":2}` |
+| `transform_text` | Text plus uppercase, lowercase, trim or Unicode NFC normalization | Uppercase `hello` to `HELLO` |
+| `encode_base64` | UTF-8 text to standard padded Base64 | `hello` becomes `aGVsbG8=` |
+| `decode_base64` | Canonical padded Base64 to valid UTF-8 text | `aGVsbG8=` becomes `hello` |
+| `hash_text` | UTF-8 text with SHA-256 or SHA-512; SHA-256 is the default | Return the selected algorithm and hexadecimal digest |
+| `generate_uuid` | Generate 1 to 100 random version 4 UUIDs | `{"count":2}` |
+| `current_time` | No arguments; read the MCP server's UTC clock | ISO 8601 text and Unix milliseconds |
 
-## Authorization is an intersection
+The tools have ordinary implementation limits, and they matter for reading results correctly. Arithmetic uses JavaScript number precision. Invalid JSON, division by zero, non-finite results and invalid Base64 or UTF-8 return tool errors rather than partial output. Inputs and outputs are bounded. Time and UUID generation can return different results on repeated calls, so two identical requests are not expected to produce identical results.
 
-The gateway first authenticates its caller and enforces workspace/integration access. It then presents a separate upstream token. At this resource server, that request must pass token validation and have this resource's `invoke` role. Its effective read permission is the intersection of the issued scope, the corresponding resource role, and the server policy's permitted scopes. Access to the requested object must also be inside the subject's explicit workspace/profile binding.
+One discovery detail trips people up. The server currently provides tools without MCP resources or resource templates, so a client that lists resources sees an empty list. That does not mean the tools are unavailable: tool discovery and resource discovery are separate MCP capabilities, and each answers only its own question. See the [MCP tools specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools).
+
+## A local calculation still needs authorization
+
+A multiplication looks too trivial to guard, but the server does not decide based on how simple the operation is. It decides based on who is asking and what they were granted. Two receivers ask that question in sequence. The gateway checks whether the user can reach the integration at all. mcp server 1 then verifies the gateway-held upstream JWT and its own grants, independently of what the gateway decided.
 
 ```mermaid
-flowchart LR
-    accTitle: MCP authorization intersection
-    accDescr: The server requires a valid resource token, invoke role, matching scope and read role, and explicit subject resource binding before a bounded read.
-    request["Authenticated MCP request"] --> token{"Valid issuer, signature, audience, client and time?"}
-    token -->|"No"| unauthorized["Reject invalid credential"]
+flowchart TD
+    accTitle: Utility tool authorization on mcp server 1
+    accDescr: A valid upstream JWT, allowed gateway client, invoke role, utilities use token scope, matching resource role and explicit subject binding are all required before local execution.
+    request["Proxied MCP request"] --> token{"Signature, issuer, audience, client and time valid?"}
+    token -->|"No"| deny["Reject request"]
     token -->|"Yes"| invoke{"Resource invoke role?"}
-    invoke -->|"No"| forbidden["Reject insufficient access"]
-    invoke -->|"Yes"| grant{"Scope, read role and policy agree?"}
-    grant -->|"No"| forbidden
-    grant -->|"Yes"| binding{"Object belongs to authorized binding?"}
-    binding -->|"No"| hidden["Generic unavailable object result"]
-    binding -->|"Yes"| read["Bounded backend read and safe projection"]
+    invoke -->|"No"| deny
+    invoke -->|"Yes"| scope{"Token includes utilities.use?"}
+    scope -->|"No"| deny
+    scope -->|"Yes"| role{"Resource role includes utilities.use?"}
+    role -->|"No"| deny
+    role -->|"Yes"| binding{"Subject policy permits utilities.use?"}
+    binding -->|"No"| deny
+    binding -->|"Yes"| execute["Validate arguments and execute locally"]
 ```
 
-Suppose Alex has `airs.gateway.read` and `gateway.read`, but the policy permits only `workspace-learning`. A request for `workspace-finance` still fails. A second user with the same roles gets only that second user's own policy bindings. A list or cursor from one identity must not become a shortcut into another identity's inventory.
+All eight tools use the `utilities.use` scope, so the grant is the same whichever tool the model selects. Effective access is the intersection of three things: the scope that was actually issued in the token, the `utilities.use` role on this specific resource client, and the subject's policy binding on the server. `invoke` is required as well. Each of these can be present without the others, which is why the server checks all of them. Requesting a scope during login does not grant it; only the issued token shows what was granted. Roles that belong to another resource client do not count, even if they carry the same name.
 
-For inaccessible object details, the server avoids distinguishing a foreign object from a nonexistent object. Detail reads require ownership context such as `workspace_id`; possession of an object ID is insufficient authorization.
+The subject policy is narrower than it might sound. It grants utility use, and that is all it enumerates. It says nothing about permitted workspaces, configurations or security profiles, because none of those objects are inputs to these tools and the server would have no use for the information.
 
-## The backend identity changes at the server
+## What crosses the boundary
+
+Local execution describes where the computation happens. It does not describe where the data goes, and the sequence for a single call shows the difference.
 
 ```mermaid
 sequenceDiagram
-    accTitle: Separate human and backend credentials
-    accDescr: The harness calls the gateway with its gateway token. The gateway forwards the call with its upstream user token. The resource server uses separate PAN credentials for the backend read.
+    accTitle: Local utility execution and result return
+    accDescr: The harness calls calculate through AI Gateway. mcp server 1 authenticates the proxied request, validates two numbers, computes their product locally and returns the result through the gateway.
     participant harness as Harness
-    participant gateway as AI Gateway MCP listener
-    participant mcp as Upstream MCP server
-    participant panAuth as PAN token endpoint
-    participant panApi as PAN management API
-    harness->>gateway: Tool call with gateway-facing token
-    gateway->>gateway: Authorize workspace and integration
-    gateway->>mcp: Tool call with gateway-managed upstream user JWT
-    mcp->>mcp: Authorize user, action, and object
-    mcp->>panAuth: Client credentials for selected backend account
-    panAuth-->>mcp: Backend access token
-    mcp->>panApi: Read permitted configuration using backend token
-    panApi-->>mcp: Backend response
-    mcp->>mcp: Validate schema and project allowed fields
-    mcp-->>gateway: Bounded tool result
-    gateway-->>harness: MCP result
+    participant gateway as AI Gateway
+    participant server as mcp server 1
+    harness->>gateway: tools/call calculate with 12 and 7
+    gateway->>server: Authorized proxy request and upstream user token
+    server->>server: Verify grants and validate arguments
+    server->>server: Multiply locally
+    server-->>gateway: Structured result: 84
+    gateway-->>harness: MCP tool result
 ```
 
-The backend token may be cached; the sequence shows acquisition when needed. The human JWT is not forwarded to PAN management APIs. Separate service accounts support gateway reads and runtime-profile reads in each environment. Gateway IAM permissions are workspace scoped. Runtime profile inventory is tenant scoped upstream, so explicit server-side profile filtering remains necessary.
+The arguments travel from the workstation through the gateway to the MCP server, and the result comes back the same way. So "local" does not mean the input stays on the workstation. It also does not mean the result stops at the harness: the result may be included in a later inference request, which sends it through the gateway again.
 
-This creates two permission checks: PAN IAM limits the server account, while MCP policy limits each human. If the human loses access, the existence of a functioning backend credential does not authorize the human's request.
+The server's tool annotations describe a read-only, non-destructive surface with no open-world tool execution. Treat those annotations as descriptive hints for clients and models. The behavior you can rely on comes from the actual implementation and the authorization checks above, not from the annotation. And the read-only label applies to these tools only; the harness's separate shell and file tools retain their own permissions.
 
-## Read-only also needs bounds
+**Checkpoint:** Alex has an inference token and wants to call `calculate`. Can the server accept that token because the operation is simple? No. The first decision in the diagram is about the token's audience, and an inference token was issued for a different resource. The operation's simplicity never enters the decision. The server still requires the upstream MCP token and the utility grants.
 
-The reviewed implementation defaults lists to 20 objects and caps them at 50. Signed cursors bind identity, client, effective grants, permitted resources, query, and inventory snapshot; they expire after five minutes. Tool calls have a 20-second budget, backend reads a 10-second deadline, and response/body limits prevent unbounded data retrieval.
-
-Authentication is checked per request. The service uses stateless Streamable HTTP rather than treating an earlier MCP initialization as a durable login. Rate limits are per user/client and per replica in this implementation; two production replicas do not create one globally coordinated quota.
-
-**Checkpoint:** why keep app-level profile filtering if the backend account is read-only? Read-only controls operations, but it does not constrain which tenant profiles the upstream inventory returns.
-
-Protocol background: [MCP authorization](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization). Exact tool and policy behavior: [Implementation status and public sources](./evidence.md).
+Continue with the [complete question walkthrough](./walkthrough.md).
