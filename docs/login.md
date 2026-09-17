@@ -8,7 +8,15 @@ sidebar_label: "Login from browser to authorized tools"
 
 The outcome is concrete: you sign into the harness as yourself, connect the ServiceNow MCP integration in the same environment, and ask the agent to read an incident. Your company SSO identity is used throughout the human login steps. Inference and MCP still receive separate credentials, and the ServiceNow backend uses a server-side integration account.
 
-**Command availability, September 17, 2026:** the unified `env create` and `env status` commands are implemented and locally tested in the harness source, but have not been published in a released package. This walkthrough targets that command set. Check `airs-harness env create --help` before starting; an older installation needs a build containing the new commands. Existing environments and their credentials do not need to be recreated. The top-level `setup` and `status` commands are removed from the new interface.
+**Command availability, September 17, 2026:** this walkthrough requires **airs-harness 0.1.0-alpha.21 or newer**, which provides `env create` and `env status` and removes top-level `setup` and `status`. Alpha.21 is published for Linux x64, Linux ARM64 and Apple Silicon. Existing environments and their credentials do not need to be recreated.
+
+Use your organization's package registry (the URL below is an example), then verify the installed commands:
+
+```sh
+npm install -g airs-harness@0.1.0-alpha.21 --include=optional --registry=https://npm.example.com
+airs-harness --version
+airs-harness env create --help
+```
 
 ### 1. Get the connection details and access
 

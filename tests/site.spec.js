@@ -63,7 +63,7 @@ test('ServiceNow onboarding is discoverable and covers both SSO authorizations',
   await page.getByRole('link',{name:'Sign in and connect ServiceNow'}).click();
   await expect(page).toHaveURL(/learn\/login\/#sso-to-servicenow-a-complete-first-session$/);
   const main=page.locator('main');
-  await expect(main).toContainText('have not been published in a released package');
+  await expect(main).toContainText('airs-harness 0.1.0-alpha.21 or newer');
   await expect(main).toContainText('env create work --gateway-url');
   await expect(main).toContainText('--oidc-client-id harness-native');
   await expect(main).toContainText('--environment work mcp add service-now');

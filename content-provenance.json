@@ -32,8 +32,8 @@
   {
     "slug": "login",
     "noteId": "6e43c28a-618d-43a8-bcad-23c91ab262d1",
-    "sourceSha256": "1de10086f3bf3a7e48d2a3e7a453d55f2f9f2832a468d2d2c4bd297bb883cc72",
-    "publishedSha256": "da6397b01c6f7eadc33a74aae0b0a595d6e098130004ec17aaeb90f991a2e691"
+    "sourceSha256": "35926e85f7469d1daf4d53439bf0c51e43d29c55ca512efe04b22bdc1df8b2d6",
+    "publishedSha256": "1194965263cdb5a6a403d28323de08c9e20bcb7fe8a239f9c911529fcdf8d2bb"
   },
   {
     "slug": "gateway",
@@ -86,7 +86,7 @@
   {
     "slug": "evidence",
     "noteId": "ae0c3bd4-47f4-4e32-afb8-687521faeba8",
-    "sourceSha256": "625ffc3a9b05e349a364d3ce3d4092a84dbdae3b5dd9db239bc1555a1d9ea6d0",
-    "publishedSha256": "fd5f65769e1bf1c845c4ee6cb8c48587527d17d4179cfbdaaab1406dee518919"
+    "sourceSha256": "bdcde426785eb5ca4d739a4f9ab30c4e0bca65a19ac6db9a01d27237a56f0caa",
+    "publishedSha256": "11889aa0a94e58e4348e4e8c1b8ca5ef2f3144c07d8a64ababb904f76a60a319"
   }
 ]
