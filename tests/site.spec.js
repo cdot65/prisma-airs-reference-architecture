@@ -56,3 +56,20 @@ test('diagram expansion supports zoom, SVG download and Escape',async({page})=>{
   await expect(dialog.getByRole('link',{name:'Save SVG'})).toHaveAttribute('href',/^blob:/);
   await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();
 });
+
+
+test('ServiceNow onboarding is discoverable and covers both SSO authorizations',async({page})=>{
+  await page.goto('./');
+  await page.getByRole('link',{name:'Sign in and connect ServiceNow'}).click();
+  await expect(page).toHaveURL(/learn\/login\/#sso-to-servicenow-a-complete-first-session$/);
+  const main=page.locator('main');
+  await expect(main).toContainText('have not been published in a released package');
+  await expect(main).toContainText('env create work --gateway-url');
+  await expect(main).toContainText('--oidc-client-id harness-native');
+  await expect(main).toContainText('--environment work mcp add service-now');
+  await expect(main).toContainText('https://gateway-mcp.example.com/mcp-service-now-dev/mcp');
+  await expect(main).toContainText('--environment work mcp login service-now');
+  await expect(main).toContainText('same company account');
+  await expect(main).toContainText('list_incidents');
+  await expect(main).toContainText('Do not create or update any records.');
+});

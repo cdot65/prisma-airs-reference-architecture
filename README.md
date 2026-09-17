@@ -6,6 +6,16 @@ An independent educational site explaining how Prisma AIRS Harness, Keycloak, Pr
 
 The course includes 15 lessons, 18 Mermaid diagrams, six tabletop labs with answer keys, an optional isolated integration lab, and an interactive authorization exercise. It explains the required gateway path for both inference and MCP, CAS/CIE workspace authorization, and separate gateway-managed upstream OAuth. The current tools compute locally on mcp server 1 without downstream management API calls. Client package and lifecycle verification are tracked in the evidence lesson.
 
+## Connect a user with SSO and ServiceNow
+
+The [end-to-end onboarding walkthrough](docs/login.md#sso-to-servicenow-a-complete-first-session)
+starts with a named harness environment, signs the user into inference with company
+SSO, registers the gateway ServiceNow MCP connection, completes gateway MCP SSO
+with the same company identity, and verifies a read-only incident call. Its
+command-availability note distinguishes the new source-only environment CLI from
+published packages. Public examples use fictional domains; concrete deployment
+values stay in the internal runbook.
+
 ## Develop
 
 Use Node 22, then:

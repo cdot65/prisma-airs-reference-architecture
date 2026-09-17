@@ -4,6 +4,129 @@ title: "Login from browser to authorized tools"
 sidebar_label: "Login from browser to authorized tools"
 ---
 
+## SSO to ServiceNow: a complete first session
+
+The outcome is concrete: you sign into the harness as yourself, connect the ServiceNow MCP integration in the same environment, and ask the agent to read an incident. Your company SSO identity is used throughout the human login steps. Inference and MCP still receive separate credentials, and the ServiceNow backend uses a server-side integration account.
+
+**Command availability, September 17, 2026:** the unified `env create` and `env status` commands are implemented and locally tested in the harness source, but have not been published in a released package. This walkthrough targets that command set. Check `airs-harness env create --help` before starting; an older installation needs a build containing the new commands. Existing environments and their credentials do not need to be recreated. The top-level `setup` and `status` commands are removed from the new interface.
+
+### 1. Get the connection details and access
+
+Ask your administrator for these public connection settings. The values below are examples, not a live tenant configuration.
+
+| Setting | Example | Used for |
+| --- | --- | --- |
+| Inference API URL | `https://gateway.example.com/v1` | Model requests through AI Gateway |
+| Company OIDC issuer | `https://sso.example.com/realms/company` | Your inference browser sign-in |
+| Public native client ID | `harness-native` | The installed harness; no client secret |
+| Inference audience | `airs-inference` | The resource expected in the inference token |
+| ServiceNow gateway MCP URL | `https://gateway-mcp.example.com/mcp-service-now-dev/mcp` | Your gateway-mediated ServiceNow connection |
+
+Your account needs inference access, membership in the gateway workspace that exposes ServiceNow, and a ServiceNow MCP subject binding with the appropriate incident permissions. Being able to sign into SSO does not grant those permissions automatically. The administrator provisions the gateway integration and its upstream OAuth client before you add it locally. The example integration targets a ServiceNow development instance.
+
+Use a desktop browser and an available OS credential store. On macOS, sign in from the desktop session and allow Keychain access. On Linux, make sure the Secret Service/keyring session is available and unlocked. Passwords belong in the company browser page, never in a command or configuration file.
+
+### 2. Create and select your environment
+
+```sh
+airs-harness env create work --gateway-url https://gateway.example.com/v1
+airs-harness env use work
+```
+
+Creation already selects `work`; the explicit `env use` makes the rest of the walkthrough's destination clear. Because the gateway URL is supplied, creation does not open a browser. Sign-in is the next step. If `work` already exists and points at the intended gateway, run only `env use work`. Use `env show work` to inspect it; do not recreate it to repair a cancelled login.
+
+For a guided alternative, run `airs-harness env create work` with no gateway flag. Enter the inference URL, choose **1. Company sign-in**, and provide the issuer, public client ID and audience from the table. That wizard combines this step and the next one. After successful sign-in, continue with verification rather than signing in twice.
+
+### 3. Sign into inference with company SSO
+
+```sh
+airs-harness --environment work login \
+  --issuer-url https://sso.example.com/realms/company \
+  --oidc-client-id harness-native \
+  --audience airs-inference
+```
+
+Sign in as the intended company user in the browser. Return to the terminal and wait for successful credential persistence. A browser success page alone does not prove that the OS store saved the credential. If you cancelled, rerun `airs-harness --environment work login` in the existing environment and choose Company sign-in.
+
+Check the saved identity, then test the inference route:
+
+```sh
+airs-harness env status work
+airs-harness --environment work doctor --verify-access
+```
+
+`env status` inspects local configuration; it does not prove fresh authentication or remote access. `doctor --verify-access` performs an inference probe, which can consume gateway quota. Its success does not test ServiceNow tools. Resolve an inference error before continuing; adding MCP will not repair an incorrect inference URL or missing inference entitlement.
+
+### 4. Add ServiceNow to that same environment
+
+Run `airs-harness env show work` and locate its `state_directory`. In that directory's `config.toml`, set the following **top-level** key before any `[table]` headers, updating an existing value rather than adding a duplicate:
+
+```toml
+mcp_oauth_credentials_store = "keyring"
+```
+
+This requires native storage for MCP credentials as well. Then register the gateway connection:
+
+```sh
+airs-harness --environment work mcp add service-now \
+  --url https://gateway-mcp.example.com/mcp-service-now-dev/mcp \
+  --scopes mcp:servers:read,mcp:tools:list,mcp:tools:call
+```
+
+`service-now` is the local connection name. The URL must be the gateway's ServiceNow connection URL, including the final `/mcp`. It is not the ServiceNow instance URL or the upstream MCP server URL. Adding a server in `work` does not add it to your other environments.
+
+### 5. Complete MCP login with the same company identity
+
+`mcp add` detects OAuth and normally opens the browser immediately. Follow the gateway's CAS/company sign-in flow and select the **same company account** used for inference. An existing SSO browser session may avoid another password prompt; consent or account selection can still appear. If the gateway requests upstream ServiceNow MCP consent, complete that gateway-managed flow with the same company identity too.
+
+Wait for the CLI to report **Successfully logged in.** If adding the connection saved it but login was cancelled, failed or expired, resume without adding it again:
+
+```sh
+airs-harness --environment work mcp login service-now
+```
+
+Do not run this again just because `mcp add` already completed login successfully. Do not paste the inference token into the MCP configuration, register the upstream confidential client on your workstation, or enter a ServiceNow integration password into the harness. The user authenticates to the gateway; the gateway handles upstream OAuth; the MCP service handles the ServiceNow backend credential. An existing browser session can simplify sign-in, but the two native logins must still use the intended account.
+
+### 6. Verify a real, read-only ServiceNow call
+
+```sh
+airs-harness --environment work mcp list
+airs-harness --environment work
+```
+
+Inside the harness, run `/mcp`. Confirm that `service-now` is connected with OAuth and inspect the tools available to your identity. A read-only grant exposes `list_incidents` and `get_incident`; an authorized incident-management grant also exposes `create_incident` and `update_incident`. A successful login does not imply all four permissions.
+
+Start with a read-only request:
+
+> Use the service-now MCP connection to list up to five active incidents. Show their numbers, short descriptions and priorities. Do not create or update any records.
+
+Confirm that the transcript actually called `list_incidents` on `service-now` and returned a tool result. An empty authorized list is a valid result. A connection label, a tool inventory, or a model answer without a tool call is not end-to-end evidence. Writes are separate actions that change real ServiceNow records; this onboarding check does not require them.
+
+### Return, switch and recover
+
+After `airs-harness env use work`, a bare `airs-harness` opens this environment. `--environment NAME` selects an environment for one command without changing the saved default. Each environment has its own history, inference identity binding and MCP configuration.
+
+| Symptom | Next step |
+| --- | --- |
+| Inference login was cancelled | `airs-harness --environment work login`; reuse the environment |
+| Gateway MCP login needs renewal | `airs-harness --environment work mcp login service-now`; then start a fresh conversation |
+| Inference succeeds but ServiceNow is absent | Check `mcp list` in `work`, then the gateway URL and workspace integration grant |
+| Browser callback says success but the terminal fails | Check native credential-store persistence; keep the terminal open through completion |
+| Gateway returns 404 | Check the exact ServiceNow gateway URL and its final `/mcp` |
+| Tools return an authorization error | Have an administrator check the gateway workspace grant and upstream incident roles/scopes/subject binding |
+
+To retire the environment, sign out the credentials you intend to remove while it is still selected, then unregister it:
+
+```sh
+airs-harness --environment work mcp logout service-now
+airs-harness --environment work logout
+airs-harness env remove work
+```
+
+`env remove` preserves local files and history and does not itself revoke credentials. If it was the default, select another environment before starting a new session. Recreating the same name creates a fresh namespace, not a reconnection to the preserved history.
+
+The steps above define what to verify. They do not claim that this documentation edit performed a fresh human SSO login or a live ServiceNow tool call. See [Implementation status and public sources](./evidence.md) for the recorded deployment and release limits.
+
 ## Authenticate for the gateway destination
 
 From Alex's chair, signing in looks like one event: a browser opens, Keycloak asks for a password once, and afterwards both the model and mcp server 1 respond. Underneath, there are separate grants, and this lesson is about seeing them separately, because when one of them expires or is denied, the other keeps working and the symptom only makes sense if you know which grant failed.
@@ -93,28 +216,6 @@ Compare the two callbacks. In the first sequence the code came back to the harne
 
 The exact consent trigger and order depend on the registered upstream integration, so expect variation between integrations. Gateway OAuth Auto and machine client credentials are distinct modes. A failure in the machine mode does not demonstrate that OAuth Auto is unavailable. The gateway manages upstream OAuth, and the harness must not acquire upstream tokens to bypass that step, since doing so would move a credential the architecture keeps server-side onto the workstation. [MCP authentication layers](https://portkey.ai/docs/product/mcp-gateway/authentication).
 
-## Native onboarding
-
-With the model in place, the onboarding commands are short. Use the connection URL returned by the gateway for the workspace integration. An illustrative production destination is `https://gateway-mcp.example.com/mcp-server-1/mcp`; a development integration might end in `/mcp-server-1-dev/mcp`. Replace these examples with the connection URLs from your gateway. The upstream resource URL is configured only on the gateway, so the harness never needs it.
-
-With the gateway integration and workspace membership provisioned, configure native credential storage in the selected harness environment and add the server:
-
-```toml
-mcp_oauth_credentials_store = "keyring"
-```
-
-```sh
-airs-harness mcp add mcp-server-1 \
-  --url https://gateway-mcp.example.com/mcp-server-1/mcp \
-  --scopes mcp:servers:read,mcp:tools:list,mcp:tools:call
-airs-harness mcp list
-airs-harness doctor --verify-access
-```
-
-`mcp add` performs the first sequence: it discovers gateway OAuth, dynamically registers the public native client, and starts browser authorization. After a cancelled or expired attempt, use `airs-harness mcp login mcp-server-1`. Run `/mcp` inside the interactive harness to inspect the available tools. The CLI identifier `mcp-server-1` is an example connection name for mcp server 1; use the actual gateway-provided URL and the discovered scopes. Changing the documentation label does not rename an existing saved connection or deployment. Upstream client IDs and secrets remain in the gateway integration.
-
-The credential store adds platform conditions of its own. On macOS, perform login in the signed-in desktop session and allow the native Keychain prompt. A browser success page confirms the callback, but the CLI must also confirm that credentials were saved, because the save is a separate step that can fail after the browser has finished. Under SSH, Keychain may refuse access with “User interaction is not allowed.” Linux requires an unlocked native Secret Service session. The loopback callback times out after five minutes, after which a fresh login attempt is required; returning to an old browser tab cannot complete a new attempt because the state and verifier belong to the earlier one.
-
-Verify OAuth discovery, browser callback, gateway access, tool discovery and a model-selected utility call as separate steps, since each can succeed while the next fails. Then test expiry, logout and denial on the gateway-mediated path. A server inventory alone does not establish any of these results. Notice too that the scopes in the command above belong to the gateway-facing OAuth leg; the upstream resource grant is utilities.use, and it is issued in the second sequence, not this one.
+The earlier diagrams use mcp server 1, the utility example in this course. The ServiceNow walkthrough above uses the same gateway login boundaries with a different upstream service and a separate backend credential.
 
 Continue with [End-to-end question walkthrough](./walkthrough.md) and [Implementation status and public sources](./evidence.md).

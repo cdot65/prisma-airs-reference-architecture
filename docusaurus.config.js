@@ -27,6 +27,7 @@ const config = {
       logo: {alt: 'Architecture Lab', src: 'img/mark.svg'},
       items: [
         {to: '/learn/start-here', label: 'Learn', position: 'left'},
+        {to: '/learn/login#sso-to-servicenow-a-complete-first-session', label: 'SSO + ServiceNow', position: 'left'},
         {to: '/learn/architecture', label: 'Architecture', position: 'left'},
         {to: '/learn/labs', label: 'Labs', position: 'left'},
         {to: '/learn/evidence', label: 'Evidence', position: 'left'},

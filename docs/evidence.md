@@ -4,7 +4,15 @@ title: "Implementation status and public sources"
 sidebar_label: "Implementation status and public sources"
 ---
 
-## Current implementation and publication scope
+## September 17: ServiceNow onboarding and environment commands
+
+The login lesson now includes an SSO-to-ServiceNow walkthrough. Its `env create` and `env status` command set is implemented in local source, with 780 scoped CLI tests and 11 focused onboarding/status checks passing. The new interface removes top-level `setup` and `status`. It has not been published in a released client package; those checks are not an installed-release claim.
+
+ServiceNow is a separate development integration from the course's eight-tool utility server. The deployment record reports upstream acceptance of four incident tools and refresh cycles with disposable users. The maintainer subsequently observed the gateway-connected `service-now` inventory with OAuth in the harness. That inventory observation does not establish a completed model-selected incident call through the gateway frontend. No ServiceNow production deployment, fresh human SSO acceptance, or new live tool-call acceptance is claimed by this documentation update.
+
+The human uses company SSO for inference and gateway MCP authorization. The gateway owns upstream OAuth; the ServiceNow MCP service uses a server-side integration credential to access the incident table. These are separate credential boundaries. The walkthrough's final read-only tool call is the user's end-to-end verification step.
+
+## Earlier implementation and publication scope
 
 Every other lesson makes claims about how this system behaves. This lesson records what those claims rest on, as of the dates given, and where each piece of evidence stops. Reading it lets you tell the difference between something the reviewed source does, something a dated check observed, and something that has not been demonstrated yet.
 

@@ -51,7 +51,7 @@ export default function Home() {
       <section className="container sectionSpace readingGrid">
         <div><p className="eyebrow">Choose a route</p><h2>Follow the arrows.<br/>Then test your explanation.</h2></div>
         <div className="routeLinks">
-          <Link to="/learn/login"><strong>Trace the complete login</strong><span>Discovery, PKCE, callback, and two token bundles →</span></Link>
+          <Link to="/learn/login#sso-to-servicenow-a-complete-first-session"><strong>Sign in and connect ServiceNow</strong><span>Create an environment, use company SSO, and verify incident tools →</span></Link>
           <Link to="/learn/walkthrough"><strong>Follow one question end to end</strong><span>Model selection, local utility results, and a grounded answer →</span></Link>
           <Link to="/learn/labs"><strong>Practice with answer keys</strong><span>Audience errors, identity joins, refresh races, and revocation →</span></Link>
         </div>

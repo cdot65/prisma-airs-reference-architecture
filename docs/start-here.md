@@ -4,6 +4,8 @@ title: "Start here"
 sidebar_label: "Start here"
 ---
 
+For a practical first session, start with [Sign in with SSO and connect ServiceNow](./login.md). It walks through environment creation, company sign-in for inference, adding the gateway ServiceNow MCP connection, a second authorization with the same SSO identity, and a read-only incident query. Check its command-availability note before running the examples.
+
 ## The goal
 
 This course follows one authenticated AI assistant from a question to a real utility result. The harness sends its model requests through an approved inference route, and it calls a small, authorized set of MCP tools through the same AI Gateway. The interesting part is how many separate services have to agree before a simple calculation is allowed to happen, and what each of them actually checks.
