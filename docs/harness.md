@@ -4,11 +4,17 @@ title: "Harness and agent execution"
 sidebar_label: "Harness and agent execution"
 ---
 
+## Commands and bundled product tools
+
+The alpha.22 npm package is named `airs-harness`; its public command is `airs`. `airs cli ...` runs the bundled Prisma AIRS CLI 7.0.0 without a second installation. A separately installed product CLI uses `airs-cli ...`. Embedded skills use the harness's private bundled executable.
+
+Harness environments select gateway connections, human login bindings and conversation history. Product CLI tenants select Prisma AIRS credentials from tenant JSON. These selections are independent: switching environments does not switch the CLI tenant, and company SSO does not create a management API credential. See [Login from browser to authorized tools](./login.md) for installation, migration and a complete first session.
+
 ## The harness owns the execution loop
 
 When Alex types the question, the first component that sees it is the harness, and the harness is the component that owns the conversation from then on. Prisma AIRS Harness is a standalone Rust terminal application. Its local responsibilities include the conversation, repository access, tool dispatch, approval policy, and credential-store integration. The similarly named hosted application is a separate project and is not required for this architecture.
 
-Remote tools are handled by the harness's inherited Codex MCP client, which runs inside the normal `airs-harness` process and takes care of remote tool discovery, browser OAuth and Streamable HTTP. Users manage this connection through `mcp add`, `mcp login`, `mcp list` and `mcp logout`, and inspect it with `/mcp` in the interactive terminal. No secondary MCP command is required. Upstream [Codex MCP documentation](https://developers.openai.com/codex/mcp/) describes the underlying client capabilities; the commands and release limits in this course describe the reviewed harness fork.
+Remote tools are handled by the harness's inherited Codex MCP client, which runs inside the normal `airs` process and takes care of remote tool discovery, browser OAuth and Streamable HTTP. Users manage this connection through `mcp add`, `mcp login`, `mcp list` and `mcp logout`, and inspect it with `/mcp` in the interactive terminal. No secondary MCP command is required. Upstream [Codex MCP documentation](https://developers.openai.com/codex/mcp/) describes the underlying client capabilities; the commands and release limits in this course describe the reviewed harness fork.
 
 When Alex asks for a calculation and server time, the harness makes tool schemas available to the model. A schema tells the model a tool's name, its purpose, and its required arguments. That is all it does. It does not grant the model access to anything: gateway policy and the server's utility authorization still apply to every call the model proposes, and the model has no way to satisfy either of them on its own.
 

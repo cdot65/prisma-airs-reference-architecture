@@ -4,7 +4,7 @@ title: "Start here"
 sidebar_label: "Start here"
 ---
 
-For a practical first session, start with [Sign in with SSO and connect ServiceNow](./login.md). It walks through environment creation, company sign-in for inference, adding the gateway ServiceNow MCP connection, a second authorization with the same SSO identity, and a read-only incident query. Check its command-availability note before running the examples.
+For a practical first session, start with [Sign in with SSO and connect ServiceNow](./login.md). It walks through environment creation, company sign-in for inference, adding the gateway ServiceNow MCP connection, a second authorization with the same SSO identity, and a read-only incident query. It starts with one harness installation and explains the `airs` / `airs cli` commands, migration from the old standalone CLI, and optional product tenant setup.
 
 ## The goal
 
@@ -44,7 +44,7 @@ The component lessons give you the pieces, the interaction lessons show them exc
 
 ## How to read the evidence labels
 
-A course about a real system has to say which claims come from where, so the lessons label them. **Implemented** describes the reviewed source. **Observed deployment** describes a dated live check against a running environment. **Release acceptance** applies only to the exact installed package and its recorded lifecycle tests, because a behavior in source and a behavior in the binary a user actually downloaded are two different facts. As of this writing, the utility server is deployed and the alpha.16 client correction has source-level checks. Package publication and timed lifecycle acceptance are separate observations, recorded in [Implementation status and public sources](./evidence.md).
+A course about a real system has to say which claims come from where, so the lessons label them. **Implemented** describes the reviewed source. **Observed deployment** describes a dated live check against a running environment. **Release acceptance** applies only to the exact installed package and its recorded lifecycle tests, because a behavior in source and a behavior in the binary a user actually downloaded are two different facts. The utility server is deployed. The current command migration has source and installed-package checks. Package publication and timed lifecycle acceptance are separate observations, recorded in [Implementation status and public sources](./evidence.md).
 
 All example domains, subjects, workspaces, and user records in these lessons are fictional. Example identifiers illustrate the contract; they are not runnable configuration or signed credentials. Read [Implementation status and public sources](./evidence.md) for dated findings, limits, and primary references.
 

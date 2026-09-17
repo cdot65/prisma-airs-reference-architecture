@@ -8,15 +8,33 @@ sidebar_label: "Login from browser to authorized tools"
 
 The outcome is concrete: you sign into the harness as yourself, connect the ServiceNow MCP integration in the same environment, and ask the agent to read an incident. Your company SSO identity is used throughout the human login steps. Inference and MCP still receive separate credentials, and the ServiceNow backend uses a server-side integration account.
 
-**Command availability, September 17, 2026:** this walkthrough requires **airs-harness 0.1.0-alpha.21 or newer**, which provides `env create` and `env status` and removes top-level `setup` and `status`. Alpha.21 is published for Linux x64, Linux ARM64 and Apple Silicon. Existing environments and their credentials do not need to be recreated.
+**Command availability:** this walkthrough targets **airs-harness 0.1.0-alpha.22**, invoked as `airs`, with **Prisma AIRS CLI 7.0.0** bundled as `airs cli`. The npm package keeps the name `airs-harness`. Existing environments, credentials and histories do not need to be recreated. Top-level `setup` and `status` are removed; use `env create` and `env status`.
 
 Use your organization's package registry (the URL below is an example), then verify the installed commands:
 
 ```sh
-npm install -g airs-harness@0.1.0-alpha.21 --include=optional --registry=https://npm.example.com
-airs-harness --version
-airs-harness env create --help
+npm install -g airs-harness@0.1.0-alpha.22 --include=optional --registry=https://npm.example.com
+airs --version
+airs cli --version
+airs env create --help
 ```
+
+Use Node.js 22.14 or later in the 22.x line, or Node.js 24 or newer. A fresh machine needs only the harness installation above; the product CLI and its skills ship with it. You do not need a global `airs-cli` installation to use `airs cli`.
+
+**If this machine already has the old standalone CLI:** upgrade it first so it releases the `airs` command, then install the harness. Do not force npm to overwrite a command owned by another package.
+
+```sh
+npm install -g @cdot65/prisma-airs-cli@7.0.0 --registry=https://registry.npmjs.org
+airs-cli --version
+npm install -g airs-harness@0.1.0-alpha.22 --include=optional --registry=https://npm.example.com
+airs --version
+airs cli --version
+airs --migration-check
+```
+
+Run `type -a airs airs-cli airs-harness` in your shell if another executable or alias shadows the npm commands; after changing PATH, refresh your shell's command cache or start a new shell. `airs --migration-check` reports executable ownership without modifying it. For a check before installation, run `npm exec --yes --registry=https://npm.example.com --package=airs-harness@0.1.0-alpha.22 -- airs --migration-check`. Move an obsolete manual command aside only after identifying its owner.
+
+The compatibility alias `airs-harness` remains for alpha.22 and is scheduled for removal in alpha.23. Update scripts now: harness commands start with `airs`; product commands start with `airs cli` or standalone `airs-cli`. For example, old `airs runtime ...` becomes `airs cli runtime ...`.
 
 ### 1. Get the connection details and access
 
@@ -37,37 +55,37 @@ Use a desktop browser and an available OS credential store. On macOS, sign in fr
 ### 2. Create and select your environment
 
 ```sh
-airs-harness env create work --gateway-url https://gateway.example.com/v1
-airs-harness env use work
+airs env create work --gateway-url https://gateway.example.com/v1
+airs env use work
 ```
 
 Creation already selects `work`; the explicit `env use` makes the rest of the walkthrough's destination clear. Because the gateway URL is supplied, creation does not open a browser. Sign-in is the next step. If `work` already exists and points at the intended gateway, run only `env use work`. Use `env show work` to inspect it; do not recreate it to repair a cancelled login.
 
-For a guided alternative, run `airs-harness env create work` with no gateway flag. Enter the inference URL, choose **1. Company sign-in**, and provide the issuer, public client ID and audience from the table. That wizard combines this step and the next one. After successful sign-in, continue with verification rather than signing in twice.
+For a guided alternative, run `airs env create work` with no gateway flag. Enter the inference URL, choose **1. Company sign-in**, and provide the issuer, public client ID and audience from the table. That wizard combines this step and the next one. After successful sign-in, continue with verification rather than signing in twice.
 
 ### 3. Sign into inference with company SSO
 
 ```sh
-airs-harness --environment work login \
+airs --environment work login \
   --issuer-url https://sso.example.com/realms/company \
   --oidc-client-id harness-native \
   --audience airs-inference
 ```
 
-Sign in as the intended company user in the browser. Return to the terminal and wait for successful credential persistence. A browser success page alone does not prove that the OS store saved the credential. If you cancelled, rerun `airs-harness --environment work login` in the existing environment and choose Company sign-in.
+Sign in as the intended company user in the browser. Return to the terminal and wait for successful credential persistence. A browser success page alone does not prove that the OS store saved the credential. If you cancelled, rerun `airs --environment work login` in the existing environment and choose Company sign-in.
 
 Check the saved identity, then test the inference route:
 
 ```sh
-airs-harness env status work
-airs-harness --environment work doctor --verify-access
+airs env status work
+airs --environment work doctor --verify-access
 ```
 
 `env status` inspects local configuration; it does not prove fresh authentication or remote access. `doctor --verify-access` performs an inference probe, which can consume gateway quota. Its success does not test ServiceNow tools. Resolve an inference error before continuing; adding MCP will not repair an incorrect inference URL or missing inference entitlement.
 
 ### 4. Add ServiceNow to that same environment
 
-Run `airs-harness env show work` and locate its `state_directory`. In that directory's `config.toml`, set the following **top-level** key before any `[table]` headers, updating an existing value rather than adding a duplicate:
+Run `airs env show work` and locate its `state_directory`. In that directory's `config.toml`, set the following **top-level** key before any `[table]` headers, updating an existing value rather than adding a duplicate:
 
 ```toml
 mcp_oauth_credentials_store = "keyring"
@@ -76,7 +94,7 @@ mcp_oauth_credentials_store = "keyring"
 This requires native storage for MCP credentials as well. Then register the gateway connection:
 
 ```sh
-airs-harness --environment work mcp add service-now \
+airs --environment work mcp add service-now \
   --url https://gateway-mcp.example.com/mcp-service-now-dev/mcp \
   --scopes mcp:servers:read,mcp:tools:list,mcp:tools:call
 ```
@@ -90,7 +108,7 @@ airs-harness --environment work mcp add service-now \
 Wait for the CLI to report **Successfully logged in.** If adding the connection saved it but login was cancelled, failed or expired, resume without adding it again:
 
 ```sh
-airs-harness --environment work mcp login service-now
+airs --environment work mcp login service-now
 ```
 
 Do not run this again just because `mcp add` already completed login successfully. Do not paste the inference token into the MCP configuration, register the upstream confidential client on your workstation, or enter a ServiceNow integration password into the harness. The user authenticates to the gateway; the gateway handles upstream OAuth; the MCP service handles the ServiceNow backend credential. An existing browser session can simplify sign-in, but the two native logins must still use the intended account.
@@ -98,8 +116,8 @@ Do not run this again just because `mcp add` already completed login successfull
 ### 6. Verify a real, read-only ServiceNow call
 
 ```sh
-airs-harness --environment work mcp list
-airs-harness --environment work
+airs --environment work mcp list
+airs --environment work
 ```
 
 Inside the harness, run `/mcp`. Confirm that `service-now` is connected with OAuth and inspect the tools available to your identity. A read-only grant exposes `list_incidents` and `get_incident`; an authorized incident-management grant also exposes `create_incident` and `update_incident`. A successful login does not imply all four permissions.
@@ -110,14 +128,35 @@ Start with a read-only request:
 
 Confirm that the transcript actually called `list_incidents` on `service-now` and returned a tool result. An empty authorized list is a valid result. A connection label, a tool inventory, or a model answer without a tool call is not end-to-end evidence. Writes are separate actions that change real ServiceNow records; this onboarding check does not require them.
 
+### 7. Use the bundled Prisma AIRS product CLI and skills
+
+The ServiceNow session above needs no product management credential. If you also manage Prisma AIRS products, configure a separate CLI tenant using credentials supplied for that tenant:
+
+```sh
+airs cli tenant create development
+airs cli tenant switch development
+airs cli --tenant development doctor
+airs cli runtime --help
+```
+
+`tenant create` prompts for the tenant service group ID, OAuth client ID and a hidden client secret, and saves a private JSON configuration. It does not select the tenant until `tenant switch`. To register an existing JSON file without copying or changing it, use `airs cli tenant create development --config /secure/development.json` instead. Doctor reports which capabilities the configuration supports; it can perform remote probes and is not a guarantee that every product is licensed or authorized.
+
+Harness environments and CLI tenants are independent. `airs env use work` selects the conversation, inference login and MCP connections. `airs cli tenant switch development` selects product credentials. Prefer `airs cli --tenant development ...` in scripts. Put `cli` immediately after `airs`; `airs --environment work cli ...` does not select a product tenant. Company SSO does not supply Prisma AIRS management API credentials, and the CLI does not read old dotenv credentials as a fallback.
+
+In the harness, ask:
+
+> Use the bundled prisma-cli skill to inspect the development tenant's configuration and identify available read-only Prisma AIRS commands. Do not create, change or delete resources.
+
+The skills invoke the private bundled executable, so a global CLI version cannot silently replace it. They cover runtime scanning, AI Gateway, red teaming, model security and related workflows. Check the proposed tenant and operation before authorizing writes. Standalone `airs-cli` and `airs cli` use the same tenant store, so switching the saved CLI tenant affects both entry points.
+
 ### Return, switch and recover
 
-After `airs-harness env use work`, a bare `airs-harness` opens this environment. `--environment NAME` selects an environment for one command without changing the saved default. Each environment has its own history, inference identity binding and MCP configuration.
+List environments with `airs env list`; switch the saved default with `airs env use work`. A bare `airs` then opens that environment. `--environment NAME` selects an environment for one command without changing the saved default. Each environment has its own history, inference identity binding and MCP configuration.
 
 | Symptom | Next step |
 | --- | --- |
-| Inference login was cancelled | `airs-harness --environment work login`; reuse the environment |
-| Gateway MCP login needs renewal | `airs-harness --environment work mcp login service-now`; then start a fresh conversation |
+| Inference login was cancelled | `airs --environment work login`; reuse the environment |
+| Gateway MCP login needs renewal | `airs --environment work mcp login service-now`; then start a fresh conversation |
 | Inference succeeds but ServiceNow is absent | Check `mcp list` in `work`, then the gateway URL and workspace integration grant |
 | Browser callback says success but the terminal fails | Check native credential-store persistence; keep the terminal open through completion |
 | Gateway returns 404 | Check the exact ServiceNow gateway URL and its final `/mcp` |
@@ -126,9 +165,9 @@ After `airs-harness env use work`, a bare `airs-harness` opens this environment.
 To retire the environment, sign out the credentials you intend to remove while it is still selected, then unregister it:
 
 ```sh
-airs-harness --environment work mcp logout service-now
-airs-harness --environment work logout
-airs-harness env remove work
+airs --environment work mcp logout service-now
+airs --environment work logout
+airs env remove work
 ```
 
 `env remove` preserves local files and history and does not itself revoke credentials. If it was the default, select another environment before starting a new session. Recreating the same name creates a fresh namespace, not a reconnection to the preserved history.

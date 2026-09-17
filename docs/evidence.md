@@ -4,6 +4,16 @@ title: "Implementation status and public sources"
 sidebar_label: "Implementation status and public sources"
 ---
 
+## September 17: command migration and bundled product CLI
+
+Prisma AIRS CLI **7.0.0** exports `airs-cli`. Harness **0.1.0-alpha.22** exports `airs` and bundles that exact CLI as `airs cli ...`, with SDK **0.33.0**. Linux x64, native Linux ARM64 and signed/notarized Apple Silicon installations passed acceptance. A separate global product CLI is optional. The temporary `airs-harness` alias is scheduled for removal in alpha.23.
+
+Validation includes 1,920 TypeScript CLI tests, 925 native CLI tests and 51 skills tests. Each installed harness passed 47 executable checks (46 passed, one platform-specific skip), including an agent invoking the embedded skill and private CLI. The installed product CLI generated PDF, PNG, JPEG, SVG and DOCX fixtures on all three platforms. Mac Keychain checks passed. Upgrade checks preserve environment identity, configuration and history; the paired CLI/harness migration, independent uninstalls and ordered rollback passed on each platform without force. These checks use isolated state and deterministic gateway fixtures.
+
+The rename does not merge harness environments with CLI tenants. Company SSO authorizes gateway inference and MCP access; product API credentials remain in separately selected tenant JSON. The login lesson covers the complete first session, including the optional product CLI setup after the ServiceNow read.
+
+Publication and installed-client acceptance do not establish a fresh human SSO login or a live ServiceNow incident call. Complete production frontend expiry and hourly renewal acceptance remain open. The user performs the walkthrough's final read-only tool call with their own provisioned account.
+
 ## September 17: ServiceNow onboarding and environment commands
 
 Alpha.21 is published for Linux x64, Linux ARM64 and Apple Silicon. It provides the login lesson's unified `env create` and `env status` commands and removes top-level `setup` and `status`. The implementation passed 780 scoped CLI tests and 11 focused onboarding/status checks. Fresh anonymous registry installations passed 47 executable checks per platform (46 passed and one platform-specific skip), plus environment lifecycle checks. Upgrades from alpha.20 preserved configuration on all three platforms; alpha.14 upgrades also passed on Linux x64 and Apple Silicon. Apple Silicon signing, notarization and Keychain checks passed; Linux ARM64 was exercised natively in an ARM64 Linux VM. These are installed-client checks against deterministic fixtures, not fresh production SSO or ServiceNow acceptance.
