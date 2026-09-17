@@ -6,7 +6,7 @@ sidebar_label: "Implementation status and public sources"
 
 ## September 17: command migration and bundled product CLI
 
-Prisma AIRS CLI **7.0.0** exports `airs-cli`. Harness **0.1.0-alpha.22** exports `airs` and bundles that exact CLI as `airs cli ...`, with SDK **0.33.0**. Linux x64, native Linux ARM64 and signed/notarized Apple Silicon installations passed acceptance. A separate global product CLI is optional. The temporary `airs-harness` alias is scheduled for removal in alpha.23.
+Standalone Prisma AIRS CLI **7.0.1** exports `airs-cli`. Harness **0.1.0-alpha.22** exports `airs` and bundles its tested CLI **7.0.0** as `airs cli ...`, with SDK **0.33.0**. The standalone patch finalizes stable publication without changing command behavior or tenant configuration. Linux x64, native Linux ARM64 and signed/notarized Apple Silicon installations passed acceptance. A separate global product CLI is optional. The temporary `airs-harness` alias is scheduled for removal in alpha.23.
 
 Validation includes 1,920 TypeScript CLI tests, 925 native CLI tests and 51 skills tests. Each installed harness passed 47 executable checks (46 passed, one platform-specific skip), including an agent invoking the embedded skill and private CLI. The installed product CLI generated PDF, PNG, JPEG, SVG and DOCX fixtures on all three platforms. Mac Keychain checks passed. Upgrade checks preserve environment identity, configuration and history; the paired CLI/harness migration, independent uninstalls and ordered rollback passed on each platform without force. These checks use isolated state and deterministic gateway fixtures.
 

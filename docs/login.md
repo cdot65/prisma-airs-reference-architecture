@@ -24,7 +24,7 @@ Use Node.js 22.14 or later in the 22.x line, or Node.js 24 or newer. A fresh mac
 **If this machine already has the old standalone CLI:** upgrade it first so it releases the `airs` command, then install the harness. Do not force npm to overwrite a command owned by another package.
 
 ```sh
-npm install -g @cdot65/prisma-airs-cli@7.0.0 --registry=https://registry.npmjs.org
+npm install -g @cdot65/prisma-airs-cli@7.0.1 --registry=https://registry.npmjs.org
 airs-cli --version
 npm install -g airs-harness@0.1.0-alpha.22 --include=optional --registry=https://npm.example.com
 airs --version
@@ -33,6 +33,8 @@ airs --migration-check
 ```
 
 Run `type -a airs airs-cli airs-harness` in your shell if another executable or alias shadows the npm commands; after changing PATH, refresh your shell's command cache or start a new shell. `airs --migration-check` reports executable ownership without modifying it. For a check before installation, run `npm exec --yes --registry=https://npm.example.com --package=airs-harness@0.1.0-alpha.22 -- airs --migration-check`. Move an obsolete manual command aside only after identifying its owner.
+
+Standalone CLI 7.0.1 is the stable default release; harness alpha.22 retains its tested CLI 7.0.0 bundle. The patch changes release metadata, not command behavior or tenant configuration. Their version outputs therefore differ by one patch.
 
 The compatibility alias `airs-harness` remains for alpha.22 and is scheduled for removal in alpha.23. Update scripts now: harness commands start with `airs`; product commands start with `airs cli` or standalone `airs-cli`. For example, old `airs runtime ...` becomes `airs cli runtime ...`.
 
@@ -145,7 +147,7 @@ Harness environments and CLI tenants are independent. `airs env use work` select
 
 In the harness, ask:
 
-> Use the bundled prisma-cli skill to inspect the development tenant's configuration and identify available read-only Prisma AIRS commands. Do not create, change or delete resources.
+> Use the bundled prisma-airs-cli skill to inspect the development tenant's configuration and identify available read-only Prisma AIRS commands. Do not create, change or delete resources.
 
 The skills invoke the private bundled executable, so a global CLI version cannot silently replace it. They cover runtime scanning, AI Gateway, red teaming, model security and related workflows. Check the proposed tenant and operation before authorizing writes. Standalone `airs-cli` and `airs cli` use the same tenant store, so switching the saved CLI tenant affects both entry points.
 

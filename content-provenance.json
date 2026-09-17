@@ -32,8 +32,8 @@
   {
     "slug": "login",
     "noteId": "6e43c28a-618d-43a8-bcad-23c91ab262d1",
-    "sourceSha256": "be45a82f4cca129cfab8f7d4572a2b7efd05c428dce3cee8ea7c40ab4d0132e5",
-    "publishedSha256": "99514e5a598d6a1165cce97f5000e49ac1158e0b75a8b92b0dfe7e0d9a36e2f3"
+    "sourceSha256": "b7dd58c541900f30bafb51214da66cb6643b9b41c4cd7d81766f45cdbc605326",
+    "publishedSha256": "4e1ced6ba4ff841b4737e6c1c29ea7664ec35e6ddf79dc9b7dce6b66df43056d"
   },
   {
     "slug": "gateway",
@@ -86,7 +86,7 @@
   {
     "slug": "evidence",
     "noteId": "ae0c3bd4-47f4-4e32-afb8-687521faeba8",
-    "sourceSha256": "09ec29b0c9f6f4fc4bb6d3c810435416aa70f2bf457f01a325d31fb3eac6ae0a",
-    "publishedSha256": "583cab78964166b4271b5344a355a90402df98db25e74e96a5fc78a2149a98d7"
+    "sourceSha256": "54c2a4689eb4f3a148743dbc2024c674eb1e08d94da8fb15797e880d378b3c9b",
+    "publishedSha256": "ecf24b4f9c3cae480eec6d4b589908b7e4254d1470ba8275a036aa10cc1236c4"
   }
 ]
