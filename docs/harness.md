@@ -12,9 +12,9 @@ Harness environments select gateway connections, human login bindings and conver
 
 ## Welcome and sign-in
 
-The onboarding review candidate adds an animated AIRS welcome screen to `airs`. A fresh user creates an environment, provides public company settings and completes browser or device SSO. A returning signed-out user sees the selected environment and sign-in choices; an existing usable sign-in enters the agent immediately. The screen distinguishes saving the credential from verifying gateway inference access. MCP login remains a separate step with the same intended company identity.
+Release `0.1.0-alpha.22.onboarding.1` adds an animated AIRS welcome screen to `airs`. A fresh user creates an environment, provides public company settings and completes browser or device SSO. A returning signed-out user sees the selected environment and sign-in choices; an existing usable sign-in enters the agent immediately. The screen distinguishes saving the credential from verifying gateway inference access. MCP login remains a separate step with the same intended company identity.
 
-The candidate retains `airs env` for creating, inspecting, selecting and removing environments, and `airs cli` for the bundled product CLI. See [Login from browser to authorized tools](./login.md) for the exact candidate version, terminal controls and the full SSO-to-ServiceNow workflow. Published alpha.22 remains the default while this candidate is reviewed.
+This release retains `airs env` for creating, inspecting, selecting and removing environments, and `airs cli` for the bundled product CLI. See [Login from browser to authorized tools](./login.md) for the exact release version, terminal controls and the full SSO-to-ServiceNow workflow. The npm `latest` and `alpha` tags select the onboarding release.
 
 ## The harness owns the execution loop
 

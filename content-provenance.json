@@ -14,8 +14,8 @@
   {
     "slug": "harness",
     "noteId": "0a24ec09-7e16-45c1-85ec-0766ba0faec1",
-    "sourceSha256": "706ea396261790b25427055543ac358cb9199bd6d00843bb4392fa9fa98a9be6",
-    "publishedSha256": "b0ded5f992dbc1e39bd5883fa9d2d273087dfca3ce8fedc19b369c84c9fa8285"
+    "sourceSha256": "d8bd4da7c761968341b19375f8c38d5f18b0b09bcfea574f656d9096d3827276",
+    "publishedSha256": "12954c5a5bd364ed967ba3d522d9096de72cea4ffbaa5d14693241238d338d7f"
   },
   {
     "slug": "keycloak",
@@ -32,8 +32,8 @@
   {
     "slug": "login",
     "noteId": "6e43c28a-618d-43a8-bcad-23c91ab262d1",
-    "sourceSha256": "e92722caf0640c72202a5c9ab4ce943c79e0a207df37b8c54d27a1db3797a536",
-    "publishedSha256": "072a38ef610e93e2c8db31dcf89d76ce168689a4270112745b3726a8a7eab81e"
+    "sourceSha256": "3ed227b77d139088238307a9fb6ecbea4fd2d2405dc995e9458acb69c25c0ec7",
+    "publishedSha256": "92b064465a772021825ce10fc2e98d42360fd9101838f6c59eef900b402c4493"
   },
   {
     "slug": "gateway",
