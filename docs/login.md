@@ -10,31 +10,30 @@ The outcome is concrete: you sign into the harness as yourself, connect the Serv
 
 **Command availability:** this walkthrough targets **airs-harness 0.1.0-alpha.22.onboarding.1**, invoked as `airs`, with **Prisma AIRS CLI 7.0.0** bundled as `airs cli`. The npm package keeps the name `airs-harness`. Existing environments, credentials and histories do not need to be recreated. Top-level `setup` and `status` are removed; use `env create` and `env status`.
 
-**Review candidate:** the branded welcome flow below targets the onboarding candidate. Candidate builds and native acceptance are in progress; do not treat this draft as a publication receipt. The published default remains alpha.22, whose explicit environment and SSO commands are compatible. Existing signed-in environments open directly without a mandatory welcome animation.
+**Review candidate:** exact installed packages passed local HTTPS SSO, native credential storage, terminal, bundled CLI and upgrade checks on Linux x64, native Linux ARM64 and Apple Silicon. The branded flow is distributed for review as a self-contained archive; this version is not published to npm. These fixture checks do not establish a production SSO login or ServiceNow call. The published default remains alpha.22. Existing signed-in environments open directly without a mandatory welcome animation.
 
-Use your organization's package registry (the URL below is an example), then verify the installed commands:
+Use the review archive supplied by your administrator for this review. Extract it, open a terminal in the extracted directory and install into a new directory. This review path requires Python 3.11+ and Node.js 22.14+ in the 22.x line, or Node.js 24+ with npm. The product CLI, skills and package dependencies are included.
 
 ```sh
-npm install -g airs-harness@0.1.0-alpha.22.onboarding.1 --registry=https://npm.example.com
+python3 install.py --prefix "$HOME/airs-onboarding-review"
+export PATH="$HOME/airs-onboarding-review/bin:$PATH"
+export AIRS_HARNESS_HOME="$HOME/airs-onboarding-review/review-home"
 airs --version
 airs cli --version
 airs env create --help
 ```
 
-Use Node.js 22.14 or later in the 22.x line, or Node.js 24 or newer. A fresh machine needs only the harness installation above; the product CLI and its skills ship with it. You do not need a global `airs-cli` installation to use `airs cli`.
+These exports select the candidate and its separate review environments in the current terminal. Keep using this `AIRS_HARNESS_HOME` throughout the walkthrough. The installer verifies the archive contents and installed executable, uses a temporary local package source, and does not change your global installation or shell configuration. You do not need a separate `airs-cli` installation.
 
-**If this machine already has the old standalone CLI:** upgrade it first so it releases the `airs` command, then install the harness. Do not force npm to overwrite a command owned by another package.
+For the **published alpha.22 baseline**, use a fresh terminal and your organization's registry:
 
 ```sh
-npm install -g @cdot65/prisma-airs-cli@7.0.1 --registry=https://registry.npmjs.org
-airs-cli --version
-npm install -g airs-harness@0.1.0-alpha.22.onboarding.1 --registry=https://npm.example.com
-airs --version
-airs cli --version
-airs --migration-check
+npm install -g airs-harness@0.1.0-alpha.22 --registry=https://npm.example.com
 ```
 
-Run `type -a airs airs-cli airs-harness` in your shell if another executable or alias shadows the npm commands; after changing PATH, refresh your shell's command cache or start a new shell. `airs --migration-check` reports executable ownership without modifying it. For a check before installation, run `npm exec --yes --registry=https://npm.example.com --package=airs-harness@0.1.0-alpha.22.onboarding.1 -- airs --migration-check`. Move an obsolete manual command aside only after identifying its owner.
+Alpha.22 supports the explicit environment and SSO commands below; the branded welcome belongs to the review candidate. If an old standalone CLI owns `airs`, upgrade it to `@cdot65/prisma-airs-cli@7.0.1` before a normal global harness installation. That CLI uses `airs-cli`. Do not force npm to overwrite another package's command.
+
+Run `type -a airs airs-cli airs-harness` if an executable or alias shadows the intended command. Refresh your shell's command cache after changing PATH. `airs --migration-check` reports executable ownership without modifying it.
 
 Standalone CLI 7.0.1 is the stable default release; this harness candidate retains the tested CLI 7.0.0 bundle from alpha.22. The patch changes release metadata, not command behavior or tenant configuration. Their version outputs therefore differ by one patch.
 

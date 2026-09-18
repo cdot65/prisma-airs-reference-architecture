@@ -32,8 +32,8 @@
   {
     "slug": "login",
     "noteId": "6e43c28a-618d-43a8-bcad-23c91ab262d1",
-    "sourceSha256": "8d45d956e4133f49eed34bd3bc1895f619a1a5b05079cf441f0a9671db8b8853",
-    "publishedSha256": "23aaaa3c9c51b6855f1ca3550efaa66e3da06cb99546cf873545eae86bc274ac"
+    "sourceSha256": "e92722caf0640c72202a5c9ab4ce943c79e0a207df37b8c54d27a1db3797a536",
+    "publishedSha256": "072a38ef610e93e2c8db31dcf89d76ce168689a4270112745b3726a8a7eab81e"
   },
   {
     "slug": "gateway",
