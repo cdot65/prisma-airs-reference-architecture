@@ -8,14 +8,14 @@ sidebar_label: "Login from browser to authorized tools"
 
 The outcome is concrete: you sign into the harness as yourself, connect the ServiceNow MCP integration in the same environment, and ask the agent to read an incident. Your company SSO identity is used throughout the human login steps. Inference and MCP still receive separate credentials, and the ServiceNow backend uses a server-side integration account.
 
-**Command availability:** this walkthrough targets **airs-harness 0.1.0-alpha.22.onboarding.1**, invoked as `airs`, with **Prisma AIRS CLI 7.0.0** bundled as `airs cli`. The npm package keeps the name `airs-harness`. Existing environments, credentials and histories do not need to be recreated. Top-level `setup` and `status` are removed; use `env create` and `env status`.
+**Command availability:** this walkthrough targets **airs-harness 0.1.0-alpha.22.onboarding.4**, invoked as `airs`, with **Prisma AIRS CLI 7.0.0** bundled as `airs cli`. The npm package keeps the name `airs-harness`. Existing environments, credentials and histories do not need to be recreated. Top-level `setup` and `status` are removed; use `env create` and `env status`.
 
-**Published onboarding release:** version **0.1.0-alpha.22.onboarding.1** includes the branded welcome and is available from the organization's npm registry. Exact installed packages passed local HTTPS SSO, native credential storage, terminal, bundled CLI and upgrade checks on Linux x64, native Linux ARM64 and Apple Silicon. Fresh anonymous registry installs also passed on all three platforms. These fixture checks do not establish a production SSO login or ServiceNow call. Existing signed-in environments open directly without a mandatory welcome animation.
+This release reports gateway HTTP status and a request/gateway trace ID when access verification fails. It also detects policy denials returned with HTTP 200. Credential storage, inference authorization and MCP authorization are separate checks. Existing signed-in environments open directly without a mandatory welcome animation.
 
 Use Node.js 22.14+ in the 22.x line, or Node.js 24+ with npm. The product CLI, skills and package dependencies are included; no Python installer or separate `airs-cli` installation is required.
 
 ```sh
-npm install -g airs-harness@0.1.0-alpha.22.onboarding.1 --registry=https://npm.example.com
+npm install -g airs-harness@0.1.0-alpha.22.onboarding.4 --registry=https://npm.example.com
 airs --version
 airs cli --version
 airs env create --help
@@ -69,6 +69,23 @@ airs login
 
 Supplying the gateway URL creates and selects the environment without opening sign-in. `airs login` opens the sign-in choices. If creation already succeeded, resume login in that environment; do not recreate it to repair a cancelled sign-in.
 
+### Environments and gateway workspaces are independent
+
+An **environment** is a local profile containing a gateway URL, credential binding, model settings, MCP connections and conversation history. Create one when you need separate credentials, destinations or histories—for example, `work-sso` and `workspace-api`.
+
+A **gateway workspace** is the server-side boundary that owns provider access, saved model configs, API keys, budgets and guardrails. `airs env create` only creates the local profile. It does not create a gateway workspace or require matching names.
+
+For example, local environments `work-sso` and `workspace-api` can both use the gateway workspace `agent-team`. An API key is bound to the workspace where it was created; SSO uses the authorized workspace mapping in its token. Renaming an environment does not change either binding.
+
+```sh
+airs env list
+airs env use workspace-api
+airs --environment work-sso doctor --verify-access
+airs env remove workspace-api
+```
+
+`env use` changes the default for new commands; `--environment` selects one command's environment. `env remove` unregisters the local environment and preserves its history on disk. It does not delete a gateway workspace or revoke a key. Revoke keys in AI Gateway when their access should end.
+
 ### 3. Sign into inference with company SSO
 
 Choose **Sign in with company SSO**. Enter the company issuer, public client ID and gateway audience from the table. These are public connection settings, not a client secret. Later attempts offer **Continue with saved settings**.
@@ -77,7 +94,7 @@ Choose **Open browser on this machine** on your desktop. Over SSH, choose **Use 
 
 Sign in as the intended company user in the browser, then return to AIRS. The screen shows progress through authorization, native credential storage and a minimal inference access check. The browser success page alone does not prove credential persistence. **You're ready to use AIRS** means the credential was saved and that inference check passed. Press **Enter** to enter the agent, then **Ctrl+D** to return to your shell before adding ServiceNow below.
 
-The access check sends one small inference request and can consume gateway quota; it sends no local files or tools. A denied or unavailable gateway produces **Signed in · gateway access needs attention**, with separate options to retry the check, continue or exit. Fix access before proceeding with this walkthrough. Storage failures remain sign-in failures and offer recovery guidance; there is no plaintext fallback. Escape cancels an unfinished sign-in and preserves the environment.
+The access check sends one small inference request and can consume gateway quota; it sends no local files or tools. A denied or unavailable gateway produces **Credential saved · gateway access needs attention**, with separate options to retry the check, continue or exit. Fix access before proceeding with this walkthrough. Storage failures remain sign-in failures and offer recovery guidance; there is no plaintext fallback. Escape cancels an unfinished sign-in and preserves the environment.
 
 To supply public settings explicitly, use the existing command form:
 
@@ -96,6 +113,28 @@ airs --environment work doctor --verify-access
 ```
 
 `env status` inspects local configuration; it does not prove fresh authentication or remote access. `doctor --verify-access` sends another inference probe. Neither result tests ServiceNow tools. Adding MCP will not repair an incorrect inference URL or missing inference entitlement.
+
+### Alternative: use a workspace API key for inference
+
+Use this path when your administrator permits workspace-key authentication. You can use the same gateway workspace as SSO; the workspace policy must explicitly support both methods.
+
+1. Open Prisma AIRS AI Gateway in Strata Cloud Manager and select the intended tenant and **gateway workspace**. The gateway is available under **AI Security → AI Gateway**; see the [vendor configuration guide](https://docs.paloaltonetworks.com/ai-runtime-security/administration/configure-ai-gateway).
+2. In that workspace's API-key management, create a **user workspace API key** for your user. Give it inference permission (`completions.write`) and the expiration and limits required by your administrator. A provider integration key or AIRS scanner key is a different credential.
+3. Attach the administrator-approved **default saved config** to the key. That config selects an authorized provider/model when the harness uses the gateway default. Confirm its provider is provisioned into this workspace. A key grants access; it does not create a model route.
+4. Copy the newly issued key into the harness's hidden prompt. Do not put it in a command argument, shell history or chat transcript.
+
+```sh
+airs env create workspace-api --gateway-url https://gateway.example.com/v1
+airs --environment workspace-api login --with-api-key
+airs --environment workspace-api doctor --verify-access
+airs --environment workspace-api
+```
+
+Skip `env create` if the environment already exists. Interactive `airs login` also offers the workspace-key choice. The hidden prompt saves the key in the OS credential store. **Credential saved** confirms local storage; **Gateway access verified** confirms one successful inference request. A user key can retain gateway-side user attribution, but it does not create an OIDC sign-in session in the harness.
+
+For recovery, HTTP 401 indicates rejected authentication; HTTP 403 indicates insufficient permission; HTTP 446 indicates a blocking guardrail. Some gateways return a completed response with HTTP 200 for a blocked request. AIRS checks the blocking hook results and reports that as a policy denial too. Give your administrator the trace ID, not the credential. Recreating a local environment will not fix a workspace policy or missing route.
+
+**MCP still needs its own login.** Continue with the ServiceNow registration and `mcp login` steps below, replacing `work` with `workspace-api`. The gateway-facing MCP connection uses organizational SSO and its own authorization. Successful inference with a workspace key does not grant ServiceNow tool access or replace the gateway's upstream OAuth integration.
 
 ### Terminal controls and quiet operation
 
