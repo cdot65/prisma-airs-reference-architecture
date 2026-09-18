@@ -10,6 +10,12 @@ The alpha.22 npm package is named `airs-harness`; its public command is `airs`. 
 
 Harness environments select gateway connections, human login bindings and conversation history. Product CLI tenants select Prisma AIRS credentials from tenant JSON. These selections are independent: switching environments does not switch the CLI tenant, and company SSO does not create a management API credential. See [Login from browser to authorized tools](./login.md) for installation, migration and a complete first session.
 
+## Welcome and sign-in
+
+The onboarding review candidate adds an animated AIRS welcome screen to `airs`. A fresh user creates an environment, provides public company settings and completes browser or device SSO. A returning signed-out user sees the selected environment and sign-in choices; an existing usable sign-in enters the agent immediately. The screen distinguishes saving the credential from verifying gateway inference access. MCP login remains a separate step with the same intended company identity.
+
+The candidate retains `airs env` for creating, inspecting, selecting and removing environments, and `airs cli` for the bundled product CLI. See [Login from browser to authorized tools](./login.md) for the exact candidate version, terminal controls and the full SSO-to-ServiceNow workflow. Published alpha.22 remains the default while this candidate is reviewed.
+
 ## The harness owns the execution loop
 
 When Alex types the question, the first component that sees it is the harness, and the harness is the component that owns the conversation from then on. Prisma AIRS Harness is a standalone Rust terminal application. Its local responsibilities include the conversation, repository access, tool dispatch, approval policy, and credential-store integration. The similarly named hosted application is a separate project and is not required for this architecture.

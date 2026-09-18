@@ -8,12 +8,14 @@ sidebar_label: "Login from browser to authorized tools"
 
 The outcome is concrete: you sign into the harness as yourself, connect the ServiceNow MCP integration in the same environment, and ask the agent to read an incident. Your company SSO identity is used throughout the human login steps. Inference and MCP still receive separate credentials, and the ServiceNow backend uses a server-side integration account.
 
-**Command availability:** this walkthrough targets **airs-harness 0.1.0-alpha.22**, invoked as `airs`, with **Prisma AIRS CLI 7.0.0** bundled as `airs cli`. The npm package keeps the name `airs-harness`. Existing environments, credentials and histories do not need to be recreated. Top-level `setup` and `status` are removed; use `env create` and `env status`.
+**Command availability:** this walkthrough targets **airs-harness 0.1.0-alpha.22.onboarding.1**, invoked as `airs`, with **Prisma AIRS CLI 7.0.0** bundled as `airs cli`. The npm package keeps the name `airs-harness`. Existing environments, credentials and histories do not need to be recreated. Top-level `setup` and `status` are removed; use `env create` and `env status`.
+
+**Review candidate:** the branded welcome flow below targets the onboarding candidate. Candidate builds and native acceptance are in progress; do not treat this draft as a publication receipt. The published default remains alpha.22, whose explicit environment and SSO commands are compatible. Existing signed-in environments open directly without a mandatory welcome animation.
 
 Use your organization's package registry (the URL below is an example), then verify the installed commands:
 
 ```sh
-npm install -g airs-harness@0.1.0-alpha.22 --include=optional --registry=https://npm.example.com
+npm install -g airs-harness@0.1.0-alpha.22.onboarding.1 --registry=https://npm.example.com
 airs --version
 airs cli --version
 airs env create --help
@@ -26,17 +28,17 @@ Use Node.js 22.14 or later in the 22.x line, or Node.js 24 or newer. A fresh mac
 ```sh
 npm install -g @cdot65/prisma-airs-cli@7.0.1 --registry=https://registry.npmjs.org
 airs-cli --version
-npm install -g airs-harness@0.1.0-alpha.22 --include=optional --registry=https://npm.example.com
+npm install -g airs-harness@0.1.0-alpha.22.onboarding.1 --registry=https://npm.example.com
 airs --version
 airs cli --version
 airs --migration-check
 ```
 
-Run `type -a airs airs-cli airs-harness` in your shell if another executable or alias shadows the npm commands; after changing PATH, refresh your shell's command cache or start a new shell. `airs --migration-check` reports executable ownership without modifying it. For a check before installation, run `npm exec --yes --registry=https://npm.example.com --package=airs-harness@0.1.0-alpha.22 -- airs --migration-check`. Move an obsolete manual command aside only after identifying its owner.
+Run `type -a airs airs-cli airs-harness` in your shell if another executable or alias shadows the npm commands; after changing PATH, refresh your shell's command cache or start a new shell. `airs --migration-check` reports executable ownership without modifying it. For a check before installation, run `npm exec --yes --registry=https://npm.example.com --package=airs-harness@0.1.0-alpha.22.onboarding.1 -- airs --migration-check`. Move an obsolete manual command aside only after identifying its owner.
 
-Standalone CLI 7.0.1 is the stable default release; harness alpha.22 retains its tested CLI 7.0.0 bundle. The patch changes release metadata, not command behavior or tenant configuration. Their version outputs therefore differ by one patch.
+Standalone CLI 7.0.1 is the stable default release; this harness candidate retains the tested CLI 7.0.0 bundle from alpha.22. The patch changes release metadata, not command behavior or tenant configuration. Their version outputs therefore differ by one patch.
 
-The compatibility alias `airs-harness` remains for alpha.22 and is scheduled for removal in alpha.23. Update scripts now: harness commands start with `airs`; product commands start with `airs cli` or standalone `airs-cli`. For example, old `airs runtime ...` becomes `airs cli runtime ...`.
+The compatibility alias `airs-harness` remains for alpha.22 and this onboarding candidate and is scheduled for removal in alpha.23. Update scripts now: harness commands start with `airs`; product commands start with `airs cli` or standalone `airs-cli`. For example, old `airs runtime ...` becomes `airs cli runtime ...`.
 
 ### 1. Get the connection details and access
 
@@ -54,18 +56,37 @@ Your account needs inference access, membership in the gateway workspace that ex
 
 Use a desktop browser and an available OS credential store. On macOS, sign in from the desktop session and allow Keychain access. On Linux, make sure the Secret Service/keyring session is available and unlocked. Passwords belong in the company browser page, never in a command or configuration file.
 
-### 2. Create and select your environment
+### 2. Start AIRS and create your environment
+
+```sh
+airs
+```
+
+On a fresh installation, the animated AIRS mark appears above **Connect an environment**. The actions are available immediately. Press **Enter**, keep `work` as the environment name, enter `https://gateway.example.com/v1`, then choose **Create environment and sign in**. AIRS validates the public fields before saving the environment. Cancelling before that confirmation creates nothing.
+
+If `work` already exists, use `airs env use work`, then run `airs`. A signed-out environment shows its name and gateway above the sign-in choices. When several environments exist, **Choose another environment** changes the destination for this session; it does not change the saved default. Use `airs env use NAME` when you want a persistent switch. Credentials and conversation history remain with their environment.
+
+You can still create an environment directly from a shell:
 
 ```sh
 airs env create work --gateway-url https://gateway.example.com/v1
 airs env use work
+airs login
 ```
 
-Creation already selects `work`; the explicit `env use` makes the rest of the walkthrough's destination clear. Because the gateway URL is supplied, creation does not open a browser. Sign-in is the next step. If `work` already exists and points at the intended gateway, run only `env use work`. Use `env show work` to inspect it; do not recreate it to repair a cancelled login.
-
-For a guided alternative, run `airs env create work` with no gateway flag. Enter the inference URL, choose **1. Company sign-in**, and provide the issuer, public client ID and audience from the table. That wizard combines this step and the next one. After successful sign-in, continue with verification rather than signing in twice.
+Supplying the gateway URL creates and selects the environment without opening sign-in. `airs login` opens the sign-in choices. If creation already succeeded, resume login in that environment; do not recreate it to repair a cancelled sign-in.
 
 ### 3. Sign into inference with company SSO
+
+Choose **Sign in with company SSO**. Enter the company issuer, public client ID and gateway audience from the table. These are public connection settings, not a client secret. Later attempts offer **Continue with saved settings**.
+
+Choose **Open browser on this machine** on your desktop. Over SSH, choose **Use device authorization** and follow the displayed verification link and code on a device with a browser. **Show the full browser URL** retains the manual browser flow; its callback must reach the machine running AIRS, so device authorization is usually easier over SSH.
+
+Sign in as the intended company user in the browser, then return to AIRS. The screen shows progress through authorization, native credential storage and a minimal inference access check. The browser success page alone does not prove credential persistence. **You're ready to use AIRS** means the credential was saved and that inference check passed. Press **Enter** to enter the agent, then **Ctrl+D** to return to your shell before adding ServiceNow below.
+
+The access check sends one small inference request and can consume gateway quota; it sends no local files or tools. A denied or unavailable gateway produces **Signed in · gateway access needs attention**, with separate options to retry the check, continue or exit. Fix access before proceeding with this walkthrough. Storage failures remain sign-in failures and offer recovery guidance; there is no plaintext fallback. Escape cancels an unfinished sign-in and preserves the environment.
+
+To supply public settings explicitly, use the existing command form:
 
 ```sh
 airs --environment work login \
@@ -74,16 +95,20 @@ airs --environment work login \
   --audience airs-inference
 ```
 
-Sign in as the intended company user in the browser. Return to the terminal and wait for successful credential persistence. A browser success page alone does not prove that the OS store saved the credential. If you cancelled, rerun `airs --environment work login` in the existing environment and choose Company sign-in.
-
-Check the saved identity, then test the inference route:
+If login was cancelled, run `airs --environment work login` and choose company SSO again. To inspect the saved environment or retry an access check without another browser login:
 
 ```sh
 airs env status work
 airs --environment work doctor --verify-access
 ```
 
-`env status` inspects local configuration; it does not prove fresh authentication or remote access. `doctor --verify-access` performs an inference probe, which can consume gateway quota. Its success does not test ServiceNow tools. Resolve an inference error before continuing; adding MCP will not repair an incorrect inference URL or missing inference entitlement.
+`env status` inspects local configuration; it does not prove fresh authentication or remote access. `doctor --verify-access` sends another inference probe. Neither result tests ServiceNow tools. Adding MCP will not repair an incorrect inference URL or missing inference entitlement.
+
+### Terminal controls and quiet operation
+
+Use arrow keys or Tab to move, Enter to select, or the displayed number shortcuts. Escape cancels. Public fields accept pasted text without submitting it automatically; workspace API keys use a separate hidden prompt. Long authorization links and recovery messages scroll with arrow keys or Page Up/Page Down.
+
+Set `animations = false` under `[tui]` in the environment configuration, or launch with `airs -c tui.animations=false`, for a static mark. `NO_COLOR=1` removes the accent colors. Small terminals use a compact layout. Plain terminals retain text prompts, and explicit scripted commands retain their existing output and exit behavior.
 
 ### 4. Add ServiceNow to that same environment
 
