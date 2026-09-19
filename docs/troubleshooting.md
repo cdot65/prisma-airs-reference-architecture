@@ -77,9 +77,11 @@ airs --environment work doctor
 
 The version and prerequisite checks need no production credential. Run `doctor` after selecting an existing environment; it reports local readiness without an inference request. `doctor --verify-access` is a separate authenticated probe that can consume gateway quota. A readiness report does not prove every saved credential is readable or that a model route is authorized.
 
-New mcp.4 environments require native MCP storage and fail sign-in without a plaintext fallback when the service is unavailable. Older environments keep their existing mode; use the login lesson's cleanup-and-sign-in procedure if migrating them. Preserve the existing keyring and credentials while repairing access: do not reset the store, copy token files or choose plaintext storage as a workaround. Enter an unlock password only through a trusted hidden prompt or the credential service's protected input, never in command arguments, logs or chat.
+New environments created by mcp.4 and later require native MCP storage and fail sign-in without a plaintext fallback when the service is unavailable. Older environments keep their existing mode; use the login lesson's cleanup-and-sign-in procedure if migrating them. Preserve the existing keyring and credentials while repairing access: do not reset the store, copy token files or choose plaintext storage as a workaround. Enter an unlock password only through a trusted hidden prompt or the credential service's protected input, never in command arguments, logs or chat.
 
-The isolated fresh-Ubuntu checks recorded in the evidence lesson establish fixture readiness on that host. They do not prove the cause or resolution of the earlier user-session incident.
+The Ubuntu helper bundled in mcp.4 predates a keyring-daemon correction. Use the verified mcp.5 helper or a corrected administrator-provided copy rather than extracting that older helper for SSH unlock. The corrected helper checks the actual collection state, preserves encrypted data after a wrong password, and reuses an unlocked service. The bundled mcp.5 helper passed its isolated encrypted-keyring regression with the default mcp.5 version. That package proof is separate from the user's own successful unlock; the implementation-status lesson records both boundaries.
+
+The isolated fresh-Ubuntu checks establish fixture readiness. A subsequent read-only observation found an unlocked user collection and passing readiness reports; that observation does not imply the checks unlocked it or establish company SSO.
 
 ## Browser callbacks on a remote machine
 

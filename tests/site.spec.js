@@ -71,7 +71,7 @@ test('ServiceNow onboarding is discoverable and explains in-session MCP authoriz
   await expect(main).toContainText('--oidc-client-id harness-native');
   await expect(main).toContainText('Add gateway MCP server');
   await expect(main).toContainText('mcp_oauth_credentials_store = "keyring"');
-  await expect(main).toContainText('New environments created by mcp.4 require native MCP storage automatically.');
+  await expect(main).toContainText('New environments created by mcp.4 and later require native MCP storage automatically.');
   await expect(main).toContainText('Upgrading preserves existing environments:');
   await expect(main).toContainText('A configuration edit alone does not move or delete saved tokens.');
   await expect(main).toContainText('sign out every connection with saved credentials, including expired or sign-in-required entries');
@@ -96,9 +96,9 @@ test('first-session guide separates workspace keys, local names and explicit ver
   await expect(main).toContainText('^22.13.0 || >=23.5.0');
   await expect(main).toContainText('Installing npm on Ubuntu does not upgrade');
   await expect(main).toContainText('airs-harness@mcp');
-  await expect(main).toContainText('npm install -g airs-harness@0.1.0-alpha.22.mcp.4 --registry=https://npm.example.com');
+  await expect(main).toContainText('npm install -g airs-harness@0.1.0-alpha.22.mcp.5 --registry=https://npm.example.com');
   await expect(main).toContainText('is published and ready for local testing');
-  await expect(main).toContainText('remain separate attended checks');
+  await expect(main).toContainText('Real-account SSO and independently recorded workspace-key/ServiceNow acceptance are separate from package verification.');
   await expect(main).not.toContainText('publication and native acceptance of that exact version are pending');
   await expect(main).toContainText('0.1.0-alpha.22.onboarding.4');
   await expect(main).toContainText('does not include these dashboards');
@@ -121,7 +121,10 @@ test('first-session guide separates workspace keys, local names and explicit ver
 test('release evidence separates published fixture acceptance from deferred live checks',async({page})=>{
   await page.goto('learn/evidence/');
   const main=page.locator('main');
-  await expect(main).toContainText('0.1.0-alpha.22.mcp.4 is published');
+  await expect(main).toContainText('0.1.0-alpha.22.mcp.5 is published');
+  await expect(main).toContainText('The helper extracted from a fresh anonymous mcp.5 installation passed all six checks with its default mcp.5 version and no override.');
+  await expect(main).toContainText('The helper bundled in mcp.4 predates that correction');
+  await expect(main).toContainText('Upgrades from mcp.4 and onboarding.4 preserved the checked configuration and legacy command targets on all three platforms.');
   await expect(main).toContainText('Fresh anonymous registry installations passed isolated acceptance on Linux x64, Linux ARM64 and Apple Silicon');
   await expect(main).toContainText('they do not establish live-account acceptance');
   await expect(main).toContainText('are deferred to attended testing');

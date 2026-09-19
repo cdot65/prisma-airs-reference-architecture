@@ -72,7 +72,7 @@ Inference recovery uses `/signin`, or `airs login --restore-session --no-browser
 
 Gateway-facing MCP credentials follow a stricter rule, and the reason is the token format. The observed opaque gateway token does not provide a verified account-continuity contract to the native client, so the client has no trustworthy way to confirm that a new login belongs to the same person. It therefore stops an MCP authentication failure before model-driven credential fallback, gives the bound gateway MCP login command, and directs the user to a fresh conversation. Automatic restoration of the old MCP conversation is still gated on trusted identity evidence. mcp server 1's tools have no downstream service-account credential to renew, so there is no server-side credential to restore.
 
-The implementation-status lesson records what is merged, deployed and still awaiting exact-package acceptance.
+The implementation-status lesson records what is merged, deployed and still awaiting exact-package acceptance. The later Ubuntu preparation-helper correction is a host-readiness change; it does not establish a new production renewal or recovery result.
 
 ## What the September 19 synthetic checks prove
 
