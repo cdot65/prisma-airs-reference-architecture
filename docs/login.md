@@ -8,7 +8,7 @@ sidebar_label: "Login from browser to authorized tools"
 
 The outcome is concrete: you sign into the harness as yourself, connect the ServiceNow MCP integration in the same environment, and ask the agent to read an incident. Your company SSO identity is used throughout the human login steps. Inference and MCP still receive separate credentials, and the ServiceNow backend uses a server-side integration account.
 
-**Release channel:** **airs-harness 0.1.0-alpha.22.mcp.3** is published and ready for local testing. The `mcp` tag selects this test release, including the in-session `/mcp` connection manager and `/doctor` dashboard. Fresh anonymous registry installations passed isolated acceptance on Linux x64, Linux ARM64 and Apple Silicon; real-account SSO, workspace-key inference and ServiceNow acceptance remain separate attended checks. The `latest`, `alpha` and `onboarding` tags remain **0.1.0-alpha.22.onboarding.4**, which does not include these dashboards. Install the exact version below and confirm `airs --version`; `airs-harness@mcp` selects the current test-channel version.
+**Release channel:** **airs-harness 0.1.0-alpha.22.mcp.4** is published and ready for local testing under the `mcp` tag. Fresh anonymous registry installations passed isolated acceptance on Linux x64, Linux ARM64 and Apple Silicon. This release requires native MCP storage for new environments and retains the in-session `/mcp` connection manager and `/doctor` dashboard. Existing environments keep their storage policy and credentials. Real-account SSO, workspace-key inference and ServiceNow acceptance remain separate attended checks. The `latest`, `alpha` and `onboarding` tags remain **0.1.0-alpha.22.onboarding.4**, which does not include these dashboards. Install the exact version below and confirm `airs --version`; `airs-harness@mcp` selects the current test-channel version.
 
 The npm package remains `airs-harness`; invoke it as `airs`. **Prisma AIRS CLI 7.0.0** and eight product skills are bundled as `airs cli`, so no separate product CLI installation is required. Supported native packages are Linux x64, Linux ARM64 and Apple Silicon; Windows and Intel Mac packages are outside this release.
 
@@ -17,7 +17,7 @@ Check Node.js and npm in the terminal you will use. The harness requires **22.13
 ```sh
 node --version
 npm --version
-npm install -g airs-harness@0.1.0-alpha.22.mcp.3 --registry=https://npm.example.com
+npm install -g airs-harness@0.1.0-alpha.22.mcp.4 --registry=https://npm.example.com
 airs --version
 airs cli --version
 ```
@@ -42,7 +42,7 @@ Ask your administrator for these public connection settings. The values below ar
 
 Your account needs inference access, membership in the gateway workspace that exposes ServiceNow, and a ServiceNow MCP subject binding with the appropriate incident permissions. Being able to sign into SSO does not grant those permissions automatically. The administrator provisions the gateway integration and its upstream OAuth client before you add it locally. The example integration targets a ServiceNow development instance.
 
-Have Git, ripgrep and your project's own build tools available. Linux also requires a usable Bubblewrap sandbox. Use a desktop browser and an available OS credential store. On macOS, sign in from the desktop session and allow Keychain access. On Linux, make sure the Secret Service/keyring session is available and unlocked. Passwords belong in the company browser page, never in a command or configuration file.
+Have Git, ripgrep and your project's own build tools available. Linux also requires a usable Bubblewrap sandbox. Use a desktop browser and an available OS credential store. On macOS, sign in from the desktop session and allow Keychain access. On Linux, make sure the Secret Service/keyring session is available and unlocked; the [troubleshooting lesson](./troubleshooting.md) covers Ubuntu SSH readiness. Passwords belong in the company browser page, never in a command or configuration file.
 
 ### 2. Create or select a local environment
 
@@ -52,7 +52,7 @@ For a new profile, start guided creation:
 airs env create work
 ```
 
-Enter `https://gateway.example.com/v1`, choose **Create environment and sign in**, and follow one of the authentication paths below. This shell command finishes at the shell after sign-in, allowing the one-time MCP storage setting before opening your agent session. Cancelling before creation saves nothing; cancelling after creation preserves the environment so you can resume login.
+Enter `https://gateway.example.com/v1`, choose **Create environment and sign in**, and follow one of the authentication paths below. This shell command finishes at the shell after sign-in. New mcp.4 environments already require native MCP storage; open the agent session after completing inference sign-in. Cancelling before creation saves nothing; cancelling after creation preserves the environment so you can resume login.
 
 If `work` already exists, reuse it:
 
@@ -74,7 +74,7 @@ Creation with `--gateway-url` saves and selects the environment without opening 
 
 An **environment** is a local profile containing a gateway URL, credential binding, model settings, MCP connections and conversation history. Create one when you need separate credentials, destinations or histories—for example, `work-sso` and `workspace-api`.
 
-Native MCP keyring records with the same connection name and URL can be shared by the same OS user across environments. Use distinct MCP connection names when you need separate local MCP credentials; a different environment name alone does not isolate that record.
+Native MCP keyring records with the same connection name and URL can be shared by the same OS user across environments. Use distinct MCP connection names when you need separate local MCP credentials; a different environment name alone does not isolate that record. Signing out of a shared connection can remove the saved MCP credential used by another environment.
 
 A **gateway workspace** is the server-side boundary that owns provider access, saved model configs, API keys, budgets and guardrails. `airs env create` only creates the local profile. It does not create a gateway workspace or require matching names.
 
@@ -95,7 +95,7 @@ Choose **Sign in with company SSO**. Enter the company issuer, public client ID 
 
 Choose **Open browser on this machine** on your desktop. Over SSH, choose **Use device authorization** and follow the displayed verification link and code on a device with a browser. **Show the full browser URL** retains the manual browser flow; its callback must reach the machine running AIRS, so device authorization is usually easier over SSH.
 
-Sign in as the intended company user in the browser, then return to AIRS. The screen shows progress through authorization, native credential storage and a minimal inference access check. The browser success page alone does not prove credential persistence. **You're ready to use AIRS** means the credential was saved and that inference check passed. When the guided shell command completes, continue with the one-time MCP storage setting below. If you started with bare `airs`, you can return to the shell once to apply that prerequisite before starting your session.
+Sign in as the intended company user in the browser, then return to AIRS. The screen shows progress through authorization, native credential storage and a minimal inference access check. The browser success page alone does not prove credential persistence. **You're ready to use AIRS** means the credential was saved and that inference check passed. When the guided shell command completes, continue to step 4. If you started with bare `airs` in a new mcp.4 environment, continue inside the session; no configuration edit is required.
 
 The access check sends one small inference request and can consume gateway quota; it sends no local files or tools. A denied or unavailable gateway produces **Credential saved · gateway access needs attention**, with separate options to retry the check, continue or exit. Fix access before proceeding with this walkthrough. Storage failures remain sign-in failures and offer recovery guidance; inference credentials have no plaintext fallback. Escape cancels an unfinished sign-in and preserves the environment.
 
@@ -144,15 +144,26 @@ Use arrow keys or Tab to move, Enter to select, or the displayed number shortcut
 
 Set `animations = false` under `[tui]` in the environment configuration, or launch with `airs -c tui.animations=false`, for a static mark. `NO_COLOR=1` removes the accent colors. Small terminals use a compact layout. Plain terminals retain text prompts, and explicit scripted commands retain their existing output and exit behavior.
 
-### 4. Require native MCP storage once, then open AIRS
+### 4. Open AIRS and check MCP storage for existing environments
 
-Run `airs env show work` and locate its `state_directory`. In that directory's `config.toml`, set this **top-level** key before any `[table]` headers; update an existing value instead of adding a duplicate:
+New environments created by mcp.4 require native MCP storage automatically. Their generated configuration includes this **top-level** setting:
 
 ```toml
 mcp_oauth_credentials_store = "keyring"
 ```
 
-This explicitly requires the OS credential store for MCP tokens. The current connection manager respects the configured mode but does not enforce this setting automatically. Do this before MCP sign-in; do not select a file fallback to work around an unavailable credential service. Linux needs an available Secret Service session, and macOS may request Keychain authorization.
+If the OS credential service is unavailable, MCP sign-in fails without a plaintext fallback. Linux needs an available, unlocked Secret Service session; macOS may request Keychain authorization.
+
+Upgrading preserves existing environments: an omitted setting or an existing `auto`, `file` or `keyring` value remains unchanged. Existing `auto` mode can still fall back to a credential file. A configuration edit alone does not move or delete saved tokens.
+
+To inspect an older environment, run `airs env show work` and locate its `state_directory`; the setting belongs in that directory's `config.toml`, before any `[table]` headers. Migration to native-only storage is optional and requires this order:
+
+1. Keep the original storage mode configured. In `/mcp`, sign out every connection with saved credentials, including expired or sign-in-required entries. Remember that the same OS user, connection name and URL can share a native record across environments.
+2. Confirm every sign-out completed. If credential cleanup fails, restore access to the original store and finish cleanup before changing the setting.
+3. Exit AIRS. Set the top-level value to `"keyring"`, updating an existing key instead of adding a duplicate. Do not copy token files between stores.
+4. Reopen the environment and sign into each required MCP connection again.
+
+A new mcp.4 environment needs none of these migration steps. Start or reopen the selected environment:
 
 ```sh
 airs --environment work

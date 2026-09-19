@@ -58,6 +58,29 @@ Tool execution has no downstream management API to diagnose, which removes a who
 
 The maintainer returned after about 30 minutes idle and received a generic fatal credential-helper error. Manual `/signin` completed, preserved the same verified identity and conversation, and allowed the next inference reply. The credential path was fine; what failed was the guidance. The normal AIRS provider dispatch had bypassed the typed recovery handler, so the terminal never received the classification it uses to show sign-in guidance. Alpha.16 corrects that route so an expired or otherwise non-renewable sign-in reaches the terminal's guidance. A real helper integration test failed before the change and passes afterward; all 78 provider tests pass. Be precise about what that evidence covers: it establishes the source correction. It does not prove every production token-renewal case.
 
+## Ubuntu SSH credential readiness
+
+An SSH connection and a usable credential store are separate prerequisites. Public-key SSH authentication does not automatically unlock an encrypted login keyring. Check readiness in the same OS user session that will run AIRS:
+
+1. Confirm a supported Node version and npm. The harness requires Node 22.13.0 or newer in the 22.x line, or 23.5.0 or newer; installing npm does not upgrade Node 18.
+2. Confirm Bubblewrap is installed and the host permits the harness's sandbox. Have the administrator diagnose the applicable namespace or AppArmor policy if the sandbox cannot start; do not disable those protections globally.
+3. Confirm a per-user D-Bus session and a Secret Service provider are available. A running provider and an unlocked encrypted collection are separate conditions.
+4. Unlock the existing collection through the OS credential service in that user session, and handle any OS authorization prompt. A missing service, a locked collection and a denied authorization need different repairs.
+
+```sh
+node --version
+npm --version
+command -v bwrap
+command airs --version
+airs --environment work doctor
+```
+
+The version and prerequisite checks need no production credential. Run `doctor` after selecting an existing environment; it reports local readiness without an inference request. `doctor --verify-access` is a separate authenticated probe that can consume gateway quota. A readiness report does not prove every saved credential is readable or that a model route is authorized.
+
+New mcp.4 environments require native MCP storage and fail sign-in without a plaintext fallback when the service is unavailable. Older environments keep their existing mode; use the login lesson's cleanup-and-sign-in procedure if migrating them. Preserve the existing keyring and credentials while repairing access: do not reset the store, copy token files or choose plaintext storage as a workaround. Enter an unlock password only through a trusted hidden prompt or the credential service's protected input, never in command arguments, logs or chat.
+
+The isolated fresh-Ubuntu checks recorded in the evidence lesson establish fixture readiness on that host. They do not prove the cause or resolution of the earlier user-session incident.
+
 ## Browser callbacks on a remote machine
 
 A callback to `127.0.0.1` reaches the browser's computer, which may differ from the harness host. For MCP, the in-session sign-in dialog supports opening the authorization URL on another computer and pasting the complete callback URL into its hidden callback input. The shell fallback is `airs --environment work mcp login service-now --no-browser`. Keep that attempt open; never paste a callback into the agent conversation or a support report. A correctly routed HTTP callback can also finish the same attempt.

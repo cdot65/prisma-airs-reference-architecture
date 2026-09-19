@@ -6,7 +6,7 @@ sidebar_label: "Deployment and operations"
 
 ## Deliver the client, gateway and server separately
 
-One request from Alex crosses three separately delivered systems. The harness is distributed as a native npm package for Linux x64 and Apple Silicon. AI Gateway and mcp server 1 are separate deployments with their own pipelines. The user experiences one answer, but the release boundaries stay separate even when a single request crosses all three. Treating them as one is how a passing check on one component gets mistaken for acceptance of the whole path.
+One request from Alex crosses three separately delivered systems. The harness is distributed as a native npm package for Linux x64, Linux ARM64 and Apple Silicon. AI Gateway and mcp server 1 are separate deployments with their own pipelines. The user experiences one answer, but the release boundaries stay separate even when a single request crosses all three. Treating them as one is how a passing check on one component gets mistaken for acceptance of the whole path.
 
 ```mermaid
 flowchart LR
@@ -57,7 +57,8 @@ The same logic applies to release validation. Each check below establishes one t
 | Fresh registry installation | Published archive integrity and the executable users receive |
 | In-place upgrade | Configuration, history and command resolution survive the upgrade |
 | Gateway utility call | The current authenticated proxy path completed an actual operation |
-| Active and idle lifecycle exercises | Renewal and recovery across the tested time boundaries |
+| Synthetic active and idle lifecycle exercises | Renewal across measured time boundaries under a controlled fixture policy, bound to the tested executable |
+| Production lifecycle exercises | Renewal, recovery and revocation across the real issuer and gateway policy boundaries |
 
 An older successful call against another inventory does not establish current utility acceptance, because the check was made against a different server. And a package can be published for maintainer testing while timed production acceptance remains incomplete; publication and acceptance are separate rows, and [Implementation status](./evidence.md) records that distinction.
 
@@ -65,6 +66,6 @@ An older successful call against another inventory does not establish current ut
 
 Pin server images and reconcile every serving replica, because a policy change that reaches only some replicas produces denials on some requests and not others, which looks like a client bug. When changing utility authorization, verify both an allowed subject and a denied subject; a test that only proves access does not prove the denial you intended. For connection failures, check the gateway integration and OAuth leg before changing server permissions, since the request may never have reached the server.
 
-On the workstation, native credentials belong in macOS Keychain or Linux Secret Service. An npm installation does not create an unlocked desktop credential store, so an install can succeed and still be unable to save a login. An upgrade can also leave an old manual executable earlier on `PATH`; verify the resolved command and `airs --version` before concluding that an upgrade did not take.
+On the workstation, native credentials belong in macOS Keychain or Linux Secret Service. New mcp.4 environments require native MCP storage; upgrading preserves older environments' storage modes and token locations. Follow the login lesson for optional migration rather than changing a setting and assuming saved tokens moved. An npm installation does not create or unlock a user's encrypted credential store, so an install can succeed and still be unable to save a login. On Ubuntu over SSH, check supported Node, Bubblewrap, the per-user D-Bus session and an unlocked Secret Service collection in that order; the [troubleshooting lesson](./troubleshooting.md) explains these prerequisites. An upgrade can also leave an old manual executable earlier on `PATH`; verify the resolved command and `airs --version` before concluding that an upgrade did not take.
 
 The educational site is delivered from a separate repository. Its explanations and diagrams should be reviewed alongside the implementation evidence whenever an interface or trust boundary changes.

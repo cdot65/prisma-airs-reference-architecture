@@ -4,13 +4,32 @@ title: "Implementation status and public sources"
 sidebar_label: "Implementation status and public sources"
 ---
 
-## September 19: in-session management and reliability test release
+## September 19: native storage default and measured synthetic lifecycle
 
-**0.1.0-alpha.22.mcp.3** is published under the `mcp` test tag, with the existing `/mcp` connection manager and `/doctor` diagnostics. Fresh anonymous registry installations passed isolated acceptance on Linux x64, Linux ARM64 and Apple Silicon, covering installation, onboarding, terminal behavior, installed regressions, MCP management, diagnostics, the bundled CLI, upgrades and command output. Apple Silicon signature checks also passed. These checks use synthetic gateway and credential fixtures; they do not establish live-account acceptance. Stable `latest`, `alpha` and `onboarding` remain **0.1.0-alpha.22.onboarding.4**. Consult the login lesson for the exact tested installation; an unqualified stable installation does not provide these dashboards.
+**0.1.0-alpha.22.mcp.4** is published and ready for local testing under the `mcp` tag. Fresh anonymous registry installations passed isolated acceptance on Linux x64, Linux ARM64 and Apple Silicon. The protected `latest`, `alpha` and `onboarding` tags remain **0.1.0-alpha.22.onboarding.4**. New environments generate `mcp_oauth_credentials_store = "keyring"`, so MCP sign-in requires the native store and cannot silently fall back to plaintext. Upgrades preserve existing storage modes, credentials and histories. Changing the mode alone does not migrate tokens; the login lesson describes cleanup under the original mode before optional migration.
+
+Exact candidate packages passed installation, onboarding, terminal, installed-regression, MCP manager, diagnostics, bundled CLI, command-output and upgrade checks on Linux x64, Linux ARM64 and Apple Silicon. Apple Silicon signature and notarization checks passed. In-place upgrades from both mcp.3 and onboarding.4 preserved existing state on all three platforms. Native MCP checks completed gateway OAuth against a synthetic service, persisted credentials without a file fallback, reused them in a second process without another authorization exchange, then signed out and verified removal while inference remained usable.
+
+Separate quick lifecycle checks on these exact candidate executables ran for approximately 178 seconds on each platform. They completed two expiry-and-renewal cycles for each of the inference and MCP credentials, three actual read-only tool calls with verified unique results, and native credential cleanup. Additional isolated checks on a fresh Ubuntu SSH host passed; they do not resolve the owner's earlier credential-session incident.
+
+The longer elapsed-time checks used a recorded **development executable**, not the published mcp.4 package bytes:
+
+| Synthetic exercise | Measured result | Boundary of the evidence |
+| --- | --- | --- |
+| 60-minute active use | 3,601.079 seconds; seven post-expiry renewal cycles each for signed OIDC inference and MCP; 16 completed read-only tool turns with unique results verified against the fixture | One continuing real process with synthetic identity and gateway services |
+| 35-minute idle return | 2,100.085 seconds with no HTTP requests during the quiet window; both credentials renewed and an actual tool call completed on return | The fixture kept refresh grants valid throughout the idle period |
+
+Both exercises preserved the process, conversation, identity binding, authentication epoch and append-only history. The fixtures enforced expiry and one-use rotating refresh tokens; the checks verified actual tool results, rather than accepting a model's claim that a tool ran. Credential and callback canaries were absent from retained transcript and history. Current cancellation and stale-completion terminal tests passed, alongside the scoped CLI, onboarding and MCP regression checks. This does not constitute a full Rust workspace pass.
+
+These results demonstrate synthetic renewal across measured time boundaries. They do not prove a production issuer's idle or revocation policy, real workspace-key routing, company SSO, ServiceNow access, or new installed recovery behavior for rejected or ambiguous grants and concurrent refresh races. Production lifecycle acceptance remains open. The dated mcp.3 and earlier records below retain their original scope.
+
+## September 19: earlier mcp.3 in-session management and reliability release
+
+**0.1.0-alpha.22.mcp.3** was published under the `mcp` test tag, with the existing `/mcp` connection manager and `/doctor` diagnostics. Fresh anonymous registry installations passed isolated acceptance on Linux x64, Linux ARM64 and Apple Silicon, covering installation, onboarding, terminal behavior, installed regressions, MCP management, diagnostics, the bundled CLI, upgrades and command output. Apple Silicon signature checks also passed. These checks use synthetic gateway and credential fixtures; they do not establish live-account acceptance. Stable `latest`, `alpha` and `onboarding` remain **0.1.0-alpha.22.onboarding.4**. Consult the login lesson for the exact tested installation; an unqualified stable installation does not provide these dashboards.
 
 The September 19 source changes preserve the selected environment in onboarding recovery commands, including valid leading-hyphen names; reject invalid loaded registry names without rewriting state; reject unsupported Node versions before native or bundled CLI launch; and retain precise credential-service failure and pending-cleanup diagnostics. The final scoped native CLI suite passed **955 tests**. Isolated Linux native recovery fixtures exercised both `staging` and `-staging` while another default remained selected. These source/fixture results are distinct from the fresh installed-package checks above.
 
-The documentation follows reviewed interface behavior: native-only MCP storage requires a one-time `keyring` setting, and successful MCP changes require **Start new conversation** within the same process. Automatic enforcement of that storage mode is not implemented. Workspace API keys authorize inference independently of the local environment name and do not replace MCP SSO.
+In mcp.3, native-only MCP storage required a one-time `keyring` setting; automatic generation of that policy was not implemented until mcp.4. Successful MCP changes require **Start new conversation** within the same process. Workspace API keys authorize inference independently of the local environment name and do not replace MCP SSO.
 
 Fresh human SSO, a real workspace-key inference request, the owner's Ubuntu credential-session investigation and a live ServiceNow incident call are deferred to attended testing. Full Rust workspace results contain classified historical failures; no full workspace pass is claimed. The dated records below remain historical evidence for their own versions.
 
@@ -48,7 +67,7 @@ The current architecture sends both inference and native MCP through Prisma AIRS
 | Alpha.16 source correction | Normal AIRS provider dispatch now preserves typed recovery; a real helper regression failed before the fix; 78 provider tests and scoped Clippy pass afterward | Installed production behavior must be distinguished from source tests |
 | Alpha.16 distribution | Publication receipts are completed alongside the binary release | Timed production renewal is not implied by package publication |
 
-The Limit column is the part to read carefully. Each row establishes one thing, and stacking the rows does not produce a stronger claim than any one of them makes: an inventory shows which tools exist, a package check shows what an installer receives, and a manual recovery shows that one path worked once. None of them stands in for the timed lifecycle acceptance that is still open.
+The Limit column is the part to read carefully. Each row establishes one thing, and stacking the rows does not produce a stronger claim than any one of them makes: an inventory shows which tools exist, a package check shows what an installer receives, and a manual recovery shows that one path worked once. None of these historical observations stands in for production lifecycle acceptance, which is still open. The newer synthetic timed results above have their own explicit scope.
 
 The failed alpha.15 lifecycle receipts remain in the private implementation repository. Earlier tests against configuration-read tools are historical observations from a previous tool inventory. They are not acceptance of this utility inventory, and the retired backend investigation is not a prerequisite for testing the harness.
 
@@ -60,9 +79,9 @@ Token storage and renewal transactions are carried forward from alpha.15, so the
 
 ## How to read the claims
 
-The course uses four labels, and they are ordered by how much of the real system each one touches. **Implemented** means reviewed source contains the behavior; it says nothing about what is installed anywhere. **Observed** means a dated check saw the behavior, on that date and in that configuration. **Package verification** binds checks to the downloaded executable, which closes the gap between source and what a user actually runs. **Production lifecycle acceptance** exercises the real identity and gateway path across the relevant expiration and recovery boundaries, which is the only label that speaks to renewal and revocation over time. A claim carrying an earlier label should not be read as if it carried a later one.
+The course distinguishes five kinds of evidence. **Implemented** means reviewed source contains the behavior; it says nothing about what is installed anywhere. **Observed** means a dated check saw the behavior in that configuration. **Package verification** binds checks to the downloaded executable. **Synthetic lifecycle observation** measures real elapsed time and protocol behavior against controlled identity and gateway fixtures, with the executable and test sources recorded. **Production lifecycle acceptance** exercises the real identity and gateway path across its expiration, recovery and revocation boundaries. Synthetic timing can establish renewal under the fixture's policy; it cannot establish the production issuer's policy. Read each claim with its recorded build, environment and limits.
 
-No full Rust workspace pass, independent release review, Windows distribution or blanket immediate revocation is claimed. Public examples use fictional identities and endpoints. Credentials, private logs and operational identifiers stay outside this site.
+No full Rust workspace pass, external security certification, Windows distribution or blanket immediate revocation is claimed. Public examples use fictional identities and endpoints. Credentials, private logs and operational identifiers stay outside this site.
 
 ## Primary references
 
