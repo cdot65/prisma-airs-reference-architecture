@@ -4,6 +4,16 @@ title: "Implementation status and public sources"
 sidebar_label: "Implementation status and public sources"
 ---
 
+## September 19: in-session management and reliability test release
+
+**0.1.0-alpha.22.mcp.3** is published under the `mcp` test tag, with the existing `/mcp` connection manager and `/doctor` diagnostics. Fresh anonymous registry installations passed isolated acceptance on Linux x64, Linux ARM64 and Apple Silicon, covering installation, onboarding, terminal behavior, installed regressions, MCP management, diagnostics, the bundled CLI, upgrades and command output. Apple Silicon signature checks also passed. These checks use synthetic gateway and credential fixtures; they do not establish live-account acceptance. Stable `latest`, `alpha` and `onboarding` remain **0.1.0-alpha.22.onboarding.4**. Consult the login lesson for the exact tested installation; an unqualified stable installation does not provide these dashboards.
+
+The September 19 source changes preserve the selected environment in onboarding recovery commands, including valid leading-hyphen names; reject invalid loaded registry names without rewriting state; reject unsupported Node versions before native or bundled CLI launch; and retain precise credential-service failure and pending-cleanup diagnostics. The final scoped native CLI suite passed **955 tests**. Isolated Linux native recovery fixtures exercised both `staging` and `-staging` while another default remained selected. These source/fixture results are distinct from the fresh installed-package checks above.
+
+The documentation follows reviewed interface behavior: native-only MCP storage requires a one-time `keyring` setting, and successful MCP changes require **Start new conversation** within the same process. Automatic enforcement of that storage mode is not implemented. Workspace API keys authorize inference independently of the local environment name and do not replace MCP SSO.
+
+Fresh human SSO, a real workspace-key inference request, the owner's Ubuntu credential-session investigation and a live ServiceNow incident call are deferred to attended testing. Full Rust workspace results contain classified historical failures; no full workspace pass is claimed. The dated records below remain historical evidence for their own versions.
+
 ## September 17: command migration and bundled product CLI
 
 Standalone Prisma AIRS CLI **7.0.1** exports `airs-cli`. Harness **0.1.0-alpha.22** exports `airs` and bundles its tested CLI **7.0.0** as `airs cli ...`, with SDK **0.33.0**. The standalone patch finalizes stable publication without changing command behavior or tenant configuration. Linux x64, native Linux ARM64 and signed/notarized Apple Silicon installations passed acceptance. A separate global product CLI is optional. The temporary `airs-harness` alias is scheduled for removal in alpha.23.

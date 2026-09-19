@@ -8,30 +8,25 @@ sidebar_label: "Login from browser to authorized tools"
 
 The outcome is concrete: you sign into the harness as yourself, connect the ServiceNow MCP integration in the same environment, and ask the agent to read an incident. Your company SSO identity is used throughout the human login steps. Inference and MCP still receive separate credentials, and the ServiceNow backend uses a server-side integration account.
 
-**Command availability:** this walkthrough targets **airs-harness 0.1.0-alpha.22.onboarding.4**, invoked as `airs`, with **Prisma AIRS CLI 7.0.0** bundled as `airs cli`. The npm package keeps the name `airs-harness`. Existing environments, credentials and histories do not need to be recreated. Top-level `setup` and `status` are removed; use `env create` and `env status`.
+**Release channel:** **airs-harness 0.1.0-alpha.22.mcp.3** is published and ready for local testing. The `mcp` tag selects this test release, including the in-session `/mcp` connection manager and `/doctor` dashboard. Fresh anonymous registry installations passed isolated acceptance on Linux x64, Linux ARM64 and Apple Silicon; real-account SSO, workspace-key inference and ServiceNow acceptance remain separate attended checks. The `latest`, `alpha` and `onboarding` tags remain **0.1.0-alpha.22.onboarding.4**, which does not include these dashboards. Install the exact version below and confirm `airs --version`; `airs-harness@mcp` selects the current test-channel version.
 
-This release reports gateway HTTP status and a request/gateway trace ID when access verification fails. It also detects policy denials returned with HTTP 200. Credential storage, inference authorization and MCP authorization are separate checks. Existing signed-in environments open directly without a mandatory welcome animation.
+The npm package remains `airs-harness`; invoke it as `airs`. **Prisma AIRS CLI 7.0.0** and eight product skills are bundled as `airs cli`, so no separate product CLI installation is required. Supported native packages are Linux x64, Linux ARM64 and Apple Silicon; Windows and Intel Mac packages are outside this release.
 
-Use Node.js 22.14+ in the 22.x line, or Node.js 24+ with npm. The product CLI, skills and package dependencies are included; no Python installer or separate `airs-cli` installation is required.
+Check Node.js and npm in the terminal you will use. The harness requires **22.13.0 or newer in the 22.x line, or 23.5.0 or newer** (`^22.13.0 || >=23.5.0`). Installing npm on Ubuntu does not upgrade a distro-provided Node 18. Install a supported Node version using your organization's method, reopen the terminal, and check again.
 
 ```sh
-npm install -g airs-harness@0.1.0-alpha.22.onboarding.4 --registry=https://npm.example.com
+node --version
+npm --version
+npm install -g airs-harness@0.1.0-alpha.22.mcp.3 --registry=https://npm.example.com
 airs --version
 airs cli --version
-airs env create --help
 ```
 
-The `latest`, `alpha` and `onboarding` tags select this release. Ordinary installs include the matching native package; `--include=optional` is unnecessary unless your npm configuration explicitly omits optional dependencies. Existing environments, credentials and histories are preserved.
+Replace the example registry with your administrator's registry. Ordinary installs include the matching native package; `--include=optional` is unnecessary unless npm configuration explicitly omits optional dependencies. Upgrades preserve existing environments, credentials and histories. Restart an already running AIRS process after upgrading.
 
-If you previously selected the isolated review archive using `PATH` and `AIRS_HARNESS_HOME`, use a fresh terminal for the npm installation. Otherwise those exports continue selecting the separate review installation and its environments.
+If an old standalone CLI owns `airs`, upgrade it to `@cdot65/prisma-airs-cli@7.0.1` first; it uses `airs-cli`. Do not force npm to overwrite another package's command. The standalone 7.0.1 release and the harness's pinned 7.0.0 bundle are intentionally distinct.
 
-If an old standalone CLI owns `airs`, upgrade it to `@cdot65/prisma-airs-cli@7.0.1` before a normal global harness installation. That CLI uses `airs-cli`. Do not force npm to overwrite another package's command.
-
-Run `type -a airs airs-cli airs-harness` if an executable or alias shadows the intended command. Refresh your shell's command cache after changing PATH. `airs --migration-check` reports executable ownership without modifying it.
-
-Standalone CLI 7.0.1 is the stable default release; this harness release retains the tested CLI 7.0.0 bundle from alpha.22. The patch changes release metadata, not command behavior or tenant configuration. Their version outputs therefore differ by one patch.
-
-The compatibility alias `airs-harness` remains for alpha.22 and this onboarding release and is scheduled for removal in alpha.23. Update scripts now: harness commands start with `airs`; product commands start with `airs cli` or standalone `airs-cli`. For example, old `airs runtime ...` becomes `airs cli runtime ...`.
+Use `type -a airs airs-cli airs-harness` and `airs --migration-check` to investigate a shadowed executable. A temporary `airs-harness` compatibility alias remains in alpha.22; new commands use `airs`. If an earlier review installation exported `PATH` or `AIRS_HARNESS_HOME`, use a fresh terminal so those exports do not select its isolated state.
 
 ### 1. Get the connection details and access
 
@@ -47,31 +42,39 @@ Ask your administrator for these public connection settings. The values below ar
 
 Your account needs inference access, membership in the gateway workspace that exposes ServiceNow, and a ServiceNow MCP subject binding with the appropriate incident permissions. Being able to sign into SSO does not grant those permissions automatically. The administrator provisions the gateway integration and its upstream OAuth client before you add it locally. The example integration targets a ServiceNow development instance.
 
-Use a desktop browser and an available OS credential store. On macOS, sign in from the desktop session and allow Keychain access. On Linux, make sure the Secret Service/keyring session is available and unlocked. Passwords belong in the company browser page, never in a command or configuration file.
+Have Git, ripgrep and your project's own build tools available. Linux also requires a usable Bubblewrap sandbox. Use a desktop browser and an available OS credential store. On macOS, sign in from the desktop session and allow Keychain access. On Linux, make sure the Secret Service/keyring session is available and unlocked. Passwords belong in the company browser page, never in a command or configuration file.
 
-### 2. Start AIRS and create your environment
+### 2. Create or select a local environment
+
+For a new profile, start guided creation:
 
 ```sh
-airs
+airs env create work
 ```
 
-On a fresh installation, the animated AIRS mark appears above **Connect an environment**. The actions are available immediately. Press **Enter**, keep `work` as the environment name, enter `https://gateway.example.com/v1`, then choose **Create environment and sign in**. AIRS validates the public fields before saving the environment. Cancelling before that confirmation creates nothing.
+Enter `https://gateway.example.com/v1`, choose **Create environment and sign in**, and follow one of the authentication paths below. This shell command finishes at the shell after sign-in, allowing the one-time MCP storage setting before opening your agent session. Cancelling before creation saves nothing; cancelling after creation preserves the environment so you can resume login.
 
-If `work` already exists, use `airs env use work`, then run `airs`. A signed-out environment shows its name and gateway above the sign-in choices. When several environments exist, **Choose another environment** changes the destination for this session; it does not change the saved default. Use `airs env use NAME` when you want a persistent switch. Credentials and conversation history remain with their environment.
+If `work` already exists, reuse it:
 
-You can still create an environment directly from a shell:
+```sh
+airs env use work
+airs --environment work login
+```
+
+Alternatively, supply the gateway URL explicitly, then sign in separately:
 
 ```sh
 airs env create work --gateway-url https://gateway.example.com/v1
-airs env use work
-airs login
+airs --environment work login
 ```
 
-Supplying the gateway URL creates and selects the environment without opening sign-in. `airs login` opens the sign-in choices. If creation already succeeded, resume login in that environment; do not recreate it to repair a cancelled sign-in.
+Creation with `--gateway-url` saves and selects the environment without opening sign-in. Bare `airs` also offers **Connect an environment** on a fresh installation. In the welcome screen, **Choose another environment** selects a destination for that session; `airs env use NAME` changes the saved default. Do not recreate an existing profile to repair a cancelled or denied login.
 
 ### Environments and gateway workspaces are independent
 
 An **environment** is a local profile containing a gateway URL, credential binding, model settings, MCP connections and conversation history. Create one when you need separate credentials, destinations or histories—for example, `work-sso` and `workspace-api`.
+
+Native MCP keyring records with the same connection name and URL can be shared by the same OS user across environments. Use distinct MCP connection names when you need separate local MCP credentials; a different environment name alone does not isolate that record.
 
 A **gateway workspace** is the server-side boundary that owns provider access, saved model configs, API keys, budgets and guardrails. `airs env create` only creates the local profile. It does not create a gateway workspace or require matching names.
 
@@ -92,9 +95,9 @@ Choose **Sign in with company SSO**. Enter the company issuer, public client ID 
 
 Choose **Open browser on this machine** on your desktop. Over SSH, choose **Use device authorization** and follow the displayed verification link and code on a device with a browser. **Show the full browser URL** retains the manual browser flow; its callback must reach the machine running AIRS, so device authorization is usually easier over SSH.
 
-Sign in as the intended company user in the browser, then return to AIRS. The screen shows progress through authorization, native credential storage and a minimal inference access check. The browser success page alone does not prove credential persistence. **You're ready to use AIRS** means the credential was saved and that inference check passed. Press **Enter** to enter the agent, then **Ctrl+D** to return to your shell before adding ServiceNow below.
+Sign in as the intended company user in the browser, then return to AIRS. The screen shows progress through authorization, native credential storage and a minimal inference access check. The browser success page alone does not prove credential persistence. **You're ready to use AIRS** means the credential was saved and that inference check passed. When the guided shell command completes, continue with the one-time MCP storage setting below. If you started with bare `airs`, you can return to the shell once to apply that prerequisite before starting your session.
 
-The access check sends one small inference request and can consume gateway quota; it sends no local files or tools. A denied or unavailable gateway produces **Credential saved · gateway access needs attention**, with separate options to retry the check, continue or exit. Fix access before proceeding with this walkthrough. Storage failures remain sign-in failures and offer recovery guidance; there is no plaintext fallback. Escape cancels an unfinished sign-in and preserves the environment.
+The access check sends one small inference request and can consume gateway quota; it sends no local files or tools. A denied or unavailable gateway produces **Credential saved · gateway access needs attention**, with separate options to retry the check, continue or exit. Fix access before proceeding with this walkthrough. Storage failures remain sign-in failures and offer recovery guidance; inference credentials have no plaintext fallback. Escape cancels an unfinished sign-in and preserves the environment.
 
 To supply public settings explicitly, use the existing command form:
 
@@ -127,14 +130,13 @@ Use this path when your administrator permits workspace-key authentication. You 
 airs env create workspace-api --gateway-url https://gateway.example.com/v1
 airs --environment workspace-api login --with-api-key
 airs --environment workspace-api doctor --verify-access
-airs --environment workspace-api
 ```
 
 Skip `env create` if the environment already exists. Interactive `airs login` also offers the workspace-key choice. The hidden prompt saves the key in the OS credential store. **Credential saved** confirms local storage; **Gateway access verified** confirms one successful inference request. A user key can retain gateway-side user attribution, but it does not create an OIDC sign-in session in the harness.
 
 For recovery, HTTP 401 indicates rejected authentication; HTTP 403 indicates insufficient permission; HTTP 446 indicates a blocking guardrail. Some gateways return a completed response with HTTP 200 for a blocked request. AIRS checks the blocking hook results and reports that as a policy denial too. Give your administrator the trace ID, not the credential. Recreating a local environment will not fix a workspace policy or missing route.
 
-**MCP still needs its own login.** Continue with the ServiceNow registration and `mcp login` steps below, replacing `work` with `workspace-api`. The gateway-facing MCP connection uses organizational SSO and its own authorization. Successful inference with a workspace key does not grant ServiceNow tool access or replace the gateway's upstream OAuth integration.
+**MCP still needs its own login.** Continue with the in-session ServiceNow steps below, using `workspace-api` wherever the example selects `work`. The gateway-facing MCP connection uses organizational SSO and its own authorization. Successful inference with a workspace key does not grant ServiceNow tool access or replace the gateway's upstream OAuth integration.
 
 ### Terminal controls and quiet operation
 
@@ -142,50 +144,57 @@ Use arrow keys or Tab to move, Enter to select, or the displayed number shortcut
 
 Set `animations = false` under `[tui]` in the environment configuration, or launch with `airs -c tui.animations=false`, for a static mark. `NO_COLOR=1` removes the accent colors. Small terminals use a compact layout. Plain terminals retain text prompts, and explicit scripted commands retain their existing output and exit behavior.
 
-### 4. Add ServiceNow to that same environment
+### 4. Require native MCP storage once, then open AIRS
 
-Run `airs env show work` and locate its `state_directory`. In that directory's `config.toml`, set the following **top-level** key before any `[table]` headers, updating an existing value rather than adding a duplicate:
+Run `airs env show work` and locate its `state_directory`. In that directory's `config.toml`, set this **top-level** key before any `[table]` headers; update an existing value instead of adding a duplicate:
 
 ```toml
 mcp_oauth_credentials_store = "keyring"
 ```
 
-This requires native storage for MCP credentials as well. Then register the gateway connection:
+This explicitly requires the OS credential store for MCP tokens. The current connection manager respects the configured mode but does not enforce this setting automatically. Do this before MCP sign-in; do not select a file fallback to work around an unavailable credential service. Linux needs an available Secret Service session, and macOS may request Keychain authorization.
+
+```sh
+airs --environment work
+```
+
+The remaining connection workflow stays inside AIRS. It uses the environment displayed by this session, even if another terminal changes the saved default.
+
+### 5. Add ServiceNow and complete MCP SSO inside AIRS
+
+1. Enter `/mcp` to open **MCP connections**.
+2. Choose **Add gateway MCP server**. Enter the local connection name `service-now` and `https://gateway-mcp.example.com/mcp-service-now-dev/mcp` as the gateway URL.
+3. Complete **Sign in to gateway MCP**. Use **Ctrl+O** to open the browser on this machine or **Ctrl+Y** to copy the authorization URL. Over SSH, open that URL on your browser host and paste the complete callback URL into the terminal's hidden callback input when requested. Never paste it into the agent conversation or a support report.
+4. In the gateway's company SSO flow, choose the **same company account** used for inference. With workspace-key inference, choose the organizational account that has the MCP workspace grant. An existing browser session may avoid another password prompt; account selection or consent can still appear.
+5. Complete any gateway-managed upstream consent. Wait for native credential persistence and MCP initialization/tool discovery to finish. After **MCP connection updated**, choose **Start new conversation**.
+
+The process stays open; your previous conversation remains saved and your unsent draft carries over for review. Nothing is submitted or replayed automatically. This transition is required because a changed MCP identity or tool inventory cannot safely be inserted into the old conversation. An opaque gateway MCP token does not prove continuity with the inference identity.
+
+If a connection was saved but sign-in was cancelled or failed, select `service-now` in `/mcp` and choose **Sign in**. Do not add a duplicate. Use **Reconnect and verify** for a fresh connection check; **Refresh connections** refreshes the manager's view. A cached inventory alone is not proof of current tool access.
+
+The URL must be the gateway's integration URL, including `/mcp`, never the direct ServiceNow instance or upstream MCP server. The harness signs into the gateway; the gateway owns upstream OAuth and its confidential client; the MCP service holds the ServiceNow integration credential. Do not copy inference tokens or ServiceNow passwords into MCP configuration.
+
+Shell commands remain available as an optional fallback:
 
 ```sh
 airs --environment work mcp add service-now \
   --url https://gateway-mcp.example.com/mcp-service-now-dev/mcp \
   --scopes mcp:servers:read,mcp:tools:list,mcp:tools:call
+# Only if the add flow did not finish sign-in:
+airs --environment work mcp login service-now --no-browser
 ```
 
-`service-now` is the local connection name. The URL must be the gateway's ServiceNow connection URL, including the final `/mcp`. It is not the ServiceNow instance URL or the upstream MCP server URL. Adding a server in `work` does not add it to your other environments.
+### 6. Inspect health and verify a read-only ServiceNow call
 
-### 5. Complete MCP login with the same company identity
+Enter `/doctor` for the current environment's connection-health dashboard. Opening it or choosing **Refresh diagnostics** does not send an inference request. **Verify gateway access** opens a confirmation; **Send connectivity check** sends a small inference request that can consume quota and appear in gateway logs. It sends no local files, conversation content or tools. This verifies inference, not ServiceNow permissions.
 
-`mcp add` detects OAuth and normally opens the browser immediately. Follow the gateway's CAS/company sign-in flow and select the **same company account** used for inference. An existing SSO browser session may avoid another password prompt; consent or account selection can still appear. If the gateway requests upstream ServiceNow MCP consent, complete that gateway-managed flow with the same company identity too.
+Return to `/mcp`, select `service-now`, and use **Reconnect and verify** if you need fresh initialization/tool discovery. Choose **Start new conversation** after connection changes, then inspect the available tools. A read-only grant exposes `list_incidents` and `get_incident`; incident-management grants may also expose `create_incident` and `update_incident`. Successful login does not imply all four permissions.
 
-Wait for the CLI to report **Successfully logged in.** If adding the connection saved it but login was cancelled, failed or expired, resume without adding it again:
-
-```sh
-airs --environment work mcp login service-now
-```
-
-Do not run this again just because `mcp add` already completed login successfully. Do not paste the inference token into the MCP configuration, register the upstream confidential client on your workstation, or enter a ServiceNow integration password into the harness. The user authenticates to the gateway; the gateway handles upstream OAuth; the MCP service handles the ServiceNow backend credential. An existing browser session can simplify sign-in, but the two native logins must still use the intended account.
-
-### 6. Verify a real, read-only ServiceNow call
-
-```sh
-airs --environment work mcp list
-airs --environment work
-```
-
-Inside the harness, run `/mcp`. Confirm that `service-now` is connected with OAuth and inspect the tools available to your identity. A read-only grant exposes `list_incidents` and `get_incident`; an authorized incident-management grant also exposes `create_incident` and `update_incident`. A successful login does not imply all four permissions.
-
-Start with a read-only request:
+Ask in the new conversation:
 
 > Use the service-now MCP connection to list up to five active incidents. Show their numbers, short descriptions and priorities. Do not create or update any records.
 
-Confirm that the transcript actually called `list_incidents` on `service-now` and returned a tool result. An empty authorized list is a valid result. A connection label, a tool inventory, or a model answer without a tool call is not end-to-end evidence. Writes are separate actions that change real ServiceNow records; this onboarding check does not require them.
+Confirm that the transcript actually called `list_incidents` on `service-now` and returned a tool result. An empty authorized list is valid. A connected label, an inventory, or a model answer without a tool call is not end-to-end evidence. This final live check is for your provisioned account; it was not performed by the documentation update.
 
 ### 7. Use the bundled Prisma AIRS product CLI and skills
 
@@ -215,13 +224,17 @@ List environments with `airs env list`; switch the saved default with `airs env 
 | Symptom | Next step |
 | --- | --- |
 | Inference login was cancelled | `airs --environment work login`; reuse the environment |
-| Gateway MCP login needs renewal | `airs --environment work mcp login service-now`; then start a fresh conversation |
-| Inference succeeds but ServiceNow is absent | Check `mcp list` in `work`, then the gateway URL and workspace integration grant |
-| Browser callback says success but the terminal fails | Check native credential-store persistence; keep the terminal open through completion |
+| Gateway MCP login needs renewal | `/mcp` → `service-now` → **Sign in**, then **Start new conversation** |
+| Inference succeeds but ServiceNow is absent | `/mcp` in the selected environment, then the gateway URL and workspace integration grant |
+| Browser callback says success but the terminal fails | `/doctor`; check native credential-store persistence and keep the terminal open through completion |
+| Workspace key needs replacement | Leave the session, run `airs --environment work login --with-api-key`, then reopen the same environment |
+| Credential cleanup is pending | Restore credential-service access, then retry the displayed environment-specific login or logout; unavailable does not necessarily mean locked |
 | Gateway returns 404 | Check the exact ServiceNow gateway URL and its final `/mcp` |
 | Tools return an authorization error | Have an administrator check the gateway workspace grant and upstream incident roles/scopes/subject binding |
 
-To retire the environment, sign out the credentials you intend to remove while it is still selected, then unregister it:
+For inference SSO renewal, `/doctor` offers **Restore company sign-in**, or use `/signin`. Workspace-key replacement remains a shell operation. Neither operation grants MCP permissions. Escape cancels an unfinished action; existing work remains saved.
+
+To retire the environment, use `/mcp` → **Sign out** if desired, then sign out the credentials you intend to remove while it is still selected and unregister it:
 
 ```sh
 airs --environment work mcp logout service-now

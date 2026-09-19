@@ -21,6 +21,16 @@ flowchart LR
     input --> execution["Local utility execution and result"]
 ```
 
+## Diagnose inside the selected environment
+
+In the mcp test channel, enter `/doctor` for the connection-health dashboard. **Refresh diagnostics** refreshes local diagnostics without making an inference request. A native-store availability check does not prove that every saved credential is readable. **Verify gateway access** asks for confirmation; only **Send connectivity check** sends the small inference probe. It may consume quota and appear in gateway logs, but sends no local files, conversation or tools. The equivalent shell commands are `airs --environment work doctor` and `airs --environment work doctor --verify-access`.
+
+**Restore company sign-in** renews inference SSO for the same verified identity. Workspace-key replacement remains a shell action: leave the session, run `airs --environment work login --with-api-key`, and reopen the same environment. Use the name displayed by the session; local names do not need to match gateway workspace names.
+
+For MCP, select the affected connection through `/doctor` or `/mcp`. Choose **Sign in** for expired or absent credentials, or **Reconnect and verify** for fresh initialization and tool discovery. After connection changes choose **Start new conversation**; history and the unsent draft remain saved and nothing is replayed. A tool inventory is still weaker evidence than a completed authorized tool call.
+
+A workspace key being saved is not evidence of an allowed model route. Check the key's workspace, inference permission and default saved config with your administrator. Recreating a local environment does not fix a gateway route or policy denial. An unavailable native credential service does not necessarily mean a locked store: check its availability and any OS authorization prompt in the same user session. If cleanup is pending, restore service access and retry the displayed environment-specific login or logout; retain both the original and cleanup error categories in a sanitized report.
+
 ## Symptoms and useful checks
 
 Most of the checks below test a boundary rather than a component, so the first question is usually whether the request reached the place you think it reached.
@@ -30,7 +40,7 @@ Most of the checks below test a boundary rather than a component, so the first q
 | Inference fails after about 30 minutes idle | Whether the inference grant is still renewable; use the company sign-in prompt |
 | Alpha.15 shows the generic bound-credential fatal error after idle | Enter `/signin`; alpha.16 includes the provider-routing correction for automatic guidance |
 | Login completes but credential save fails | Native Keychain or Secret Service availability and the reported storage category |
-| Browser cannot reach localhost | Whether the current native callback listener is still alive and reachable from that browser |
+| Browser cannot reach localhost | Use the current MCP flow's hidden callback input over SSH, or verify callback routing for browser-only inference flows |
 | Gateway denies workspace access after CAS login | CIE group-to-workspace mapping and the workspace Members view |
 | Gateway MCP login succeeds but upstream needs consent | The separate gateway-held upstream OAuth grant |
 | mcp server 1 rejects the token | Issuer, signature, resource audience, allowed client and time limits |
@@ -50,9 +60,11 @@ The maintainer returned after about 30 minutes idle and received a generic fatal
 
 ## Browser callbacks on a remote machine
 
-A callback to `127.0.0.1` reaches the browser's computer, which is not necessarily the harness's computer. When the harness runs elsewhere, a correctly bound tunnel must forward that callback to the native process; otherwise the callback lands on a machine where no harness is listening. The PKCE verifier and native credential store remain with the harness, which is why the login cannot simply be finished on the browser side.
+A callback to `127.0.0.1` reaches the browser's computer, which may differ from the harness host. For MCP, the in-session sign-in dialog supports opening the authorization URL on another computer and pasting the complete callback URL into its hidden callback input. The shell fallback is `airs --environment work mcp login service-now --no-browser`. Keep that attempt open; never paste a callback into the agent conversation or a support report. A correctly routed HTTP callback can also finish the same attempt.
 
-Keep the current login attempt and tunnel alive until the native command reports completion. The callback window is five minutes in the tested flow, and an expired tab cannot complete a later login attempt because its state and verifier belong to the earlier one. Verify credential persistence and an actual request after browser completion; a success page in the browser is not the end of the login.
+For inference, use **Use device authorization** over SSH when your issuer supports it. If using the browser callback flow instead, the callback must reach the harness host, which can require a correctly bound tunnel. These are different flows; MCP manual callback support does not imply inference device authorization support at every issuer.
+
+The callback window is five minutes in the tested MCP flow. An expired tab cannot complete a later attempt because its state and verifier belong to the earlier one. The PKCE verifier and native credential store remain on the harness host. Verify native completion and an actual request after browser consent; the success page alone is insufficient.
 
 ## Capture a useful report
 
