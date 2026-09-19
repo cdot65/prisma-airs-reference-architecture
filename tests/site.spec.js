@@ -82,7 +82,10 @@ test('ServiceNow onboarding is discoverable and explains in-session MCP authoriz
   await expect(main).toContainText('Nothing is submitted or replayed automatically');
   await expect(main).toContainText('https://gateway-mcp.example.com/mcp-service-now-dev/mcp');
   await expect(main).toContainText('Reconnect and verify');
-  await expect(main).toContainText('hidden callback input');
+  await expect(main).toContainText('hidden callback field');
+  await expect(main).toContainText('a local desktop session opens the browser automatically');
+  await expect(main).toContainText('Saving MCP credential');
+  await expect(main).toContainText('Connecting and discovering MCP tools');
   await expect(main).not.toContainText('Ctrl+D');
   await expect(main).toContainText('same company account');
   await expect(main).toContainText('list_incidents');
@@ -96,9 +99,9 @@ test('first-session guide separates workspace keys, local names and explicit ver
   await expect(main).toContainText('^22.13.0 || >=23.5.0');
   await expect(main).toContainText('Installing npm on Ubuntu does not upgrade');
   await expect(main).toContainText('airs-harness@mcp');
-  await expect(main).toContainText('npm install -g airs-harness@0.1.0-alpha.22.mcp.5 --registry=https://npm.example.com');
+  await expect(main).toContainText('npm install -g airs-harness@0.1.0-alpha.22.mcp.6 --registry=https://npm.example.com');
   await expect(main).toContainText('is published and ready for local testing');
-  await expect(main).toContainText('Real-account SSO and independently recorded workspace-key/ServiceNow acceptance are separate from package verification.');
+  await expect(main).toContainText('Real-account SSO and independently recorded workspace-key/ServiceNow acceptance are separate from package verification');
   await expect(main).not.toContainText('publication and native acceptance of that exact version are pending');
   await expect(main).toContainText('0.1.0-alpha.22.onboarding.4');
   await expect(main).toContainText('does not include these dashboards');

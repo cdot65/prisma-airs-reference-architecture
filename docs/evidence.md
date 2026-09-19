@@ -6,6 +6,14 @@ sidebar_label: "Implementation status and public sources"
 
 ## September 19: Ubuntu preparation helper correction
 
+**0.1.0-alpha.22.mcp.6** is published and ready for local testing under the `mcp` tag. Exact candidates and fresh anonymous registry installations passed on Linux x64, native Linux ARM64 and signed/notarized Apple Silicon. Non-mcp tags remain unchanged. This is isolated package acceptance, not production SSO or ServiceNow acceptance.
+
+The release adds desktop browser opening, a failed-launch fallback, SSH/manual callback guidance, scrollable long links and typed authorization/storage/discovery progress. Native MCP persistence, reuse and logout passed; upgrades from mcp.5 and onboarding.4 preserved checked configuration and legacy command targets. Candidate lifecycle checks completed two renewal cycles for inference and MCP and three synthetic read-only tool turns on each platform. The real five-minute callback-expiry check passed during development; that opt-in test was not repeated against every packaged binary. The desktop browser-launch stub fixture runs on Linux; the owner’s real Apple Silicon browser/SSO test remains pending.
+
+Affected Rust checks passed 5,633 tests with 14 skips; an unchanged pet-rendering assertion failed because its encoded temporary filename contained the searched substring. That single test passed with a different temporary path, and inherited-color terminal failures also passed after environment correction. New MCP UI snapshots were reviewed. Scoped lint completed with one preexisting warning and no source edits. This does not claim a green full-workspace run or replace the earlier long-duration lifecycle evidence.
+
+### Previous mcp.5 release and Ubuntu evidence
+
 **0.1.0-alpha.22.mcp.5** is published and ready for local testing under the `mcp` tag. Fresh anonymous registry installations passed isolated acceptance on Linux x64, native Linux ARM64 and signed/notarized Apple Silicon. The protected `latest`, `alpha` and `onboarding` tags remain **0.1.0-alpha.22.onboarding.4**. The release packages the corrected Ubuntu SSH readiness helper. The helper bundled in mcp.4 predates that correction; use the verified mcp.5 helper or a corrected administrator-provided copy for SSH keyring setup.
 
 Exact mcp.5 candidate and published packages passed the installation, onboarding, terminal, installed-regression, MCP manager, diagnostics, bundled CLI and command-output checks. Upgrades from mcp.4 and onboarding.4 preserved the checked configuration and legacy command targets on all three platforms. Required native MCP checks passed on every platform, including persistence, reuse in a second process and logout. Separate candidate quick lifecycle runs each completed two renewal cycles for inference and MCP and three verified read-only tool turns. These shorter exact-build checks do not replace the older development-binary timing evidence below.
