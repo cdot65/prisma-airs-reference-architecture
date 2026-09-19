@@ -117,6 +117,32 @@ airs --environment work doctor --verify-access
 
 `env status` inspects local configuration; it does not prove fresh authentication or remote access. `doctor --verify-access` sends another inference probe. Neither result tests ServiceNow tools. Adding MCP will not repair an incorrect inference URL or missing inference entitlement.
 
+### Browserless sign-in over SSH
+
+AIRS already supports device authorization for inference. On a host without a browser, select **Sign in with company SSO → Use device authorization**, or use `login --device-auth`. Your administrator must enable device authorization for the public harness client; an issuer advertising the endpoint alone does not prove that client is permitted.
+
+To try SSO while keeping a working workspace-key environment, use a separate local profile. In this example, `work` is your existing default; substitute its actual name and your administrator's connection settings. Skip creation if `work-sso` already exists:
+
+```sh
+airs env create work-sso --gateway-url https://gateway.example.com/v1
+airs env use work
+airs --environment work-sso login --device-auth \
+  --issuer-url https://sso.example.com/realms/company \
+  --oidc-client-id harness-native \
+  --audience airs-inference
+```
+
+Keep the SSH terminal open. Open your laptop or phone browser yourself; the SSH process cannot open that browser automatically. Open the displayed verification link there, enter the displayed code, and complete company sign-in there. AIRS polls the issuer from the SSH host; this flow needs no inbound callback or SSH port forward. The code is short-lived: if it expires or you cancel with Ctrl+C, rerun the login command to start a new attempt. After the command reports that credentials were stored, run `airs --environment work-sso doctor --verify-access`. This separate check sends one small inference request and can consume gateway quota. Once access is verified, open `airs --environment work-sso`. If credentials were saved but the gateway denies access, fix the reported route, entitlement or policy issue; successful browser approval does not grant a missing gateway entitlement.
+
+`login --no-browser` selects the authorization-code flow and prints its browser URL. It is not device authorization; that inference flow still needs its callback to reach the SSH host.
+
+| Sign-in | Browser on another device | Return to the SSH terminal |
+| --- | --- | --- |
+| Inference with `login --device-auth` | Open the verification link and enter the user code | Wait for polling, credential storage and the inference result; no callback to paste |
+| Gateway MCP through `/mcp` | Open the connection's authorization URL and complete consent | Paste the full callback URL into the manager's hidden input, even if the browser cannot load its localhost page |
+
+Inference and MCP use separate credentials and permissions. A workspace API key or successful device login does not sign in an MCP connection. Paste an MCP callback only into its hidden authorization field, never into the agent conversation. The gateway continues to own upstream ServiceNow authorization.
+
 ### Alternative: use a workspace API key for inference
 
 Use this path when your administrator permits workspace-key authentication. You can use the same gateway workspace as SSO; the workspace policy must explicitly support both methods.
