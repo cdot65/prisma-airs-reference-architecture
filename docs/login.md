@@ -8,7 +8,9 @@ sidebar_label: "Login from browser to authorized tools"
 
 The outcome is concrete: you sign into the harness as yourself, connect the ServiceNow MCP integration in the same environment, and ask the agent to read an incident. Your company SSO identity is used throughout the human login steps. Inference and MCP still receive separate credentials, and the ServiceNow backend uses a server-side integration account.
 
-**Release channel:** **airs-harness 0.1.0-alpha.22.mcp.6** is published and ready for local testing under the `mcp` tag. It adds automatic browser opening in desktop MCP sign-in, clearer SSH/manual callback instructions, scrollable authorization links and progress through authorization, credential storage and tool discovery. Exact candidates and fresh anonymous registry installations passed isolated acceptance on Linux x64, native Linux ARM64 and signed/notarized Apple Silicon. Existing environments keep their configuration and credentials. The `latest`, `alpha` and `onboarding` tags remain **0.1.0-alpha.22.onboarding.4**. That default-channel version does not include these dashboards. Real-account SSO and independently recorded workspace-key/ServiceNow acceptance are separate from package verification; the owner’s attended Apple Silicon browser test is next. Install the exact version below and confirm `airs --version`; `airs-harness@mcp` selects the current test-channel version.
+**Release: airs-harness 0.1.1.** This stable release is published under `latest`; fresh default installations passed on all three supported platforms. It includes guided local environments, company SSO or workspace API-key inference, the in-session `/mcp` manager and `/doctor`, automatic desktop browser opening, remote callback entry and authorization/storage/discovery progress. Upgrades preserve existing environments, credential bindings and history. Native MCP device authorization still requires gateway support.
+
+The owner confirmed inference sign-in, ServiceNow sign-in through `/mcp`, a read-only query and credential reuse after restarting `airs` on Apple Silicon with the preceding mcp.6 release. That real-account result is separate from automated package acceptance. The `mcp` prerelease tag remains available; unversioned installs and `@latest` select 0.1.1.
 
 The npm package remains `airs-harness`; invoke it as `airs`. **Prisma AIRS CLI 7.0.0** and eight product skills are bundled as `airs cli`, so no separate product CLI installation is required. Supported native packages are Linux x64, Linux ARM64 and Apple Silicon; Windows and Intel Mac packages are outside this release.
 
@@ -17,7 +19,7 @@ Check Node.js and npm in the terminal you will use. The harness requires **22.13
 ```sh
 node --version
 npm --version
-npm install -g airs-harness@0.1.0-alpha.22.mcp.6 --registry=https://npm.example.com
+npm install -g airs-harness@0.1.1 --registry=https://npm.example.com
 airs --version
 airs cli --version
 ```
@@ -26,7 +28,7 @@ Replace the example registry with your administrator's registry. Ordinary instal
 
 If an old standalone CLI owns `airs`, upgrade it to `@cdot65/prisma-airs-cli@7.0.1` first; it uses `airs-cli`. Do not force npm to overwrite another package's command. The standalone 7.0.1 release and the harness's pinned 7.0.0 bundle are intentionally distinct.
 
-Use `type -a airs airs-cli airs-harness` and `airs --migration-check` to investigate a shadowed executable. A temporary `airs-harness` compatibility alias remains in alpha.22; new commands use `airs`. If an earlier review installation exported `PATH` or `AIRS_HARNESS_HOME`, use a fresh terminal so those exports do not select its isolated state.
+Use `type -a airs airs-cli airs-harness` and `airs --migration-check` to investigate a shadowed executable. The `airs-harness` compatibility alias remains available in 0.1.1; new commands use `airs`. If an earlier review installation exported `PATH` or `AIRS_HARNESS_HOME`, use a fresh terminal so those exports do not select its isolated state.
 
 ### 1. Get the connection details and access
 
@@ -201,7 +203,7 @@ The remaining connection workflow stays inside AIRS. It uses the environment dis
 
 1. Enter `/mcp` to open **MCP connections**.
 2. Choose **Add gateway MCP server**. Enter the local connection name `service-now` and `https://gateway-mcp.example.com/mcp-service-now-dev/mcp` as the gateway URL.
-3. Complete **Sign in to gateway MCP**. In mcp.6 and later, a local desktop session opens the browser automatically. **Ctrl+O** opens it again; **Ctrl+Y** copies the full authorization URL. In an SSH/headless session, open that link on your laptop or phone. After SSO and consent, the browser may show a localhost page that cannot load: copy its entire address, paste it into AIRS’s hidden callback field, and press Enter. Never paste it into the agent conversation or a support report. Use **Page Up/Page Down** to scroll long links; the controls remain visible.
+3. Complete **Sign in to gateway MCP**. In 0.1.1, a local desktop session opens the browser automatically. **Ctrl+O** opens it again; **Ctrl+Y** copies the full authorization URL. In an SSH/headless session, open that link on your laptop or phone. After SSO and consent, the browser may show a localhost page that cannot load: copy its entire address, paste it into AIRS’s hidden callback field, and press Enter. Never paste it into the agent conversation or a support report. Use **Page Up/Page Down** to scroll long links; the controls remain visible.
 4. In the gateway's company SSO flow, choose the **same company account** used for inference. With workspace-key inference, choose the organizational account that has the MCP workspace grant. An existing browser session may avoid another password prompt; account selection or consent can still appear.
 5. Complete any gateway-managed upstream consent. AIRS shows **Completing MCP sign-in**, **Saving MCP credential**, then **Connecting and discovering MCP tools**. Browser approval alone does not prove that a credential was saved, and discovery does not execute a tool. After **MCP connection updated**, choose **Start new conversation**.
 

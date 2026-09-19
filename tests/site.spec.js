@@ -63,7 +63,7 @@ test('ServiceNow onboarding is discoverable and explains in-session MCP authoriz
   await page.getByRole('link',{name:'Sign in and connect ServiceNow'}).click();
   await expect(page).toHaveURL(/learn\/login\/#sso-to-servicenow-a-complete-first-session$/);
   const main=page.locator('main');
-  await expect(main).toContainText('airs-harness 0.1.0-alpha.22');
+  await expect(main).toContainText('airs-harness 0.1.1');
   await expect(main).toContainText('Prisma AIRS CLI 7.0.0');
   await expect(main).toContainText('airs cli tenant switch development');
   await expect(main).toContainText('Harness environments and CLI tenants are independent');
@@ -98,13 +98,10 @@ test('first-session guide separates workspace keys, local names and explicit ver
   const main=page.locator('main');
   await expect(main).toContainText('^22.13.0 || >=23.5.0');
   await expect(main).toContainText('Installing npm on Ubuntu does not upgrade');
-  await expect(main).toContainText('airs-harness@mcp');
-  await expect(main).toContainText('npm install -g airs-harness@0.1.0-alpha.22.mcp.6 --registry=https://npm.example.com');
-  await expect(main).toContainText('is published and ready for local testing');
-  await expect(main).toContainText('Real-account SSO and independently recorded workspace-key/ServiceNow acceptance are separate from package verification');
+  await expect(main).toContainText('npm install -g airs-harness@0.1.1 --registry=https://npm.example.com');
+  await expect(main).toContainText('That real-account result is separate from automated package acceptance');
   await expect(main).not.toContainText('publication and native acceptance of that exact version are pending');
-  await expect(main).toContainText('0.1.0-alpha.22.onboarding.4');
-  await expect(main).toContainText('does not include these dashboards');
+  await expect(main).toContainText('The owner confirmed inference sign-in, ServiceNow sign-in through /mcp');
   await expect(main).toContainText('does not create a gateway workspace or require matching names');
   await expect(main).toContainText('a different environment name alone does not isolate that record');
   await expect(main).toContainText('default saved config');
