@@ -4,6 +4,24 @@ title: "Implementation status and public sources"
 sidebar_label: "Implementation status and public sources"
 ---
 
+## September 20: post-0.1.1 reliability test release
+
+Optional test version **0.1.2-alpha.1.mcp.1** is published under `mcp`. The launcher and all three native packages passed exact candidate and fresh anonymous registry acceptance on Linux x64, native Linux ARM64 and signed/notarized Apple Silicon. `latest` continues to select stable **0.1.1**, and other tags are unchanged. Source implementation, installed package acceptance and production-account acceptance remain separate claims.
+
+The launcher now gives exact-version recovery when its native dependency is absent, preserving the original registry and installation scope. A disposable local installation reproduced the published 0.1.1 failure and recovered after reinstalling the same version with optional dependencies included. Global omission did not reproduce that failure on the examined npm installations; no universal global-omission claim is made. The launcher regression suite passed 31 tests, and the exact packaged 0.1.1 Ubuntu helper passed its six isolated keyring/readiness cases without using owner credentials.
+
+The new diagnostic-report UI uses an explicit field allowlist and reuses completed `/doctor` results. Preview, clipboard and private local-save actions do not initiate another request or upload a report. Stale or wrong-thread actions are rejected. The implementation passed 13 focused tests, the TUI suite recorded **4,360 passed and six skipped**, and all five installed doctor scenarios passed. An independent implementation review scored this bounded work **9.4/10**. These results cover privacy, preserved state, request counts, clipboard failure handling, local saves and existing doctor behavior; the score is not a publication decision.
+
+Clipboard failure was tested with an injected backend, while the installed SSH fixture captured the terminal-mediated clipboard request and matched its decoded bytes to the saved file. Neither establishes successful pasting in every desktop or terminal. All three native package and fresh registry checks passed. The isolated fixture checks do not establish a fresh human SSO login, a live ServiceNow request or production long-duration renewal.
+
+The same test version corrects pre-session company SSO recovery guidance. When startup or `resume` encounters a rejected grant or an uncertain consumed refresh, the shell error recommends `airs --environment NAME login --restore-session`, followed by retrying the original command. Same-person restoration preserves the conversation binding; an active terminal session retains `/signin`. This narrow fix passed independent source review and installed recovery fixtures on all three native targets. No attended restoration is claimed.
+
+Release acceptance also exercised exact stable 0.1.1 → test release → stable 0.1.1 npm roundtrips on every platform, both before and after publication. Configuration, native credential bindings and conversation history remained intact while actual synthetic inference/MCP turns completed before upgrade, after upgrade and after rollback. Separate continuous-process fixtures completed three turns and two inference/MCP expiry cycles on each platform. They do not substitute for long-duration production renewal.
+
+The current full GNU workspace completed with **18,331 passed, three failed and 34 skipped**. Its status remains **failed**. Independent current-source review found that the three failures exercise experimental remote shell snapshot V2, which is disabled by default in AIRS. The explicit AIRS product gate passed while retaining the failed workspace result. No historical release waiver was reused, and this test release does not promote a new stable version.
+
+Stable 0.1.1 and its original full-workspace results remain recorded below. This work does not reclassify the earlier non-green workspace run as green or carry its version-specific exceptions into a new release.
+
 ## September 19: 0.1.1 stable release
 
 Version **0.1.1** consolidates the onboarding and MCP work into a stable release. The `latest` tag selects 0.1.1. Exact native candidates, fresh anonymous registry installations, upgrades from mcp.6 and onboarding.4, and unversioned default installations passed on Linux x64, native Linux ARM64 and signed/notarized Apple Silicon. Existing prerelease tags remain separate. No new authentication service is added, and native MCP device authorization remains dependent on gateway support.

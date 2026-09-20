@@ -23,13 +23,15 @@ flowchart LR
 
 ## Diagnose inside the selected environment
 
-In the mcp test channel, enter `/doctor` for the connection-health dashboard. **Refresh diagnostics** refreshes local diagnostics without making an inference request. A native-store availability check does not prove that every saved credential is readable. **Verify gateway access** asks for confirmation; only **Send connectivity check** sends the small inference probe. It may consume quota and appear in gateway logs, but sends no local files, conversation or tools. The equivalent shell commands are `airs --environment work doctor` and `airs --environment work doctor --verify-access`.
+In stable 0.1.1 and the newer test releases, enter `/doctor` for the connection-health dashboard. **Refresh diagnostics** refreshes local diagnostics without making an inference request. A native-store availability check does not prove that every saved credential is readable. **Verify gateway access** asks for confirmation; only **Send connectivity check** sends the small inference probe. It may consume quota and appear in gateway logs, but sends no local files, conversation or tools. The equivalent shell commands are `airs --environment work doctor` and `airs --environment work doctor --verify-access`.
 
 **Restore company sign-in** renews inference SSO for the same verified identity. Workspace-key replacement remains a shell action: leave the session, run `airs --environment work login --with-api-key`, and reopen the same environment. Use the name displayed by the session; local names do not need to match gateway workspace names.
 
+**Optional test release `0.1.2-alpha.1.mcp.1`:** when startup or `resume` encounters a rejected refresh grant or an uncertain refresh that may already have been consumed, AIRS exits before opening the session and recommends `airs --environment NAME login --restore-session`. Use the environment named by the error, sign in as the same person, then retry the original command. Existing conversations are preserved; no operation is replayed automatically. `/signin` remains the recovery action in an already-open session. The published package passed installed recovery fixtures; an attended restoration test remains separate.
+
 For MCP, select the affected connection through `/doctor` or `/mcp`. Choose **Sign in** for expired or absent credentials, or **Reconnect and verify** for fresh initialization and tool discovery. After connection changes choose **Start new conversation**; history and the unsent draft remain saved and nothing is replayed. A tool inventory is still weaker evidence than a completed authorized tool call.
 
-A workspace key being saved is not evidence of an allowed model route. Check the key's workspace, inference permission and default saved config with your administrator. Recreating a local environment does not fix a gateway route or policy denial. An unavailable native credential service does not necessarily mean a locked store: check its availability and any OS authorization prompt in the same user session. If cleanup is pending, restore service access and retry the displayed environment-specific login or logout; retain both the original and cleanup error categories in a sanitized report.
+A workspace key being saved is not evidence of an allowed model route. Check the key's workspace, inference permission and default saved config with your administrator. Recreating a local environment does not fix a gateway route or policy denial. An unavailable native credential service does not necessarily mean a locked store: check its availability and any OS authorization prompt in the same user session. If cleanup is pending, restore service access and retry the displayed environment-specific login or logout. A report can identify the failed check; exact local error categories may need separate review with your administrator.
 
 ## Symptoms and useful checks
 
@@ -50,7 +52,12 @@ Most of the checks below test a boundary rather than a component, so the first q
 | `calculate` fails for division by zero | Correct the input; a new login does not repair arithmetic |
 | `decode_base64` rejects text | Canonical padding and valid decoded UTF-8 |
 | `current_time` differs from the workstation | The tool reports the MCP server's clock |
+| `airs` reports that its native package is unavailable | Reinstall the same exact version with `--include=optional`, preserving the original registry and global/local installation scope; follow the repair example in the login lesson |
 | An upgrade still shows an older version | Resolved executable, npm prefix and `PATH` ordering |
+
+To return from the optional test release to stable, reinstall exact `airs-harness@0.1.1` using the same registry and installation scope, then restart AIRS. Keep existing environments and credentials. The login lesson provides both exact installation commands and the tested rollback scope.
+
+A missing native dependency and an unsupported platform are different failures. Do not switch releases or change npm configuration merely to repair an omitted package. Normal installs include optional dependencies; the explicit flag is a repair for a missing dependency. See [the login lesson](./login.md) for the exact 0.1.1 repair example.
 
 Tool execution has no downstream management API to diagnose, which removes a whole class of failure from the utility path. The server's authentication layer can still depend on trusted signing-key retrieval, so DNS or issuer-key failures are real, but they belong to the identity boundary rather than to the tool.
 
@@ -93,8 +100,12 @@ The callback window is five minutes in the tested MCP flow. An expired tab canno
 
 ## Capture a useful report
 
-Record the package version, affected environment, approximate idle time, failing step and sanitized error. For MCP, include the actual tool name and whether it completed. Use request IDs to correlate gateway and server observations, since the same request looks different from each side. Never include tokens, refresh grants, client secrets or private tool input in public reports.
+**Stable 0.1.1:** record the package version, platform, approximate idle time and failed step. Describe whether a tool completed, failed or has an uncertain outcome. Review any additional identifiers before sharing them through your organization's support channel. Environment names, tool names and request IDs may be private; do not add them to a public report automatically. Never share credentials, device codes, authorization/callback URLs or private tool input.
 
-A model's statement that tools are “working” is weaker evidence than a completed MCP call with a valid result, because the model can only report what it was told, and a returned function call is a request rather than a result.
+**Published optional test version `0.1.2-alpha.1.mcp.1`:** the new `/doctor` → **Diagnostic report** action offers **Preview report**, **Copy report** and **Save local report**. These controls are not in stable 0.1.1. Preview shows the exact text that will be copied or saved; **Esc** returns to the actions. Saving creates a new owner-only `diagnostic-report-*.txt` file in the current environment's state directory and displays its location. If your terminal declines clipboard access, use preview or the saved file. Nothing is uploaded automatically.
+
+The report allowlists version/platform, authentication method, known check outcomes and recovery steps. It excludes local environment/connection names, addresses, paths, credentials, raw errors, conversation content and tool inputs/results. It does not include individual MCP status or Node/npm versions. Report actions reuse the last completed snapshot and make no additional health, credential-store, inference or MCP request. Running `/doctor` itself still performs its existing diagnostics; **Verify gateway access** remains a separate, explicit inference action.
+
+A passed native-service check does not prove access to the saved credential. A failed service check does not establish that the store is locked. Gateway health does not verify inference, and MCP discovery does not verify a completed tool call. An absent inference check remains **Not verified**. Inspect the report before sharing it; raw `airs doctor --json` contains more detailed local information and is not the shareable report.
 
 Continue with [Labs and answer keys](./labs.md).

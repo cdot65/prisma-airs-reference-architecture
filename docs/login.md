@@ -12,6 +12,8 @@ The outcome is concrete: you sign into the harness as yourself, connect the Serv
 
 The owner confirmed inference sign-in, ServiceNow sign-in through `/mcp`, a read-only query and credential reuse after restarting `airs` on Apple Silicon with the preceding mcp.6 release. That real-account result is separate from automated package acceptance. The `mcp` prerelease tag remains available; unversioned installs and `@latest` select 0.1.1.
 
+**Optional test release: `0.1.2-alpha.1.mcp.1`.** Published under `mcp`, it adds exact-version missing-native recovery guidance, the diagnostic-report controls below and clearer company SSO recovery before a session opens. Exact candidates and fresh anonymous registry installations passed on Linux x64, native Linux ARM64 and signed/notarized Apple Silicon. Stable `latest` remains 0.1.1.
+
 The npm package remains `airs-harness`; invoke it as `airs`. **Prisma AIRS CLI 7.0.0** and eight product skills are bundled as `airs cli`, so no separate product CLI installation is required. Supported native packages are Linux x64, Linux ARM64 and Apple Silicon; Windows and Intel Mac packages are outside this release.
 
 Check Node.js and npm in the terminal you will use. The harness requires **22.13.0 or newer in the 22.x line, or 23.5.0 or newer** (`^22.13.0 || >=23.5.0`). Installing npm on Ubuntu does not upgrade a distro-provided Node 18. Install a supported Node version using your organization's method, reopen the terminal, and check again.
@@ -25,6 +27,34 @@ airs cli --version
 ```
 
 Replace the example registry with your administrator's registry. Ordinary installs include the matching native package; `--include=optional` is unnecessary unless npm configuration explicitly omits optional dependencies. Upgrades preserve existing environments, credentials and histories. Restart an already running AIRS process after upgrading.
+
+If `airs` reports that its native package is unavailable, reinstall the **same package version** with `--include=optional`, using the same registry and installation scope. For the global 0.1.1 installation above, use:
+
+```sh
+npm install -g airs-harness@0.1.1 --include=optional --registry=https://npm.example.com
+airs --version
+airs cli --version
+```
+
+Replace the example registry with the one you originally used. For a local installation, omit `-g` and run the repair in the same project. If you installed another version, retain that exact version. This repairs missing optional dependencies without changing releases or your npm configuration. Ordinary installations still do not need `--include=optional`.
+
+To try the optional test release, stop any running AIRS process and install this exact version in the same npm scope and registry:
+
+```sh
+npm install -g airs-harness@0.1.2-alpha.1.mcp.1 --registry=https://npm.example.com
+airs --version
+airs cli --version
+```
+
+To return to stable 0.1.1, stop AIRS and reinstall:
+
+```sh
+npm install -g airs-harness@0.1.1 --registry=https://npm.example.com
+airs --version
+airs cli --version
+```
+
+Use your original registry. For a local installation, omit `-g` and use the same project. Restart AIRS afterward; do not remove environments or credentials to change package versions. Automated checks on all three platforms exercised stable 0.1.1 → this test release → stable 0.1.1, preserving configuration, credential bindings and a resumed conversation through actual synthetic inference/MCP turns. These checks do not establish a fresh human SSO or ServiceNow login. If a native package is missing, repair the exact selected version with `--include=optional` as above.
 
 If an old standalone CLI owns `airs`, upgrade it to `@cdot65/prisma-airs-cli@7.0.1` first; it uses `airs-cli`. Do not force npm to overwrite another package's command. The standalone 7.0.1 release and the harness's pinned 7.0.0 bundle are intentionally distinct.
 
@@ -227,6 +257,12 @@ airs --environment work mcp login service-now --no-browser
 
 Enter `/doctor` for the current environment's connection-health dashboard. Opening it or choosing **Refresh diagnostics** does not send an inference request. **Verify gateway access** opens a confirmation; **Send connectivity check** sends a small inference request that can consume quota and appear in gateway logs. It sends no local files, conversation content or tools. This verifies inference, not ServiceNow permissions.
 
+**Diagnostic report is available in optional test release `0.1.2-alpha.1.mcp.1`; it is not in stable 0.1.1.** In that version, choose **Diagnostic report → Preview report** to review a summary of the last completed check. It contains the harness version, platform, authentication method, known check outcomes and recovery steps. **Esc** returns to the report actions.
+
+Choose **Copy report** to send that same text to your clipboard, or **Save local report** to create a new private `diagnostic-report-*.txt` file in the current environment's state directory. AIRS displays the saved location. Over SSH, copying depends on your terminal accepting clipboard requests; preview or save the report if copying is unavailable. Saved files use owner-only permissions on supported Linux and macOS systems.
+
+The report omits environment and MCP connection names, addresses, paths, credentials, raw errors, conversation content and tool inputs/results. It does not include individual MCP connection status or Node/npm version output. Previewing, copying and saving reuse the snapshot without another gateway, credential-store or inference check; no report is uploaded. **Not verified** means no inference verification was recorded. Review the text before sharing it. Raw `airs doctor --json` is a different local diagnostic and can contain private addresses and paths.
+
 Return to `/mcp`, select `service-now`, and use **Reconnect and verify** if you need fresh initialization/tool discovery. Choose **Start new conversation** after connection changes, then inspect the available tools. A read-only grant exposes `list_incidents` and `get_incident`; incident-management grants may also expose `create_incident` and `update_incident`. Successful login does not imply all four permissions.
 
 Ask in the new conversation:
@@ -272,6 +308,14 @@ List environments with `airs env list`; switch the saved default with `airs env 
 | Tools return an authorization error | Have an administrator check the gateway workspace grant and upstream incident roles/scopes/subject binding |
 
 For inference SSO renewal, `/doctor` offers **Restore company sign-in**, or use `/signin`. Workspace-key replacement remains a shell operation. Neither operation grants MCP permissions. Escape cancels an unfinished action; existing work remains saved.
+
+**Test release startup recovery:** `0.1.2-alpha.1.mcp.1` also improves company SSO recovery when startup or `resume` cannot renew a rejected grant, or cannot safely retry a refresh that may already have been consumed. If AIRS exits before the session opens, follow its shell instruction:
+
+```sh
+airs --environment NAME login --restore-session
+```
+
+Replace `NAME` with the local environment named by the error, sign in as the same person, then retry your original start or resume command. Same-person restoration preserves the conversations; it does not silently replay the failed operation. If the terminal session is already open, continue to use `/signin` or **Restore company sign-in** in `/doctor`. The installed recovery checks do not constitute an attended restoration test.
 
 To retire the environment, use `/mcp` → **Sign out** if desired, then sign out the credentials you intend to remove while it is still selected and unregister it:
 
