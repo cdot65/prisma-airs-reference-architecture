@@ -4,6 +4,14 @@ title: "Implementation status and public sources"
 sidebar_label: "Implementation status and public sources"
 ---
 
+## September 21: 0.1.2 stable release
+
+Version 0.1.2 consolidates the reliability corrections, in-session `/typesafe` setup and bundled CLI 7.1.5 Jev ASR judge. Model output strings are preserved verbatim; prompt normalization is separate. The skill uses Node and the TypeScript implementation, with per-command approval for native key storage and network access during live judging. Dry runs and explicit replay remain sandboxed.
+
+The owner confirmed alpha.5 inference, ServiceNow through `/mcp`, restart/reuse and Jev. Stable promotion changes the version stamp without changing that runtime behavior. Model verdicts are estimates, not validated ground truth. Historical release evidence and its limitations remain below.
+
+The exact stable source full GNU workspace run recorded **18,374 passed, 3 failed and 34 skipped**. It is not a green full-suite result. The three failures exercise inherited experimental remote execution behavior whose implementation and tests are unchanged from upstream; AIRS disables the corresponding service. Their original failures and the release-specific review are retained rather than relabeled as passes.
+
 ## September 20: post-0.1.1 reliability test release
 
 Optional test version **0.1.2-alpha.1.mcp.1** is published under `mcp`. The launcher and all three native packages passed exact candidate and fresh anonymous registry acceptance on Linux x64, native Linux ARM64 and signed/notarized Apple Silicon. `latest` continues to select stable **0.1.1**, and other tags are unchanged. Source implementation, installed package acceptance and production-account acceptance remain separate claims.

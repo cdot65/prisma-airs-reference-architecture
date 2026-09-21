@@ -63,8 +63,8 @@ test('ServiceNow onboarding is discoverable and explains in-session MCP authoriz
   await page.getByRole('link',{name:'Sign in and connect ServiceNow'}).click();
   await expect(page).toHaveURL(/learn\/login\/#sso-to-servicenow-a-complete-first-session$/);
   const main=page.locator('main');
-  await expect(main).toContainText('airs-harness 0.1.1');
-  await expect(main).toContainText('Prisma AIRS CLI 7.0.0');
+  await expect(main).toContainText('airs-harness 0.1.2');
+  await expect(main).toContainText('Prisma AIRS CLI 7.1.5');
   await expect(main).toContainText('airs cli tenant switch development');
   await expect(main).toContainText('Harness environments and CLI tenants are independent');
   await expect(main).toContainText('env create work --gateway-url');
@@ -98,10 +98,10 @@ test('first-session guide separates workspace keys, local names and explicit ver
   const main=page.locator('main');
   await expect(main).toContainText('^22.13.0 || >=23.5.0');
   await expect(main).toContainText('Installing npm on Ubuntu does not upgrade');
-  await expect(main).toContainText('npm install -g airs-harness@0.1.1 --registry=https://npm.example.com');
-  await expect(main).toContainText('That real-account result is separate from automated package acceptance');
+  await expect(main).toContainText('npm install -g airs-harness@0.1.2 --registry=https://npm.example.com');
+  await expect(main).toContainText('That real-account report is separate from automated package acceptance');
   await expect(main).not.toContainText('publication and native acceptance of that exact version are pending');
-  await expect(main).toContainText('The owner confirmed inference sign-in, ServiceNow sign-in through /mcp');
+  await expect(main).toContainText('The owner confirmed inference sign-in, ServiceNow through /mcp');
   await expect(main).toContainText('does not create a gateway workspace or require matching names');
   await expect(main).toContainText('a different environment name alone does not isolate that record');
   await expect(main).toContainText('default saved config');
@@ -139,4 +139,16 @@ test('release evidence separates published fixture acceptance from deferred live
   await expect(main).toContainText('The fixture kept refresh grants valid throughout the idle period');
   await expect(main).toContainText('Production lifecycle acceptance remains open.');
   await expect(main).not.toContainText('publication and three-platform installed acceptance remain pending');
+});
+
+
+test('Jev setup explains the saved-key permission boundary',async({page})=>{
+  await page.goto('learn/login/');
+  const main=page.locator('main');
+  await expect(main).toContainText('/typesafe');
+  await expect(main).toContainText('$prisma-airs-asr-judge attacks.json');
+  await expect(main).toContainText('no Python or separate CLI installation');
+  await expect(main).toContainText('Approve the specific live judge command');
+  await expect(main).toContainText('Declining approval sends no judgment request');
+  await expect(main).toContainText('Replay reuses recorded answers');
 });

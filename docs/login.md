@@ -8,57 +8,39 @@ sidebar_label: "Login from browser to authorized tools"
 
 The outcome is concrete: you sign into the harness as yourself, connect the ServiceNow MCP integration in the same environment, and ask the agent to read an incident. Your company SSO identity is used throughout the human login steps. Inference and MCP still receive separate credentials, and the ServiceNow backend uses a server-side integration account.
 
-**Release: airs-harness 0.1.1.** This stable release is published under `latest`; fresh default installations passed on all three supported platforms. It includes guided local environments, company SSO or workspace API-key inference, the in-session `/mcp` manager and `/doctor`, automatic desktop browser opening, remote callback entry and authorization/storage/discovery progress. Upgrades preserve existing environments, credential bindings and history. Native MCP device authorization still requires gateway support.
+**Release: airs-harness 0.1.2.** This stable release includes guided local environments, company SSO or workspace API-key inference, the in-session `/mcp` manager, `/doctor`, optional `/typesafe` setup and the bundled Jev ASR judge. It also includes exact-version missing-native recovery, redacted diagnostic reports and company SSO startup recovery. Native MCP device authorization still requires gateway support.
 
-The owner confirmed inference sign-in, ServiceNow sign-in through `/mcp`, a read-only query and credential reuse after restarting `airs` on Apple Silicon with the preceding mcp.6 release. That real-account result is separate from automated package acceptance. The `mcp` prerelease tag remains available; unversioned installs and `@latest` select 0.1.1.
+The owner confirmed inference sign-in, ServiceNow through `/mcp`, a read-only query, restart/reuse and the Jev workflow on the preceding alpha.5 release. That real-account report is separate from automated package acceptance. Restart AIRS after upgrading to load the bundled skill.
 
-**Optional test release: `0.1.2-alpha.1.mcp.1`.** Published under `mcp`, it adds exact-version missing-native recovery guidance, the diagnostic-report controls below and clearer company SSO recovery before a session opens. Exact candidates and fresh anonymous registry installations passed on Linux x64, native Linux ARM64 and signed/notarized Apple Silicon. Stable `latest` remains 0.1.1.
-
-The npm package remains `airs-harness`; invoke it as `airs`. **Prisma AIRS CLI 7.0.0** and eight product skills are bundled as `airs cli`, so no separate product CLI installation is required. Supported native packages are Linux x64, Linux ARM64 and Apple Silicon; Windows and Intel Mac packages are outside this release.
+The npm package remains `airs-harness`; invoke it as `airs`. **Prisma AIRS CLI 7.1.5** and the product skills are bundled as `airs cli`, so no separate product CLI installation is required. Supported native packages are Linux x64, Linux ARM64 and Apple Silicon; Windows and Intel Mac packages are outside this release.
 
 Check Node.js and npm in the terminal you will use. The harness requires **22.13.0 or newer in the 22.x line, or 23.5.0 or newer** (`^22.13.0 || >=23.5.0`). Installing npm on Ubuntu does not upgrade a distro-provided Node 18. Install a supported Node version using your organization's method, reopen the terminal, and check again.
 
 ```sh
 node --version
 npm --version
-npm install -g airs-harness@0.1.1 --registry=https://npm.example.com
+npm install -g airs-harness@0.1.2 --registry=https://npm.example.com
 airs --version
 airs cli --version
 ```
 
 Replace the example registry with your administrator's registry. Ordinary installs include the matching native package; `--include=optional` is unnecessary unless npm configuration explicitly omits optional dependencies. Upgrades preserve existing environments, credentials and histories. Restart an already running AIRS process after upgrading.
 
-If `airs` reports that its native package is unavailable, reinstall the **same package version** with `--include=optional`, using the same registry and installation scope. For the global 0.1.1 installation above, use:
+If `airs` reports that its native package is unavailable, reinstall the **same package version** with `--include=optional`, using the same registry and installation scope. For the global 0.1.2 installation above, use:
 
 ```sh
-npm install -g airs-harness@0.1.1 --include=optional --registry=https://npm.example.com
+npm install -g airs-harness@0.1.2 --include=optional --registry=https://npm.example.com
 airs --version
 airs cli --version
 ```
 
 Replace the example registry with the one you originally used. For a local installation, omit `-g` and run the repair in the same project. If you installed another version, retain that exact version. This repairs missing optional dependencies without changing releases or your npm configuration. Ordinary installations still do not need `--include=optional`.
 
-To try the optional test release, stop any running AIRS process and install this exact version in the same npm scope and registry:
+To roll back, stop AIRS and reinstall the required previous version from the same registry and npm scope. Do not remove environments or credentials to change package versions. Verify `airs --version` and `airs cli --version`, then restart AIRS.
 
-```sh
-npm install -g airs-harness@0.1.2-alpha.1.mcp.1 --registry=https://npm.example.com
-airs --version
-airs cli --version
-```
+If an old standalone CLI owns `airs`, upgrade it to `@cdot65/prisma-airs-cli@7.0.1` first; it uses `airs-cli`. Do not force npm to overwrite another package's command. The standalone 7.0.1 release and the harness's pinned 7.1.5 bundle are intentionally distinct.
 
-To return to stable 0.1.1, stop AIRS and reinstall:
-
-```sh
-npm install -g airs-harness@0.1.1 --registry=https://npm.example.com
-airs --version
-airs cli --version
-```
-
-Use your original registry. For a local installation, omit `-g` and use the same project. Restart AIRS afterward; do not remove environments or credentials to change package versions. Automated checks on all three platforms exercised stable 0.1.1 → this test release → stable 0.1.1, preserving configuration, credential bindings and a resumed conversation through actual synthetic inference/MCP turns. These checks do not establish a fresh human SSO or ServiceNow login. If a native package is missing, repair the exact selected version with `--include=optional` as above.
-
-If an old standalone CLI owns `airs`, upgrade it to `@cdot65/prisma-airs-cli@7.0.1` first; it uses `airs-cli`. Do not force npm to overwrite another package's command. The standalone 7.0.1 release and the harness's pinned 7.0.0 bundle are intentionally distinct.
-
-Use `type -a airs airs-cli airs-harness` and `airs --migration-check` to investigate a shadowed executable. The `airs-harness` compatibility alias remains available in 0.1.1; new commands use `airs`. If an earlier review installation exported `PATH` or `AIRS_HARNESS_HOME`, use a fresh terminal so those exports do not select its isolated state.
+Use `type -a airs airs-cli airs-harness` and `airs --migration-check` to investigate a shadowed executable. The `airs-harness` compatibility alias remains available in 0.1.2; new commands use `airs`. If an earlier review installation exported `PATH` or `AIRS_HARNESS_HOME`, use a fresh terminal so those exports do not select its isolated state.
 
 ### 1. Get the connection details and access
 
@@ -233,7 +215,7 @@ The remaining connection workflow stays inside AIRS. It uses the environment dis
 
 1. Enter `/mcp` to open **MCP connections**.
 2. Choose **Add gateway MCP server**. Enter the local connection name `service-now` and `https://gateway-mcp.example.com/mcp-service-now-dev/mcp` as the gateway URL.
-3. Complete **Sign in to gateway MCP**. In 0.1.1, a local desktop session opens the browser automatically. **Ctrl+O** opens it again; **Ctrl+Y** copies the full authorization URL. In an SSH/headless session, open that link on your laptop or phone. After SSO and consent, the browser may show a localhost page that cannot load: copy its entire address, paste it into AIRS’s hidden callback field, and press Enter. Never paste it into the agent conversation or a support report. Use **Page Up/Page Down** to scroll long links; the controls remain visible.
+3. Complete **Sign in to gateway MCP**. In 0.1.2, a local desktop session opens the browser automatically. **Ctrl+O** opens it again; **Ctrl+Y** copies the full authorization URL. In an SSH/headless session, open that link on your laptop or phone. After SSO and consent, the browser may show a localhost page that cannot load: copy its entire address, paste it into AIRS’s hidden callback field, and press Enter. Never paste it into the agent conversation or a support report. Use **Page Up/Page Down** to scroll long links; the controls remain visible.
 4. In the gateway's company SSO flow, choose the **same company account** used for inference. With workspace-key inference, choose the organizational account that has the MCP workspace grant. An existing browser session may avoid another password prompt; account selection or consent can still appear.
 5. Complete any gateway-managed upstream consent. AIRS shows **Completing MCP sign-in**, **Saving MCP credential**, then **Connecting and discovering MCP tools**. Browser approval alone does not prove that a credential was saved, and discovery does not execute a tool. After **MCP connection updated**, choose **Start new conversation**.
 
@@ -257,7 +239,7 @@ airs --environment work mcp login service-now --no-browser
 
 Enter `/doctor` for the current environment's connection-health dashboard. Opening it or choosing **Refresh diagnostics** does not send an inference request. **Verify gateway access** opens a confirmation; **Send connectivity check** sends a small inference request that can consume quota and appear in gateway logs. It sends no local files, conversation content or tools. This verifies inference, not ServiceNow permissions.
 
-**Diagnostic report is available in optional test release `0.1.2-alpha.1.mcp.1`; it is not in stable 0.1.1.** In that version, choose **Diagnostic report → Preview report** to review a summary of the last completed check. It contains the harness version, platform, authentication method, known check outcomes and recovery steps. **Esc** returns to the report actions.
+**Diagnostic report is included in stable 0.1.2.** Choose **Diagnostic report → Preview report** to review a summary of the last completed check. It contains the harness version, platform, authentication method, known check outcomes and recovery steps. **Esc** returns to the report actions.
 
 Choose **Copy report** to send that same text to your clipboard, or **Save local report** to create a new private `diagnostic-report-*.txt` file in the current environment's state directory. AIRS displays the saved location. Over SSH, copying depends on your terminal accepting clipboard requests; preview or save the report if copying is unavailable. Saved files use owner-only permissions on supported Linux and macOS systems.
 
@@ -309,7 +291,7 @@ List environments with `airs env list`; switch the saved default with `airs env 
 
 For inference SSO renewal, `/doctor` offers **Restore company sign-in**, or use `/signin`. Workspace-key replacement remains a shell operation. Neither operation grants MCP permissions. Escape cancels an unfinished action; existing work remains saved.
 
-**Test release startup recovery:** `0.1.2-alpha.1.mcp.1` also improves company SSO recovery when startup or `resume` cannot renew a rejected grant, or cannot safely retry a refresh that may already have been consumed. If AIRS exits before the session opens, follow its shell instruction:
+**Startup recovery:** 0.1.2 improves company SSO recovery when startup or `resume` cannot renew a rejected grant, or cannot safely retry a refresh that may already have been consumed. If AIRS exits before the session opens, follow its shell instruction:
 
 ```sh
 airs --environment NAME login --restore-session
@@ -421,3 +403,13 @@ The exact consent trigger and order depend on the registered upstream integratio
 The earlier diagrams use mcp server 1, the utility example in this course. The ServiceNow walkthrough above uses the same gateway login boundaries with a different upstream service and a separate backend credential.
 
 Continue with [End-to-end question walkthrough](./walkthrough.md) and [Implementation status and public sources](./evidence.md).
+
+### Optional: judge a red-team export with TypeSafe Jev
+
+Inside AIRS, enter `/typesafe`, choose **Save or replace API key**, and enter the key in the hidden field. The key belongs to the selected local environment; never paste it into the conversation. Saving does not send a paid judgment. `/doctor` can verify access to the TypeSafe models endpoint.
+
+Invoke `$prisma-airs-asr-judge attacks.json`. The bundled skill runs the shared TypeScript CLI through Node; no Python or separate CLI installation is required. It validates and normalizes the export, then uses a bounded probe before a full paid run. Prompt envelopes are normalized; each model `output` string is preserved verbatim, including JSON-looking text.
+
+Approve the specific live judge command when AIRS requests native credential-store and network access. A successful `/typesafe` save does not grant those permissions to the shell sandbox. Dry runs and explicitly requested replay need no key and retain normal sandbox permissions. Declining approval sends no judgment request. An unreadable saved credential is distinct from an absent key; inspect the native store before replacing it.
+
+The judge sends selected scan content to TypeSafe and may incur charges. Its ASR is an independent model estimate under the configured policy, not validated ground truth. Review coverage exclusions and disagreements with AIRS. Replay reuses recorded answers and is not a fresh evaluation.
