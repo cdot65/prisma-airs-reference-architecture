@@ -23,7 +23,7 @@ flowchart LR
 
 ## Diagnose inside the selected environment
 
-In stable 0.1.1 and the newer test releases, enter `/doctor` for the connection-health dashboard. **Refresh diagnostics** refreshes local diagnostics without making an inference request. A native-store availability check does not prove that every saved credential is readable. **Verify gateway access** asks for confirmation; only **Send connectivity check** sends the small inference probe. It may consume quota and appear in gateway logs, but sends no local files, conversation or tools. The equivalent shell commands are `airs --environment work doctor` and `airs --environment work doctor --verify-access`.
+In stable 0.1.2, enter `/doctor` for the connection-health dashboard. **Refresh diagnostics** refreshes local diagnostics without making an inference request. A native-store availability check does not prove that every saved credential is readable. **Verify gateway access** asks for confirmation; only **Send connectivity check** sends the small inference probe. It may consume quota and appear in gateway logs, but sends no local files, conversation or tools. The equivalent shell commands are `airs --environment work doctor` and `airs --environment work doctor --verify-access`.
 
 **Restore company sign-in** renews inference SSO for the same verified identity. Workspace-key replacement remains a shell action: leave the session, run `airs --environment work login --with-api-key`, and reopen the same environment. Use the name displayed by the session; local names do not need to match gateway workspace names.
 
@@ -98,11 +98,23 @@ For inference, use **Use device authorization** or `airs --environment NAME logi
 
 The callback window is five minutes in the tested MCP flow. An expired tab cannot complete a later attempt because its state and verifier belong to the earlier one. The PKCE verifier and native credential store remain on the harness host. Verify native completion and an actual request after browser consent; the success page alone is insufficient.
 
+## Reliability preview checks
+
+**0.1.3-alpha.1.mcp.1 is undergoing validation and is not yet available for installation.** When published, this preview adds these recovery checks while keeping 0.1.2 as stable:
+
+- A 401 means authentication was rejected; a 403 means permission was denied; a 446 means a gateway guardrail denied the request. The agent stops these requests instead of repeatedly sending them. Resolve the relevant cause and retry explicitly. Do not treat a policy denial as a request to log in again.
+- **Checked at** identifies when the explicit inference check completed. Doctor JSON exposes the same time as `gateway_access_checked_at`, or null when no inference check was requested. A failed check also has a time. An old success does not establish current MCP permission or current inference access.
+- If configuration changes during verification, run `airs --environment work doctor --verify-access` again for the intended settings. A check of the old settings is not reported as current access.
+- If the catalog check times out, inspect the filesystem or mount holding that environment's catalog and retry doctor. Its two-second helper wait does not promise a deadline for every operating-system or configuration operation.
+- If a conversation cannot be loaded, recovery menus and their diagnostic report actions remain usable. Ordinary text remains editable. Use `/new` for a new writable conversation; review an uncertain operation before deciding whether to retry it.
+
+These changes do not move an SSH callback listener to your laptop and do not add an MCP device grant. Keep using the gateway's supported browser/manual-callback workflow. Signing into the gateway for inference does not authorize ServiceNow by itself.
+
 ## Capture a useful report
 
-**Stable 0.1.1:** record the package version, platform, approximate idle time and failed step. Describe whether a tool completed, failed or has an uncertain outcome. Review any additional identifiers before sharing them through your organization's support channel. Environment names, tool names and request IDs may be private; do not add them to a public report automatically. Never share credentials, device codes, authorization/callback URLs or private tool input.
+**Stable 0.1.2:** record the package version, platform, approximate idle time and failed step. Describe whether a tool completed, failed or has an uncertain outcome. Review any additional identifiers before sharing them through your organization's support channel. Environment names, tool names and request IDs may be private; do not add them to a public report automatically. Never share credentials, device codes, authorization/callback URLs or private tool input.
 
-**Published optional test version `0.1.2-alpha.1.mcp.1`:** the new `/doctor` → **Diagnostic report** action offers **Preview report**, **Copy report** and **Save local report**. These controls are not in stable 0.1.1. Preview shows the exact text that will be copied or saved; **Esc** returns to the actions. Saving creates a new owner-only `diagnostic-report-*.txt` file in the current environment's state directory and displays its location. If your terminal declines clipboard access, use preview or the saved file. Nothing is uploaded automatically.
+**Stable 0.1.2:** the `/doctor` → **Diagnostic report** action offers **Preview report**, **Copy report** and **Save local report**. Preview shows the exact text that will be copied or saved; **Esc** returns to the actions. Saving creates a new owner-only `diagnostic-report-*.txt` file in the current environment's state directory and displays its location. If your terminal declines clipboard access, use preview or the saved file. Nothing is uploaded automatically.
 
 The report allowlists version/platform, authentication method, known check outcomes and recovery steps. It excludes local environment/connection names, addresses, paths, credentials, raw errors, conversation content and tool inputs/results. It does not include individual MCP status or Node/npm versions. Report actions reuse the last completed snapshot and make no additional health, credential-store, inference or MCP request. Running `/doctor` itself still performs its existing diagnostics; **Verify gateway access** remains a separate, explicit inference action.
 

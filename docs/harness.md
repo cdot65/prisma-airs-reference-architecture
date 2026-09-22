@@ -20,6 +20,16 @@ Desktop MCP sign-in opens the browser automatically; SSH sessions provide explic
 
 Use `/typesafe` to configure an optional environment-scoped Jev key inside AIRS. The bundled `prisma-airs-asr-judge` skill delegates to CLI 7.1.5's TypeScript implementation. Live judging asks for per-command approval to access the native credential store and TypeSafe network endpoint; dry runs and explicit replay retain the shell sandbox. No Python runtime or separate CLI installation is required. This optional third credential channel is independent of inference and MCP authorization.
 
+## Selective upstream reliability preview
+
+Candidate **0.1.3-alpha.1.mcp.1 is in validation, not yet published**. Stable remains 0.1.2. The preview keeps AIRS's gateway authentication and imports selected Codex reliability behavior rather than replacing the AIRS login contract.
+
+Cancel and Escape belong to the operation that displayed them, so a delayed action cannot cancel a later login or diagnostic check. If a conversation cannot be attached, `/signin`, `/doctor`, `/mcp` and `/typesafe` remain available; ordinary text stays in the draft. `/new` starts a writable conversation. Recovery does not automatically replay an inference request or tool call.
+
+Access verification shows its completion time and rejects a result if gateway configuration, model catalog or authentication generation changes during the check. The same timestamp appears through the shell and `/doctor`. A timestamp records the check, including a failed check; it is not a lasting authorization grant. This preview also stops replaying inference after HTTP 401, 403 or 446 and bounds the catalog-read portion of doctor. See [Troubleshooting by trust boundary](./troubleshooting.md) for recovery actions.
+
+No new MCP device authorization or authentication service is included. Inference OIDC/workspace keys, gateway-facing MCP OAuth and optional Jev credentials retain their separate roles. Broader remote-executor, daemon and fullscreen changes are deferred.
+
 ## The harness owns the execution loop
 
 When Alex types the question, the first component that sees it is the harness, and the harness is the component that owns the conversation from then on. Prisma AIRS Harness is a standalone Rust terminal application. Its local responsibilities include the conversation, repository access, tool dispatch, approval policy, and credential-store integration. The similarly named hosted application is a separate project and is not required for this architecture.

@@ -145,6 +145,14 @@ The course distinguishes five kinds of evidence. **Implemented** means reviewed 
 
 No full Rust workspace pass, external security certification, Windows distribution or blanket immediate revocation is claimed. Public examples use fictional identities and endpoints. Credentials, private logs and operational identifiers stay outside this site.
 
+## Selective upstream preview status — September 22
+
+Version **0.1.3-alpha.1.mcp.1** is a candidate under validation, not a published package or stable promotion. Implemented slices cover attempt-owned cancellation, unavailable-conversation recovery and reports, configuration-bound access checks, time-stamped observations, bounded catalog diagnostics and terminal inference-denial handling. The managed CLI stays at 7.1.5.
+
+Local evidence includes 4,364 TUI tests passing (one required a retry), 155 AIRS CLI tests passing, 338 protocol tests passing, native doctor/MCP/environment fixtures and the native Jev agent-approval fixture. These are controlled fixtures, not new company SSO or ServiceNow acceptance. An earlier integrated source recorded 18,375 passes, three preexisting experimental remote-shell failures and 34 skips; the final stamped source has a separate full-workspace run in progress. Installed platform, signing, upgrade/rollback and publication gates remain pending.
+
+The adoption is selective. AIRS retains CAS-facing authentication, CIE directory semantics and gateway ownership of upstream MCP OAuth. No remote auth service, direct upstream connection fallback, new device grant or credential/history migration is introduced. Deferred startup submission, remote executor/daemon changes and fullscreen defaults are not claimed as implemented.
+
 ## Primary references
 
 These references explain protocols and product capabilities. The deployment observations above come from the reviewed implementation and operator checks; they describe one deployment on particular dates and are not guarantees made by the vendor.
