@@ -22,11 +22,21 @@ Use `/typesafe` to configure an optional environment-scoped Jev key inside AIRS.
 
 ## Selective upstream reliability preview
 
-Candidate **0.1.3-alpha.1.mcp.1 is in validation, not yet published**. Stable remains 0.1.2. The preview keeps AIRS's gateway authentication and imports selected Codex reliability behavior rather than replacing the AIRS login contract.
+Test release **0.1.3-alpha.2.mcp.1** is available from the AIRS npm registry. Stable remains **0.1.2**. The preview preserves AIRS's gateway authentication while adopting selected Codex reliability improvements.
+
+Install the preview explicitly, replacing `npm.example.com` with your organization’s approved registry:
+
+```bash
+npm install -g airs-harness@0.1.3-alpha.2.mcp.1 --registry=https://npm.example.com
+airs --version
+airs cli --version
+```
+
+The bundled CLI remains 7.1.5. To return to stable, install `airs-harness@0.1.2` from the same registry. Upgrade and rollback were checked with isolated environments, histories and native credentials; no credential or history migration is required.
 
 Cancel and Escape belong to the operation that displayed them, so a delayed action cannot cancel a later login or diagnostic check. If a conversation cannot be attached, `/signin`, `/doctor`, `/mcp` and `/typesafe` remain available; ordinary text stays in the draft. `/new` starts a writable conversation. Recovery does not automatically replay an inference request or tool call.
 
-Access verification shows its completion time and rejects a result if gateway configuration, model catalog or authentication generation changes during the check. The same timestamp appears through the shell and `/doctor`. A timestamp records the check, including a failed check; it is not a lasting authorization grant. This preview also stops replaying inference after HTTP 401, 403 or 446 and bounds the catalog-read portion of doctor. See [Troubleshooting by trust boundary](./troubleshooting.md) for recovery actions.
+Access verification shows its completion time and rejects a result if gateway configuration, model catalog or authentication generation changes during the check. The same timestamp appears through the shell and `/doctor`. A timestamp records the check, including a failed check; it is not a lasting authorization grant. This preview also stops replaying inference after HTTP 401, 403 or 446, recognizes explicit gateway policy denials returned inside HTTP 200 responses, and bounds the catalog-read portion of doctor. See [Troubleshooting by trust boundary](./troubleshooting.md) for recovery actions.
 
 No new MCP device authorization or authentication service is included. Inference OIDC/workspace keys, gateway-facing MCP OAuth and optional Jev credentials retain their separate roles. Broader remote-executor, daemon and fullscreen changes are deferred.
 

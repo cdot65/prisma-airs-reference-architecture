@@ -100,9 +100,9 @@ The callback window is five minutes in the tested MCP flow. An expired tab canno
 
 ## Reliability preview checks
 
-**0.1.3-alpha.1.mcp.1 is undergoing validation and is not yet available for installation.** When published, this preview adds these recovery checks while keeping 0.1.2 as stable:
+**Test release 0.1.3-alpha.2.mcp.1 is published.** Stable remains 0.1.2. The preview adds these recovery checks:
 
-- A 401 means authentication was rejected; a 403 means permission was denied; a 446 means a gateway guardrail denied the request. The agent stops these requests instead of repeatedly sending them. Resolve the relevant cause and retry explicitly. Do not treat a policy denial as a request to log in again.
+- A 401 means authentication was rejected; a 403 means permission was denied; a 446 means a gateway guardrail denied the request. The agent stops these requests instead of repeatedly sending them. An explicit gateway policy denial can also arrive inside an HTTP 200 JSON or streamed response; it remains a denial and is not automatically replayed. Resolve the relevant cause and retry explicitly. Do not treat a policy denial as a request to log in again.
 - **Checked at** identifies when the explicit inference check completed. Doctor JSON exposes the same time as `gateway_access_checked_at`, or null when no inference check was requested. A failed check also has a time. An old success does not establish current MCP permission or current inference access.
 - If configuration changes during verification, run `airs --environment work doctor --verify-access` again for the intended settings. A check of the old settings is not reported as current access.
 - If the catalog check times out, inspect the filesystem or mount holding that environment's catalog and retry doctor. Its two-second helper wait does not promise a deadline for every operating-system or configuration operation.
