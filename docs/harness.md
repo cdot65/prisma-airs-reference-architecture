@@ -42,7 +42,7 @@ No new MCP device authorization or authentication service is included. Inference
 
 ## Mac-first terminal preview
 
-**0.1.3-alpha.3.mcp.1 is published under `mac-preview`.** This preview adds
+**0.1.3-alpha.4.mcp.1 is published under `mac-preview`.** This preview adds
 selected terminal improvements on top of alpha.2. Its first distribution is for
 Apple Silicon macOS only. Linux builds wait for owner Mac acceptance, and stable
 remains 0.1.2. The existing `mcp` tag continues to select alpha.2 for all three
@@ -51,18 +51,24 @@ supported platforms.
 On an Apple Silicon Mac, replace `npm.example.com` with your approved registry:
 
 ```bash
-npm install -g airs-harness@0.1.3-alpha.3.mcp.1 --registry=https://npm.example.com
+npm install -g airs-harness@0.1.3-alpha.4.mcp.1 --registry=https://npm.example.com
 airs --version
 airs cli --version
 ```
 
-Expect harness `0.1.3-alpha.3.mcp.1` and CLI `7.1.5`. The native executable is
+Expect harness `0.1.3-alpha.4.mcp.1` and CLI `7.1.5`. The native executable is
 Developer ID signed and Apple notarized. Exact candidate and fresh registry
 installations passed controlled terminal, native-store, MCP and Jev approval
-checks. Upgrade and rollback were checked from both stable 0.1.2 and alpha.2;
+checks. Upgrade and rollback were checked from both stable 0.1.2 and alpha.3;
 install either previous exact version from the same registry to return to it.
 No manual credential or conversation migration is needed.
 
+- Selected options now have the upstream blue background in shared menus,
+  including `/mcp`, `/typesafe`, `/model`, approvals and question choices. The
+  highlight follows keyboard selection and covers wrapped descriptions. Light
+  and dark themes receive contrast-checked fills; terminals with unknown color
+  capabilities or limited palettes use reverse video. This styles menu options;
+  it does not introduce fullscreen transcript text selection.
 - Open and close the transcript with **Ctrl+T** while composing a draft. Returning
   to the conversation preserves the draft, including after resizing the terminal.
 - `/copy` uses the latest completed assistant message, including commentary that

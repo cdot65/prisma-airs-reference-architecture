@@ -4,6 +4,24 @@ title: "Implementation status and public sources"
 sidebar_label: "Implementation status and public sources"
 ---
 
+## September 24: blue menu selection follow-up
+
+**0.1.3-alpha.4.mcp.1** adds contrast-aware blue selection backgrounds to shared
+AIRS menus on Apple Silicon. It is published under `mac-preview`; stable and Linux
+channels retain their previous versions. The implementation selectively adapts
+upstream picker colors and contrast handling, preserving AIRS authentication,
+menu layout and keyboard behavior. Fullscreen selection/search remains deferred.
+
+The TUI source suite passed **4,388 tests**, with two skips, and scoped lint passed.
+The full GNU workspace recorded **18,429 passes, three matching inherited failures
+and 34 skips**; it is not fully green.
+Exact signed/notarized candidate and fresh registry checks include a terminal
+fixture that answers the actual startup palette probe and verifies blue menu
+selection and arrow navigation under light and dark backgrounds. Existing MCP,
+native-store and actual-agent Jev approval checks remain part of acceptance.
+These are controlled fixtures; owner visual and real-account acceptance remain
+separate. See [Harness and agent execution](./harness.md) for installation.
+
 ## September 24: Mac-first terminal preview
 
 **0.1.3-alpha.3.mcp.1** is published under `mac-preview` for Apple Silicon only,
