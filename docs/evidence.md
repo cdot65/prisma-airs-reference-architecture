@@ -4,6 +4,44 @@ title: "Implementation status and public sources"
 sidebar_label: "Implementation status and public sources"
 ---
 
+## September 24: Mac-first terminal preview
+
+**0.1.3-alpha.3.mcp.1** is published under `mac-preview` for Apple Silicon only,
+with bundled CLI **7.1.5**. Stable `latest` remains **0.1.2** and the existing
+`mcp` tag remains **0.1.3-alpha.2.mcp.1**. Linux distribution builds await owner
+Mac acceptance. This immutable Mac-only version will not later acquire Linux
+packages; a subsequent all-platform handoff needs a new version.
+
+The preview preserves drafts across transcript resizing, copies the latest
+completed assistant message, recovers unfinished question answers without sending
+them, preserves active history search, monitors tmux size asynchronously and
+retains full hyperlink destinations when wrapping prompts. Fullscreen selection
+and transcript search are deferred because they require a broader renderer and
+input-ownership migration. See [Harness and agent execution](./harness.md)
+for installation and the owner test checklist.
+
+The final TUI suite passed **4,382 tests**, with two skips. Full GNU workspace:
+**18,423 passed, 3 failed and 34 skipped**. All three failures have the same
+normalized assertion details as the retained stable 0.1.2 remote-shell baseline;
+they remain failures, and this is not an all-green workspace result. Scoped lint
+passed. Each implemented phase meets the self-assessed **9/10** preview gate;
+real-account acceptance remains a separate owner check.
+
+The exact Developer ID signed and Apple-notarized executable passed candidate
+and fresh anonymous registry acceptance, including native credentials, terminal
+resize/draft recovery, gateway policy handling, MCP management and Jev through
+the actual agent approval path. Separate checks passed in a real tmux pane and
+preserved conversations and native credentials through upgrade and rollback from
+both stable 0.1.2 and alpha.2. Ten measured warm starts met the 10% startup budget;
+the maximum measured cancellation latency was about 12 milliseconds. These are
+controlled fixture measurements, not cold-boot or production-account guarantees.
+
+Company inference sign-in, workspace keys, gateway-facing MCP OAuth and optional
+Jev credentials keep their existing separate roles. No direct upstream MCP route,
+new authentication service, live owner sign-in, paid Jev judgment or model-accuracy
+claim is introduced. Earlier evidence retains its original platform and account
+scope below.
+
 ## September 21: 0.1.2 stable release
 
 Version 0.1.2 consolidates the reliability corrections, in-session `/typesafe` setup and bundled CLI 7.1.5 Jev ASR judge. Model output strings are preserved verbatim; prompt normalization is separate. The skill uses Node and the TypeScript implementation, with per-command approval for native key storage and network access during live judging. Dry runs and explicit replay remain sandboxed.

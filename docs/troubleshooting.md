@@ -110,6 +110,28 @@ The callback window is five minutes in the tested MCP flow. An expired tab canno
 
 These changes do not move an SSH callback listener to your laptop and do not add an MCP device grant. Keep using the gateway's supported browser/manual-callback workflow. Signing into the gateway for inference does not authorize ServiceNow by itself.
 
+## Terminal preview checks on Apple Silicon
+
+The Mac-first **0.1.3-alpha.3.mcp.1** preview adds draft recovery and terminal
+improvements. See [Harness and agent execution](./harness.md) for its current
+publication status, platform scope and installation command.
+
+If a question disappears when its turn ends, inspect the composer: a typed answer
+is recovered there with your existing draft. Review that text before pressing
+Enter. Recovery itself does not submit the answer. When a history search is open,
+Escape cancels the search and restores the draft, including recovered answers;
+accepting a history result selects that result instead.
+
+Use Ctrl+T to open or close the transcript; `q` also closes it. Resize the terminal
+while the transcript is open, then return to the draft. `/copy` selects the latest
+completed assistant message, which may be commentary rather than an earlier final
+answer. Complete URL destinations are retained even when a prompt wraps narrowly.
+
+These behaviors do not verify inference permission, sign in to MCP, or change a
+saved Jev key. Continue to use `/doctor`, `/mcp` and `/typesafe` for their separate
+connections. A terminal rendering problem is not evidence that the native store
+lost a credential.
+
 ## Capture a useful report
 
 **Stable 0.1.2:** record the package version, platform, approximate idle time and failed step. Describe whether a tool completed, failed or has an uncertain outcome. Review any additional identifiers before sharing them through your organization's support channel. Environment names, tool names and request IDs may be private; do not add them to a public report automatically. Never share credentials, device codes, authorization/callback URLs or private tool input.

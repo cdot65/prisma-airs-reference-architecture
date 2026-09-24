@@ -40,6 +40,52 @@ Access verification shows its completion time and rejects a result if gateway co
 
 No new MCP device authorization or authentication service is included. Inference OIDC/workspace keys, gateway-facing MCP OAuth and optional Jev credentials retain their separate roles. Broader remote-executor, daemon and fullscreen changes are deferred.
 
+## Mac-first terminal preview
+
+**0.1.3-alpha.3.mcp.1 is published under `mac-preview`.** This preview adds
+selected terminal improvements on top of alpha.2. Its first distribution is for
+Apple Silicon macOS only. Linux builds wait for owner Mac acceptance, and stable
+remains 0.1.2. The existing `mcp` tag continues to select alpha.2 for all three
+supported platforms.
+
+On an Apple Silicon Mac, replace `npm.example.com` with your approved registry:
+
+```bash
+npm install -g airs-harness@0.1.3-alpha.3.mcp.1 --registry=https://npm.example.com
+airs --version
+airs cli --version
+```
+
+Expect harness `0.1.3-alpha.3.mcp.1` and CLI `7.1.5`. The native executable is
+Developer ID signed and Apple notarized. Exact candidate and fresh registry
+installations passed controlled terminal, native-store, MCP and Jev approval
+checks. Upgrade and rollback were checked from both stable 0.1.2 and alpha.2;
+install either previous exact version from the same registry to return to it.
+No manual credential or conversation migration is needed.
+
+- Open and close the transcript with **Ctrl+T** while composing a draft. Returning
+  to the conversation preserves the draft, including after resizing the terminal.
+- `/copy` uses the latest completed assistant message, including commentary that
+  arrived after an earlier final answer. It does not copy an unfinished stream.
+- If an active turn ends while you are typing answers to its questions, AIRS
+  recovers those answers into the composer. Review or edit them before sending;
+  recovery does not automatically submit them. An active history search retains
+  its query and preview; cancelling the search restores the recovered draft.
+- Narrow prompt wrapping retains complete hyperlink destinations. Unix tmux
+  sessions receive background size checks without a geometry query on the UI thread.
+
+Inference sign-in, `/mcp`, `/doctor`, `/typesafe`, gateway route selection and Jev's
+per-command approval continue to use the existing AIRS flows. Upstream fullscreen
+selection and transcript search are a separate renderer migration and are not
+included in this preview. The inline terminal remains the default.
+
+After installing the published Mac preview, test a conversation through your
+normal gateway, a read-only ServiceNow request through `/mcp`, and reuse after
+restarting AIRS. Also type an unsent draft, open the transcript, resize the window,
+and close it; the draft should remain. If you use Jev, confirm the skill still
+requests the normal approval and reads the selected environment's saved key.
+Automated fixture checks do not replace these real-account checks.
+
 ## The harness owns the execution loop
 
 When Alex types the question, the first component that sees it is the harness, and the harness is the component that owns the conversation from then on. Prisma AIRS Harness is a standalone Rust terminal application. Its local responsibilities include the conversation, repository access, tool dispatch, approval policy, and credential-store integration. The similarly named hosted application is a separate project and is not required for this architecture.
