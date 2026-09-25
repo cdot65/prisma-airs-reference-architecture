@@ -42,7 +42,7 @@ No new MCP device authorization or authentication service is included. Inference
 
 ## Mac-first terminal preview
 
-**0.1.3-alpha.4.mcp.1 is published under `mac-preview`.** This preview adds
+**0.1.3-alpha.5.mcp.1 is published under `mac-preview`.** This preview adds
 selected terminal improvements on top of alpha.2. Its first distribution is for
 Apple Silicon macOS only. Linux builds wait for owner Mac acceptance, and stable
 remains 0.1.2. The existing `mcp` tag continues to select alpha.2 for all three
@@ -51,15 +51,15 @@ supported platforms.
 On an Apple Silicon Mac, replace `npm.example.com` with your approved registry:
 
 ```bash
-npm install -g airs-harness@0.1.3-alpha.4.mcp.1 --registry=https://npm.example.com
+npm install -g airs-harness@0.1.3-alpha.5.mcp.1 --registry=https://npm.example.com
 airs --version
 airs cli --version
 ```
 
-Expect harness `0.1.3-alpha.4.mcp.1` and CLI `7.1.5`. The native executable is
+Expect harness `0.1.3-alpha.5.mcp.1` and CLI `7.1.5`. The native executable is
 Developer ID signed and Apple notarized. Exact candidate and fresh registry
 installations passed controlled terminal, native-store, MCP and Jev approval
-checks. Upgrade and rollback were checked from both stable 0.1.2 and alpha.3;
+checks. Upgrade and rollback were checked from both stable 0.1.2 and alpha.4;
 install either previous exact version from the same registry to return to it.
 No manual credential or conversation migration is needed.
 
@@ -91,6 +91,54 @@ restarting AIRS. Also type an unsent draft, open the transcript, resize the wind
 and close it; the draft should remain. If you use Jev, confirm the skill still
 requests the normal approval and reads the selected environment's saved key.
 Automated fixture checks do not replace these real-account checks.
+
+## Conversation routing in the Mac preview
+
+Apple Silicon preview **0.1.3-alpha.5.mcp.1** adds these in-session controls.
+A saved gateway config selects provider routing, fallback
+and policy. It is separate from a local AIRS environment, which owns credentials
+and history. Switching configs does not sign you into another workspace.
+
+| In-session command | Requested behavior |
+| --- | --- |
+| `/config` | Inspect the current pair and enter a saved config ID |
+| `/config pc-example-123456` | Request that saved config for this conversation |
+| `/config default` | Return to the gateway's default config and follow its routing |
+| `/model` | Follow config routing or enter an explicit `@integration/model` |
+| `/model @integration/model` | Request a model override where gateway policy permits it |
+| `/model default` | Follow the selected config's model routing |
+
+Changing to a different config clears the previous model override. Selecting the
+same config preserves it. Opening a menu sends no inference request. **Verify and
+use** sends one fixed connectivity message with up to 16 output tokens, without
+conversation content, files or tools. It can consume quota; the provider is asked
+not to store the response, and gateway logging still applies. AIRS applies the
+selection after the gateway accepts the check and the session confirms the update.
+
+A denied or cancelled verification preserves the previous pair and draft. If the
+session's update confirmation is lost, input pauses because the server may have
+applied the change: resume the conversation to refresh its state, or use `/new`.
+Saved conversations restore their routing on resume; new conversations use the
+environment defaults. These choices do not change MCP login or TypeSafe credentials.
+
+The display describes requested routing. Gateway configuration can override the
+requested model; inspect the gateway trace to establish the effective backend.
+`/doctor` checks environment defaults. To recheck a conversation override, select
+its current value in `/config` or `/model` and confirm **Verify and use**.
+
+## Gateway MCP onboarding in the Mac preview
+
+The routing preview also guides `/mcp` setup through the gateway listener. Enter
+its HTTPS MCP URL and a local connection name; the upstream service remains behind
+the gateway. Saving a connection, completing sign-in and discovering tools are
+separate states. A successful discovery does not prove permission to execute a
+particular tool: finish with a read-only call.
+
+If setup fails, the recovery view identifies the failed phase and whether the
+connection was saved, unchanged or has an unknown outcome. Follow the displayed
+retry action after resolving gateway policy, throttling or credential-store access.
+The current conversation and draft remain available. Cancelling setup before
+saving does not create a connection.
 
 ## The harness owns the execution loop
 
