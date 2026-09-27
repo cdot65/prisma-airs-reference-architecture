@@ -38,8 +38,8 @@
   {
     "slug": "gateway",
     "noteId": "ad5b921d-7285-4de8-a7e6-cd1d10f2d469",
-    "sourceSha256": "8884d5349efeb5cdf678c51195e25d06b12d5619ea4b66ae3b931c2b1aebf782",
-    "publishedSha256": "97047229c356014e87b0182af23e1afdb5ca8c43f020980e8748913adc185560"
+    "sourceSha256": "60ac29f5b2c537c3f7de12b59d3c8abb4caeaa5f7d8754d906a1dd348bef06da",
+    "publishedSha256": "a513e511efcafc7155ce9f4d90b73e5303be768975ed62b3ed7a1f21836c7cfe"
   },
   {
     "slug": "mcp",

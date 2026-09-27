@@ -55,6 +55,14 @@ The gateway's position matters twice in one question. After mcp server 1 returns
 
 There is also a content reason to keep the tool loop in view. Text and JSON utility output can carry untrusted content that arrived as input, so a tool result should be treated as data, not as a new source of instructions. Content checks help evaluate inputs and outputs. They do not grant workspace access, and they do not replace the harness's local tool approval rules.
 
+## Managing policy is a separate operation
+
+The bundled product CLI manages gateway resources with the selected CLI tenant's management OAuth credentials. A harness environment selects inference and MCP connections; it does not select that product tenant. `/config` and `/model` choose routing for a conversation, while `/mcp` handles the gateway-facing tool login. None of these grants management permissions.
+
+CLI 7.2 adds `airs cli aigateway admin-guardrails` for organisation policies on the explicit admin endpoint. Ordinary `airs cli aigateway guardrails` remains workspace-scoped. Start with `airs cli tenant list`, then inspect the selected scope with `airs cli aigateway admin-guardrails list --page-size 100 --current-page 0 --output json`. Organisation records may have no workspace, and the optional workspace filter may be denied. Do not retry a denied write on a different plane.
+
+The September 27 official OpenAPI alignment preserves working service/user API-key commands and native SSO, CAS and MCP OAuth. The specification describes multiple API planes; its bearer scheme is not permission to exchange their credentials. Admin listing has read-only live acceptance, while new admin mutations and mapping changes have specification-based tests. Configuring an MCP policy mapping does not sign in to that service. See the [CLI scope and command guide](https://cdot65.github.io/prisma-airs-cli/cli/aigateway/official-spec-alignment/) and [SDK evidence and remaining gaps](https://cdot65.github.io/prisma-airs-sdk/developer/official-gateway-alignment/).
+
 ## Evidence to collect
 
 If you later need to show what the gateway did with a request, collect the observations that answer each stage's question. For an allowed question, retain a correlation ID, the selected workspace and configuration, the input and output verdicts, the response status, and the model route. For a denial, retain the failing stage and the policy reason, without logging the token. A 446 was observed for specific guardrail failures in this deployment; it is not an OAuth-standard status code, so do not expect it from other gateways or interpret it as an authentication result.
