@@ -143,3 +143,54 @@ The report allowlists version/platform, authentication method, known check outco
 A passed native-service check does not prove access to the saved credential. A failed service check does not establish that the store is locked. Gateway health does not verify inference, and MCP discovery does not verify a completed tool call. An absent inference check remains **Not verified**. Inspect the report before sharing it; raw `airs doctor --json` contains more detailed local information and is not the shareable report.
 
 Continue with [Labs and answer keys](./labs.md).
+
+## Managed CLI network and credential checks
+
+The Mac preview **0.1.3-alpha.7.mcp.1** bundles CLI **7.2.0** and SDK **0.34.0**.
+A matching version and working command help confirm installation, not live access.
+`airs cli doctor` diagnoses the selected product tenant. `airs doctor` and `/doctor`
+diagnose the selected Harness environment. Company SSO and MCP login do not supply
+the product tenant's management OAuth credentials.
+
+If workspace and admin-guardrail reads all fail with
+`AISEC_OAUTH_ERROR: Token request failed: fetch failed`, the shared token request
+is failing before those APIs return records. Sandbox restrictions are one possible
+cause; the text alone cannot distinguish them from DNS, TLS, proxy or endpoint
+reachability problems. Do not call this a bad credential or permission denial
+without the corresponding server response.
+
+Paste this read-only request into the agent:
+
+```text
+Use the installed prisma-airs-gateway skill. Retry this read using the shell
+host's supported per-command network approval:
+"$AIRS_MANAGED_CLI" aigateway admin-guardrails list --page-size 10 --current-page 0 --output json
+Keep the same product tenant and API plane. Do not change credentials or disable
+the sandbox. If approval is unavailable, report that restriction. If the approved
+request fails, report only sanitized network error details and the execution context.
+```
+
+Approval of a command prefix alone may not grant network access. If the approved
+attempt still fails, compare the same read in a normal terminal on the same host:
+
+```bash
+airs cli aigateway admin-guardrails list --page-size 10 --current-page 0 --output json
+```
+
+Check the same selected tenant, OAuth endpoint, proxy and certificate trust. Do not
+print tenant files, tokens or secrets, or disable TLS verification. An empty list
+is valid; a failed request provides no inventory. A Gateway 403 after OAuth needs
+permission diagnosis, not an automatic switch to another API plane.
+
+A product CLI warning that TypeSafe is not configured does **not** establish that
+the Harness's saved Jev key is missing. `/typesafe` manages the environment's
+native-store key; the installed ASR skill resolves it and passes it only to its
+judge child process. A missing scanner key likewise does not block management
+reads. Do not copy keys into product configuration to clear unrelated diagnostics.
+Use a dry run first, then an approved small fresh Jev probe to validate live
+judging. The probe sends scan records and may incur charges; replay does not
+verify new provider access.
+
+See the [CLI configuration guide](https://cdot65.github.io/prisma-airs-cli/getting-started/configuration/)
+and [SDK OAuth guide](https://cdot65.github.io/prisma-airs-sdk/guides/oauth-lifecycle/)
+for the corresponding caller and transport boundaries.
