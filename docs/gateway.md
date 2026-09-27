@@ -61,6 +61,8 @@ The bundled product CLI manages gateway resources with the selected CLI tenant's
 
 CLI 7.2 adds `airs cli aigateway admin-guardrails` for organisation policies on the explicit admin endpoint. Ordinary `airs cli aigateway guardrails` remains workspace-scoped. Start with `airs cli tenant list`, then inspect the selected scope with `airs cli aigateway admin-guardrails list --page-size 100 --current-page 0 --output json`. Organisation records may have no workspace, and the optional workspace filter may be denied. Do not retry a denied write on a different plane.
 
+Apple Silicon users can get the bundled CLI 7.2 and SDK 0.34 with `npm install -g airs-harness@0.1.3-alpha.7.mcp.1 --registry=https://YOUR_NPM_REGISTRY`; replace `YOUR_NPM_REGISTRY` with your team’s registry hostname. This is the signed, notarized Mac preview; stable 0.1.2 still bundles CLI 7.1.5. Run `airs cli --version` before using the new admin commands. Linux preview builds remain deferred.
+
 The September 27 official OpenAPI alignment preserves working service/user API-key commands and native SSO, CAS and MCP OAuth. The specification describes multiple API planes; its bearer scheme is not permission to exchange their credentials. Admin listing has read-only live acceptance, while new admin mutations and mapping changes have specification-based tests. Configuring an MCP policy mapping does not sign in to that service. See the [CLI scope and command guide](https://cdot65.github.io/prisma-airs-cli/cli/aigateway/official-spec-alignment/) and [SDK evidence and remaining gaps](https://cdot65.github.io/prisma-airs-sdk/developer/official-gateway-alignment/).
 
 ## Evidence to collect
