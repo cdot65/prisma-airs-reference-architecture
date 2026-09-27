@@ -92,11 +92,28 @@ and close it; the draft should remain. If you use Jev, confirm the skill still
 requests the normal approval and reads the selected environment's saved key.
 Automated fixture checks do not replace these real-account checks.
 
-## Upcoming fullscreen preview: release validation pending
+## Fullscreen and reliability preview
 
-The next Apple Silicon preview, **0.1.3-alpha.6.mcp.1**, is in final validation.
-It is not yet an installation recommendation; the published preview above remains
-the available handoff until signing, notarization and registry checks finish.
+Apple Silicon preview **0.1.3-alpha.6.mcp.1** is published under `mac-preview`.
+It supersedes alpha.5 and includes the routing and MCP controls described below.
+The package is Developer ID signed and Apple notarized; exact candidate, fresh
+registry installation and upgrade/rollback checks passed. Stable remains 0.1.2;
+Linux distribution follows owner Mac acceptance.
+
+```bash
+npm install -g airs-harness@0.1.3-alpha.6.mcp.1 --registry="$AIRS_NPM_REGISTRY"
+airs --version
+airs cli --version
+```
+
+Set `AIRS_NPM_REGISTRY` to your organization’s package registry URL first.
+Expect harness `0.1.3-alpha.6.mcp.1` and bundled CLI `7.1.5`. Existing environments,
+credentials and conversations are reused. To roll back, close AIRS and install
+`airs-harness@0.1.3-alpha.5.mcp.1` from the same registry.
+
+Final Mac source checks passed all 6,254 tests. The GNU workspace passed 18,995
+with three verified inherited failures and 35 skips; it was not wholly green.
+The checks use isolated fixtures and do not establish real-account authorization.
 
 Fullscreen is optional. Open `/tui`, choose the preferred terminal mode and save.
 The preference belongs to the selected environment and takes effect after restarting
@@ -124,7 +141,7 @@ restoration. Authentication failures and gateway policy denials remain terminal 
 AIRS does not retry around them. Gateway inference, gateway-facing MCP OAuth, native
 credential storage and optional Jev approval remain separate contracts.
 
-After the signed package is available, repeat inference, a read-only ServiceNow call,
+After installing this preview, repeat inference, a read-only ServiceNow call,
 restart/reuse and Jev approval on your real account. Then test `/tui` restart behavior,
 search, selection, window resize and an unsent draft. Automated platform fixtures cannot
 establish your gateway authorization or your terminal's visual and clipboard behavior.
