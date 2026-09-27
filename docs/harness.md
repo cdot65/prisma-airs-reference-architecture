@@ -92,6 +92,43 @@ and close it; the draft should remain. If you use Jev, confirm the skill still
 requests the normal approval and reads the selected environment's saved key.
 Automated fixture checks do not replace these real-account checks.
 
+## Upcoming fullscreen preview: release validation pending
+
+The next Apple Silicon preview, **0.1.3-alpha.6.mcp.1**, is in final validation.
+It is not yet an installation recommendation; the published preview above remains
+the available handoff until signing, notarization and registry checks finish.
+
+Fullscreen is optional. Open `/tui`, choose the preferred terminal mode and save.
+The preference belongs to the selected environment and takes effect after restarting
+AIRS. Launch-time overrides still take precedence. Inline mode remains the default;
+use `/tui` again to return to it on the next launch.
+
+In fullscreen mode:
+
+- Use **F3** to find transcript text. While searching, **Enter** moves to the next
+  match and **Shift+Enter** moves to the previous match. **F4** toggles activity detail
+  with the default keymap. Search does not rewrite model context.
+- Drag to select text; double-click selects a word and triple-click selects a line.
+  Shift-click extends an existing selection. Copy joins wrapped display rows while
+  preserving original line breaks, Unicode and full link destinations.
+- Right-click inside a selection to copy it. Confirmed copies clear the selection;
+  unconfirmed terminal clipboard delivery preserves it so you can retry. SSH clipboard
+  support depends on your terminal, and tmux's explicit mouse-off setting is respected.
+- Press Escape twice from the composer to browse earlier prompts. The compact footer
+  shows navigation and edit controls. Leaving browse mode restores the reading position.
+- Approval prompts and private credential dialogs retain keyboard and mouse ownership.
+  Transcript search or selection must not capture input from `/typesafe` or `/mcp`.
+
+This preview also improves interrupted-output handling, transport retries and terminal
+restoration. Authentication failures and gateway policy denials remain terminal errors;
+AIRS does not retry around them. Gateway inference, gateway-facing MCP OAuth, native
+credential storage and optional Jev approval remain separate contracts.
+
+After the signed package is available, repeat inference, a read-only ServiceNow call,
+restart/reuse and Jev approval on your real account. Then test `/tui` restart behavior,
+search, selection, window resize and an unsent draft. Automated platform fixtures cannot
+establish your gateway authorization or your terminal's visual and clipboard behavior.
+
 ## Conversation routing in the Mac preview
 
 Apple Silicon preview **0.1.3-alpha.5.mcp.1** adds these in-session controls.
