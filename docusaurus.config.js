@@ -14,7 +14,7 @@ const config = {
     docs: {
       sidebarPath: './sidebars.js',
       routeBasePath: 'learn',
-      editUrl: 'https://github.com/cdot65/prisma-airs-reference-architecture/edit/main/',
+      editUrl: 'https://git.cdot.io/cdot/prisma-airs-reference-architecture/_edit/main/',
       showLastUpdateTime: false,
     },
     blog: false,
@@ -31,7 +31,7 @@ const config = {
         {to: '/learn/architecture', label: 'Architecture', position: 'left'},
         {to: '/learn/labs', label: 'Labs', position: 'left'},
         {to: '/learn/evidence', label: 'Evidence', position: 'left'},
-        {href: 'https://github.com/cdot65/prisma-airs-reference-architecture', label: 'GitHub', position: 'right'},
+        {href: 'https://git.cdot.io/cdot/prisma-airs-reference-architecture', label: 'Forgejo', position: 'right'},
       ],
     },
     footer: {
