@@ -44,7 +44,7 @@ Write each lesson around a learner outcome, an explained diagram, a concrete exa
 
 ## GitHub Pages
 
-The repository uses a project Pages URL with `baseUrl: '/prisma-airs-reference-architecture/'`. The deployment workflow builds and verifies the snapshot on main, uploads the static output, and deploys through the `github-pages` environment. Pull requests run the same validation without publishing. Select **GitHub Actions** as the Pages source.
+The repository uses a project Pages URL with `baseUrl: '/prisma-airs-reference-architecture/'`. Forgejo pull requests validate the snapshot without publishing. After required main-branch checks pass, run **Authorize GitHub Pages release** on Forgejo. It creates an `airs-docs-<full commit SHA>` tag that the mirror copies to GitHub. GitHub verifies the tag against the source commit, builds the snapshot, and deploys through the `github-pages` environment. Select **GitHub Actions** as the Pages source.
 
 Sources: [Docusaurus Mermaid](https://docusaurus.io/docs/markdown-features/diagrams), [Docusaurus deployment](https://docusaurus.io/docs/deployment), and [GitHub Pages workflows](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
