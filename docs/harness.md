@@ -260,3 +260,21 @@ Each actor in the loop has limits worth stating. A model's tool selection cannot
 **Checkpoint:** the model selects `hash_text`, but Alex lacks the utilities.use grant. What happens? The server rejects access, even though the tool only computes a digest. The deciding fact is that model selection is not an authorization grant; the simplicity of the operation never enters the decision.
 
 Continue with [Keycloak and token contracts](./keycloak.md). Implementation basis: [Implementation status and public sources](./evidence.md).
+
+## Software license and upstream attribution
+
+The Harness uses **Apache License 2.0** and retains OpenAI Codex attribution and
+third-party notices. Project-owned CLI and SDK source moved to Apache-2.0 on
+September 28, 2026, with the owner's authorization. Older published MIT packages
+retain MIT: the current Mac preview still bundles CLI 7.2.0 and SDK 0.34.0.
+Updated source metadata does not change an installed package's license.
+
+When distributing a fork, retain LICENSE and applicable NOTICE content and carry
+prominent modification notices with changed files. The Harness uses adjacent
+`.license` companion notices for upstream-derived modified source. Native
+packaging retains dependency notices; third-party components remain under their
+own licenses. Apache-2.0 does not grant rights to product names or logos.
+
+Read the [Apache-2.0 terms](https://www.apache.org/licenses/LICENSE-2.0),
+[CLI license page](https://cdot65.github.io/prisma-airs-cli/about/license/), and
+[SDK license page](https://cdot65.github.io/prisma-airs-sdk/about/license/).
